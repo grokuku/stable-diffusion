@@ -1,0 +1,10 @@
+##### Web + Network #####
+--host 0.0.0.0
+--port 9000
+
+##### Directories #####
+#--output-dir /outputs/50-Lama-Cleaner
+
+##### Options #####
+--device cuda
+--enable-xformers

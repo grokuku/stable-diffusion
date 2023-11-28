@@ -1,0 +1,15 @@
+# Web + Network
+--listen
+--port 9000
+
+# options
+--enable-insecure-extension-access
+--medvram
+--xformers
+--api
+
+#--no-half-vae
+#--disable-nan-check
+#--update-all-extensions
+#--reinstall-xformers
+#--reinstall-torch  

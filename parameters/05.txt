@@ -1,0 +1,8 @@
+# Web + Network
+--listen
+--port 9000
+
+# Directories
+--output-directory /outputs/05-comfy-ui
+
+# Options

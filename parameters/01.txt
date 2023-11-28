@@ -1,0 +1,1 @@
+{"render_devices": "auto", "update_branch": "main", "net": {"listen_port": 9000, "listen_to_network": true}}
