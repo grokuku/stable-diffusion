@@ -44,6 +44,3 @@ cd ${SD70_DIR}/kohya_ss
 pip install -r requirements.txt
 cd ${SD70_DIR}/kohya_ss
 CMD="bash gui.sh"; while IFS= read -r param; do if [[ $param != \#* ]]; then CMD+=" ${param}"; fi; done < "${SD70_DIR}/parameters.txt"; eval $CMD
-
-
-

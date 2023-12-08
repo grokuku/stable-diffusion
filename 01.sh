@@ -38,3 +38,4 @@ chown -R diffusion:users ${BASE_DIR}
 
 cd $SD01_DIR
 bash start.sh
+

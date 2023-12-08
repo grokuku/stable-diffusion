@@ -23,7 +23,7 @@ cd ${SD03_DIR}
 
 # Install if the folder is not present
 if [ ! -d "${SD03_DIR}/invokeai" ]; then
-    pip install "InvokeAI[xformers]" --use-pep517 --extra-index-url https://download.pytorch.org/whl/cu118
+    pip install "InvokeAI[xformers]" --use-pep517 --extra-index-url https://download.pytorch.org/whl/cu121
     invokeai-configure --yes --root ${SD03_DIR}/invokeai
 fi
 
@@ -33,10 +33,11 @@ invokeai-configure --yes --root ${SD03_DIR}/invokeai --skip-sd-weights
 
 # pip install ruamel.yaml==0.17.40 pillow==10.0.1 pypatchmatch
 
-CMD="invokeai"
+CMD="invokeai-web"
 while IFS= read -r param; do
     if [[ $param != \#* ]]; then
         CMD+=" ${param}"
     fi
 done < "${SD03_DIR}/parameters.txt"
 eval $CMD
+

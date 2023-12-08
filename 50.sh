@@ -44,3 +44,4 @@ done < "${SD50_DIR}/parameters.txt"
 
 eval $CMD
 
+

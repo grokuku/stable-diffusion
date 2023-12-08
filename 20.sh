@@ -40,3 +40,4 @@ source venv/bin/activate
 cd ${SD20_DIR}/kubin
 pip install -r requirements.txt
 CMD="python3 src/kubin.py"; while IFS= read -r param; do if [[ $param != \#* ]]; then CMD+=" ${param}"; fi; done < "${SD20_DIR}/parameters.txt"; eval $CMD
+

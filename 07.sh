@@ -48,3 +48,4 @@ while IFS= read -r param; do
     fi
 done < "${SD07_DIR}/parameters.txt"
 eval $CMD
+

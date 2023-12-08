@@ -77,14 +77,20 @@ By default, each user interface will save data in its own directory, which is au
 
 
 ## History
+- **Version 2.0.2** :  
+move .cache folder to stable-diffusion/temp to avoid filling unraid's docker.img file.  
+(hopefully) fix all the things I broke in the last update :)  
+  
 - **Version 2.0.0** :  
-Make use of Conda to help managing dependencies.
-Ready for Reactor in Auto1111, SD-Next and ComfyUI.
-More common folders merged in the models folder.
-install scripts splitted for easy maintenance
-and some fixes
-
-
+Utilize Conda to manage dependencies efficiently.  
+Prepared for Reactor in Auto1111, SD-Next, and ComfyUI.  
+More common folders merged in the models folder.  
+Split install scripts for easier maintenance.  
+Implemented various fixes.  
+  
+- **Version 1.5.1** :  
+Added a fix for Automatic1111/dreambooth
+  
 - **Version 1.5.0** :  
 Added StableSwarm and VoltaML
   
