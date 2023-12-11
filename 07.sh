@@ -1,10 +1,10 @@
 #!/bin/bash
 source /sl_folder.sh
 
-export PATH="/opt/miniconda3/bin:$PATH"
+export PATH="/home/abc/miniconda3/bin:$PATH"
 
 mkdir -p ${SD07_DIR}
-mkdir -p /outputs/07-StableSwarm
+mkdir -p /config/outputs/07-StableSwarm
 
 if [ ! -d ${SD07_DIR}/env ]; then
     conda create -p ${SD07_DIR}/env -y
@@ -38,7 +38,7 @@ sl_folder ${SD07_DIR}/StableSwarmUI/Models Embeddings ${BASE_DIR}/models embeddi
 sl_folder ${SD07_DIR}/StableSwarmUI/Models clip_vision ${BASE_DIR}/models clip_vision
 sl_folder ${SD07_DIR}/StableSwarmUI/Models controlnet ${BASE_DIR}/models controlnet
 
-sl_folder ${SD07_DIR}/StableSwarmUI Output /outputs 07-StableSwarm
+sl_folder ${SD07_DIR}/StableSwarmUI Output /config/outputs 07-StableSwarm
 
 cd ${SD07_DIR}/StableSwarmUI
 CMD="./launch-linux.sh"
@@ -48,4 +48,3 @@ while IFS= read -r param; do
     fi
 done < "${SD07_DIR}/parameters.txt"
 eval $CMD
-

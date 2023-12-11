@@ -1,5 +1,7 @@
 # Easy Image Generation
 
+[![Docker Pulls](https://img.shields.io/docker/pulls/holaflenain/stable-diffusion)](https://hub.docker.com/r/holaflenain/stable-diffusion)
+
 The goal of this docker container is to provide an easy way to run different WebUI and other tools related to Image Generation (mostly stable-diffusion).
   
 Please consult each respective website for a comprehensive description and usage guidelines.  
@@ -21,10 +23,34 @@ Please consult each respective website for a comprehensive description and usage
 
 ## Usage
 
-
 Unraid template available on superboki's Repository (search diffusion in community apps)
+
+### Using PUID and PGID
+
+If you are 
+
+* running on a **linux host** (ie unraid) and
+* **not** using [rootless containers with Podman](https://developers.redhat.com/blog/2020/09/25/rootless-containers-with-podman-the-basics#why_podman_)
+
+then you must set the [environmental variables **PUID** and **PGID**.](https://docs.linuxserver.io/general/understanding-puid-and-pgid) in the container in order for it to generate files/folders your normal user can interact it.
+
+Run these commands from your terminal
+
+* `id -u` -- prints UID for **PUID**
+* `id -g` -- prints GID for **PGID**
+
+Then add to your docker command like so:
+
+```shell
+docker run -d ... -e "PUID=1000" -e "PGID=1000" ... holaflenain/stable-diffusion
+```
+
+or substitute them in the docker-compose examples below.
+
+#### Docker Compose Example
+
   
-Docker-Compose example for Easy-Diffusion: 
+Using Easy-Diffusion as an example: 
 
 ```yaml
 version: '3.1'
@@ -36,12 +62,16 @@ services:
       - WEBUI_VERSION=01
       - NVIDIA_VISIBLE_DEVICES=all
       - TZ=Europe/Paris
+      - PUID=1000
+      - PGID=1000
     ports:
       - '9000:9000/tcp'
     volumes:
-      - '/my/own/datadir:/opt/stable-diffusion:rw'
-      - '/my/own/datadir/outputs:/outputs:rw'
-      - '/my/own/datadir/cache:/home/diffusion/.cache:rw'
+      - '/my/own/datadir:/config:rw'
+      # or specify individual dirs
+      #- '/my/own/datadir:/config/stable-diffusion:rw' # config/program dir
+      #- '/my/own/datadir/outputs:/config/outputs:rw'
+      #- '/my/own/datadir/cache:/config/cache:rw'
     runtime: nvidia
 
 ```

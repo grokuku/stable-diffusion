@@ -1,10 +1,10 @@
 #!/bin/bash
 source /sl_folder.sh
 
-export PATH="/opt/miniconda3/bin:$PATH"
+export PATH="/home/abc/miniconda3/bin:$PATH"
 
 mkdir -p "${SD50_DIR}"
-mkdir -p /outputs/50-Lama-cleaner
+mkdir -p /config/outputs/50-Lama-cleaner
 
 if [ ! -d ${SD50_DIR}/env ]; then
     conda create -p ${SD50_DIR}/env -y
@@ -43,5 +43,4 @@ while IFS= read -r param; do
 done < "${SD50_DIR}/parameters.txt"
 
 eval $CMD
-
 

@@ -3,6 +3,6 @@
 --port 9000
 
 # Directories
---output-directory /outputs/05-comfy-ui
+--output-directory /config/outputs/05-comfy-ui
 
 # Options

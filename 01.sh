@@ -1,6 +1,8 @@
 #!/bin/bash
 source /sl_folder.sh
 
+SD01_DIR="${BASE_DIR}/01-easy-diffusion"
+
 mkdir -p ${SD01_DIR}/{models,version,plugins/ui,scripts}
 cd ${SD01_DIR}
 
@@ -20,7 +22,7 @@ sl_folder ${SD01_DIR}/models codeformer ${BASE_DIR}/models codeformer
 sl_folder ${SD01_DIR}/models embeddings ${BASE_DIR}/models embeddings
 sl_folder ${SD01_DIR}/models gfpgan ${BASE_DIR}/models gfpgan
 
-sl_folder /home/diffusion "Stable Diffusion UI" /outputs 01-Easy-Diffusion
+sl_folder /home/diffusion "Stable Diffusion UI" /config/outputs 01-Easy-Diffusion
 
 if [ ! -f "$SD01_DIR/scripts/config.json" ]; then
     cp -v "${SD_INSTALL_DIR}/parameters/01.txt" "$SD01_DIR/scripts/config.json"
@@ -38,4 +40,3 @@ chown -R diffusion:users ${BASE_DIR}
 
 cd $SD01_DIR
 bash start.sh
-

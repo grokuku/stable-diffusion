@@ -1,7 +1,7 @@
 #!/bin/bash
 source /sl_folder.sh
 
-export PATH="/opt/miniconda3/bin:$PATH"
+export PATH="/home/abc/miniconda3/bin:$PATH"
 export use_venv=1
 
 # Clean if venv is present
@@ -35,6 +35,7 @@ fi
 
 # Create venv
 if [ ! -d ${SD04_DIR}/webui/venv ]; then
+    echo "Activating venv"
     cd ${SD04_DIR}/webui
     python -m venv venv
     cd ${SD04_DIR}/webui
@@ -58,11 +59,11 @@ sl_folder ${SD04_DIR}/webui/models GFPGAN ${BASE_DIR}/models gfpgan
 sl_folder ${SD04_DIR}/webui/models LDSR ${BASE_DIR}/models ldsr
 sl_folder ${SD04_DIR}/webui/models ControlNet ${BASE_DIR}/models controlnet
 
-sl_folder ${SD04_DIR}/webui outputs /outputs 04-SD-Next
+sl_folder ${SD04_DIR}/webui outputs /config/outputs 04-SD-Next
 
 cd ${SD04_DIR}/webui/
 source venv/bin/activate
-export PATH="/opt/stable-diffusion/04-SD-Next/env/lib/python3.11/site-packages/onnxruntime/capi:$PATH"
+export PATH="/config/stable-diffusion/04-SD-Next/env/lib/python3.11/site-packages/onnxruntime/capi:$PATH"
 
 pip install typing-extensions==4.8.0 numpy==1.24.4 huggingface_hub==0.18.0 sqlalchemy --upgrade
 CMD="bash webui.sh"
@@ -72,4 +73,3 @@ while IFS= read -r param; do
     fi
 done < "${SD04_DIR}/parameters.txt"
 eval $CMD
-

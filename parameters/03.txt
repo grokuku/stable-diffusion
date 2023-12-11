@@ -4,9 +4,9 @@
 --port=9000
 
 # Directories
---outdir=/outputs/03-InvokeAI
---embedding_dir=/opt/stable-diffusion/models/embeddings/
---lora_dir=/opt/stable-diffusion/models/lora/
+--outdir=/config/outputs/03-InvokeAI
+--embedding_dir=/config/stable-diffusion/models/embeddings/
+--lora_dir=/config/stable-diffusion/models/lora/
 --root=${SD03_DIR}/invokeai
 
 # Options
