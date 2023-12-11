@@ -25,7 +25,7 @@ ENV XDG_CACHE_HOME="${BASE_DIR}/temp"
 
 # Installing required packages
 RUN apt-get update -y -q=2 && \
-    apt-get install -y -q=2 curl wget mc nano rsync libgl1-mesa-glx libtcmalloc-minimal4 libcufft10 cmake build-essential python3-opencv libopencv-dev dotnet-sdk-7.0
+    apt-get install -y -q=2 curl wget mc nano rsync libgl1-mesa-glx libtcmalloc-minimal4 libcufft10 cmake build-essential python3-opencv libopencv-dev dotnet-sdk-7.0 libgoogle-perftools-dev
 #    apt-get install -y -q=2 curl unzip bzip2 gpg mc nano rsync wget python3 python3-tk python3-venv git python3-pip build-essential ffmpeg \
 #        libglew-dev libglfw3-dev libglm-dev libgl1-mesa-glx python3-opencv libopencv-dev \
 #        libao-dev libmpg123-dev google-perftools
