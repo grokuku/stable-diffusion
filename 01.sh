@@ -36,7 +36,7 @@ if [ ! -f "$SD01_DIR/start.sh" ]; then
     rm -f edui.zip
 fi
 
-chown -R diffusion:users ${BASE_DIR}
+#chown -R diffusion:users ${BASE_DIR}
 
 cd $SD01_DIR
 bash start.sh

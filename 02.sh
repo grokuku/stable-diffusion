@@ -65,7 +65,7 @@ sl_folder ${SD02_DIR}/webui outputs /config/outputs 02-sd-webui
 echo "Run Stable-Diffusion-WebUI"
 cd ${SD02_DIR}/webui
 source venv/bin/activate
-export PATH="/config/stable-diffusion/02-sd-webui/webui/venv/lib/python3.11/site-packages/onnxruntime/capi:$PATH"
+export PATH="/config/02-sd-webui/webui/venv/lib/python3.11/site-packages/onnxruntime/capi:$PATH"
 pip install --upgrade pip
 
 CMD="bash webui.sh"

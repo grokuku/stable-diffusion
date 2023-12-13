@@ -63,7 +63,7 @@ sl_folder ${SD04_DIR}/webui outputs /config/outputs 04-SD-Next
 
 cd ${SD04_DIR}/webui/
 source venv/bin/activate
-export PATH="/config/stable-diffusion/04-SD-Next/env/lib/python3.11/site-packages/onnxruntime/capi:$PATH"
+export PATH="/config/04-SD-Next/env/lib/python3.11/site-packages/onnxruntime/capi:$PATH"
 
 pip install typing-extensions==4.8.0 numpy==1.24.4 huggingface_hub==0.18.0 sqlalchemy --upgrade
 CMD="bash webui.sh"

@@ -5,8 +5,8 @@
 
 # Directories
 --outdir=/config/outputs/03-InvokeAI
---embedding_dir=/config/stable-diffusion/models/embeddings/
---lora_dir=/config/stable-diffusion/models/lora/
+--embedding_dir=/config/models/embeddings/
+--lora_dir=/config/models/lora/
 --root=${SD03_DIR}/invokeai
 
 # Options

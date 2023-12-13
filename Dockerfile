@@ -4,21 +4,21 @@ COPY docker/root/ /
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV WEBUI_VERSION=01
-ENV BASE_DIR=/config/stable-diffusion
+ENV BASE_DIR=/config
 ENV SD_INSTALL_DIR=/opt/sd-install
-ENV SD01_DIR=/config/stable-diffusion/01-easy-diffusion
-ENV SD02_DIR=/config/stable-diffusion/02-sd-webui
-ENV SD03_DIR=/config/stable-diffusion/03-invokeai
-ENV SD04_DIR=/config/stable-diffusion/04-SD-Next
-ENV SD05_DIR=/config/stable-diffusion/05-comfy-ui
-ENV SD06_DIR=/config/stable-diffusion/06-Fooocus
-ENV SD07_DIR=/config/stable-diffusion/07-StableSwarm
-ENV SD08_DIR=/config/stable-diffusion/08-voltaML
-ENV SD20_DIR=/config/stable-diffusion/20-kubin
-ENV SD50_DIR=/config/stable-diffusion/50-lama-cleaner
-ENV SD51_DIR=/config/stable-diffusion/51-facefusion
-ENV SD70_DIR=/config/stable-diffusion/70-kohya
-ENV XDG_CACHE_HOME=/config/stable-diffusion/temp
+ENV SD01_DIR=/config/01-easy-diffusion
+ENV SD02_DIR=/config/02-sd-webui
+ENV SD03_DIR=/config/03-invokeai
+ENV SD04_DIR=/config/04-SD-Next
+ENV SD05_DIR=/config/05-comfy-ui
+ENV SD06_DIR=/config/06-Fooocus
+ENV SD07_DIR=/config/07-StableSwarm
+ENV SD08_DIR=/config/08-voltaML
+ENV SD20_DIR=/config/20-kubin
+ENV SD50_DIR=/config/50-lama-cleaner
+ENV SD51_DIR=/config/51-facefusion
+ENV SD70_DIR=/config/70-kohya
+ENV XDG_CACHE_HOME=/config/temp
 
 RUN apt-get update -y -q=2 && \
     apt-get install -y -q=2 curl \

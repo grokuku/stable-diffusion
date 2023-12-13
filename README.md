@@ -69,7 +69,7 @@ services:
     volumes:
       - '/my/own/datadir:/config:rw'
       # or specify individual dirs
-      #- '/my/own/datadir:/config/stable-diffusion:rw' # config/program dir
+      #- '/my/own/datadir:/config:rw' # config/program dir
       #- '/my/own/datadir/outputs:/config/outputs:rw'
       #- '/my/own/datadir/cache:/config/cache:rw'
     runtime: nvidia
