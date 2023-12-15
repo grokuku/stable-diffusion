@@ -12,7 +12,7 @@ fi
 
 source activate ${SD06_DIR}/env
 conda install -n base conda-libmamba-solver -y
-conda install -c conda-forge git python=3.11 pip --solver=libmamba -y
+conda install -c conda-forge git python=3.10 pip --solver=libmamba -y
 conda install -c nvidia cuda-cudart --solver=libmamba -y
 
 if [ ! -f "$SD06_DIR/parameters.txt" ]; then
