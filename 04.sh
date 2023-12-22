@@ -4,11 +4,6 @@ source /sl_folder.sh
 export PATH="/opt/miniconda3/bin:$PATH"
 export use_venv=1
 
-# Clean if venv is present
-if [ -d "${SD04_DIR}/webui/venv" ]; then
-    rm -rf ${SD04_DIR}/webui/venv
-fi
-
 echo "Install and run SD-Next"
 
 mkdir -p ${SD04_DIR}
@@ -27,7 +22,23 @@ if [ ! -d ${SD04_DIR}/webui ]; then
 fi
 
 cd ${SD04_DIR}/webui
-git pull -X ours
+
+if [ -d "${SD04_DIR}/webui/venv" ]; then
+    # check if remote is ahead of local
+    # https://stackoverflow.com/a/25109122/1469797
+    if [ "$CLEAN_ENV" != "true" ] && [ $(git rev-parse HEAD) = $(git ls-remote $(git rev-parse --abbrev-ref @{u} | \
+    sed 's/\// /g') | cut -f1) ]; then
+         echo "Local branch up-to-date, keeping existing venv"
+      else
+        if [ "$CLEAN_ENV" = "true" ]; then
+          echo "Forced wiping venv for clean packages install"
+        else
+          echo "Remote branch is ahead. Wiping venv for clean packages install"
+        fi
+        rm -rf ${SD04_DIR}/webui/venv
+        git pull -X ours
+    fi
+fi
 
 if [ ! -f "$SD04_DIR/parameters.txt" ]; then
     cp -v "${SD_INSTALL_DIR}/parameters/04.txt" "$SD04_DIR/parameters.txt"

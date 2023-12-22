@@ -23,15 +23,26 @@ if [ ! -d ${SD02_DIR}/webui ]; then
 fi
 
 cd ${SD02_DIR}/webui
-git pull -X ours
+
+if [ -d "${SD02_DIR}/webui/venv" ]; then
+    # check if remote is ahead of local
+    # https://stackoverflow.com/a/25109122/1469797
+    if [ "$CLEAN_ENV" != "true" ] && [ $(git rev-parse HEAD) = $(git ls-remote $(git rev-parse --abbrev-ref @{u} | \
+    sed 's/\// /g') | cut -f1) ]; then
+         echo "Local branch up-to-date, keeping existing venv"
+      else
+        if [ "$CLEAN_ENV" = "true" ]; then
+          echo "Forced wiping venv for clean packages install"
+        else
+          echo "Remote branch is ahead. Wiping venv for clean packages install"
+        fi
+        rm -rf ${SD02_DIR}/webui/venv
+        git pull -X ours
+    fi
+fi
 
 if [ ! -f "$SD02_DIR/parameters.txt" ]; then
     cp -v "/opt/sd-install/parameters/02.txt" "$SD02_DIR/parameters.txt"
-fi
-
-# Clean if venv is present
-if [ -d "${SD02_DIR}/venv" ]; then
-    rm -rf ${SD02_DIR}/venv
 fi
 
 # Create venv
