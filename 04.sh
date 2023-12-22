@@ -32,6 +32,14 @@ git pull -X ours
 if [ ! -f "$SD04_DIR/parameters.txt" ]; then
     cp -v "${SD_INSTALL_DIR}/parameters/04.txt" "$SD04_DIR/parameters.txt"
 fi
+# Load updated malloc to fix memory leak
+# https://github.com/AUTOMATIC1111/stable-diffusion-webui/issues/6850#issuecomment-1432435503
+if [ ! -f "$SD04_DIR/webui/webui-user.sh" ]; then
+cat >"$SD04_DIR/webui/webui-user.sh" <<EOL
+export LD_PRELOAD=libtcmalloc.so
+echo "libtcmalloc loaded"
+EOL
+fi
 
 # Create venv
 if [ ! -d ${SD04_DIR}/webui/venv ]; then
