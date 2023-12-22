@@ -1,10 +1,10 @@
 #!/bin/bash
 source /sl_folder.sh
 
-export PATH="/opt/miniconda3/bin:$PATH"
+export PATH="/home/abc/miniconda3/bin:$PATH"
 
 mkdir -p ${SD08_DIR}
-mkdir -p /outputs/08-voltaML
+mkdir -p /config/outputs/08-voltaML
 
 if [ ! -d ${SD08_DIR}/env ]; then
     conda create -p ${SD08_DIR}/env -y
@@ -48,7 +48,7 @@ sl_folder ${SD08_DIR}/voltaML-fast-stable-diffusion/data lora ${BASE_DIR}/models
 sl_folder ${SD08_DIR}/voltaML-fast-stable-diffusion/data vae ${BASE_DIR}/models vae
 sl_folder ${SD08_DIR}/voltaML-fast-stable-diffusion/data textual-inversion ${BASE_DIR}/models embeddings
 sl_folder ${SD08_DIR}/voltaML-fast-stable-diffusion/data upscaler ${BASE_DIR}/models upscale
-sl_folder ${SD08_DIR}/voltaML-fast-stable-diffusion/data outputs /outputs 08-voltaML
+sl_folder ${SD08_DIR}/voltaML-fast-stable-diffusion/data outputs /config/outputs 08-voltaML
 
 # cd ${SD08_DIR}
 # conda install -c conda-forge pytorch torchvis --solver=libmamba -y
@@ -67,4 +67,3 @@ while IFS= read -r param; do
     fi
 done < "${SD08_DIR}/parameters.txt"
 eval $CMD
-

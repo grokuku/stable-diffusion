@@ -2,10 +2,10 @@
 
 source /sl_folder.sh
 
-export PATH="/opt/miniconda3/bin:$PATH"
+export PATH="/home/abc/miniconda3/bin:$PATH"
 
 mkdir -p "${SD20_DIR}"
-mkdir -p /outputs/20-kubin
+mkdir -p /config/outputs/20-kubin
 
 if [ ! -d ${SD20_DIR}/env ]; then
     conda create -p ${SD20_DIR}/env -y
@@ -40,4 +40,3 @@ source venv/bin/activate
 cd ${SD20_DIR}/kubin
 pip install -r requirements.txt
 CMD="python3 src/kubin.py"; while IFS= read -r param; do if [[ $param != \#* ]]; then CMD+=" ${param}"; fi; done < "${SD20_DIR}/parameters.txt"; eval $CMD
-

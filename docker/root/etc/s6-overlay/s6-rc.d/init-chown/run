@@ -1,0 +1,8 @@
+#!/usr/bin/with-contenv bash
+
+echo "-------------------------------------"
+# permissions
+echo "chown'ing directory to ensure correct permissions."
+chown -R abc:abc /home/abc
+echo "Done!"
+echo -e "-------------------------------------\n"

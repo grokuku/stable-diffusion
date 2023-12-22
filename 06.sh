@@ -1,10 +1,10 @@
 #!/bin/bash
 source /sl_folder.sh
 
-export PATH="/opt/miniconda3/bin:$PATH"
+export PATH="/home/abc/miniconda3/bin:$PATH"
 
 mkdir -p ${SD06_DIR}
-mkdir -p /outputs/06-Fooocus
+mkdir -p /config/outputs/06-Fooocus
 
 if [ ! -d ${SD06_DIR}/env ]; then
     conda create -p ${SD06_DIR}/env -y
@@ -37,7 +37,7 @@ sl_folder ${SD06_DIR}/Fooocus/models upscale_models ${BASE_DIR}/models upscale
 sl_folder ${SD06_DIR}/Fooocus/models clip_vision ${BASE_DIR}/models clip_vision
 sl_folder ${SD06_DIR}/Fooocus/models controlnet ${BASE_DIR}/models controlnet
 
-sl_folder ${SD06_DIR}/Fooocus Output /outputs 06-Fooocus
+sl_folder ${SD06_DIR}/Fooocus Output /config/outputs 06-Fooocus
 
 if [ -d ${SD06_DIR}/venv ]; then
     rm -rf ${SD06_DIR}/venv
@@ -52,4 +52,3 @@ while IFS= read -r param; do
     fi
 done < "${SD06_DIR}/parameters.txt"
 eval $CMD
-

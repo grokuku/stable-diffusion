@@ -1,10 +1,10 @@
 #!/bin/bash
 source /sl_folder.sh
 
-export PATH="/opt/miniconda3/bin:$PATH"
+export PATH="/home/abc/miniconda3/bin:$PATH"
 
 mkdir -p ${SD70_DIR}
-mkdir -p /outputs/70-kohya
+mkdir -p /config/outputs/70-kohya
 
 if [ ! -d ${SD70_DIR}/env ]; then
     conda create -p ${SD70_DIR}/env -y
@@ -44,3 +44,6 @@ cd ${SD70_DIR}/kohya_ss
 pip install -r requirements.txt
 cd ${SD70_DIR}/kohya_ss
 CMD="bash gui.sh"; while IFS= read -r param; do if [[ $param != \#* ]]; then CMD+=" ${param}"; fi; done < "${SD70_DIR}/parameters.txt"; eval $CMD
+
+
+

@@ -1,11 +1,11 @@
 #!/bin/bash
 source /sl_folder.sh
 
-export PATH="/opt/miniconda3/bin:$PATH"
+export PATH="/home/abc/miniconda3/bin:$PATH"
 
 echo "Install and run Comfy-UI"
 mkdir -p ${SD05_DIR}
-mkdir -p /outputs/05-comfy-ui
+mkdir -p /config/outputs/05-comfy-ui
 
 if [ ! -d ${SD05_DIR}/env ]; then
     conda create -p ${SD05_DIR}/env -y
@@ -53,4 +53,3 @@ while IFS= read -r param; do
     fi
 done < "${SD05_DIR}/parameters.txt"
 eval $CMD
-

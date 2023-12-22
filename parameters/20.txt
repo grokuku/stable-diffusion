@@ -3,6 +3,6 @@
 --server-port 9000
 
 # Directories
---output-dir /outputs/20-kubin
+--output-dir /config/outputs/20-kubin
 
 # Options
