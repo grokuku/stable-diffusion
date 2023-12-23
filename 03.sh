@@ -1,11 +1,11 @@
 #!/bin/bash
 source /sl_folder.sh
 
-export PATH="/opt/miniconda3/bin:$PATH"
+export PATH="/home/abc/miniconda3/bin:$PATH"
 export use_venv=0
 
 mkdir -p "$SD03_DIR"
-mkdir -p /outputs/03-InvokeAI
+mkdir -p /config/outputs/03-InvokeAI
 
 if [ ! -f "$SD03_DIR/parameters.txt" ]; then
     cp -v "${SD_INSTALL_DIR}/parameters/03.txt" "$SD03_DIR/parameters.txt"
@@ -40,4 +40,3 @@ while IFS= read -r param; do
     fi
 done < "${SD03_DIR}/parameters.txt"
 eval $CMD
-

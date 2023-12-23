@@ -1,7 +1,7 @@
 #!/bin/bash
 source /sl_folder.sh
 
-export PATH="/opt/miniconda3/bin:$PATH"
+export PATH="/home/abc/miniconda3/bin:$PATH"
 
 export use_venv=1
 
@@ -71,12 +71,12 @@ sl_folder ${SD02_DIR}/webui/models Codeformer ${BASE_DIR}/models codeformer
 sl_folder ${SD02_DIR}/webui/models GFPGAN ${BASE_DIR}/models gfpgan
 sl_folder ${SD02_DIR}/webui/models LDSR ${BASE_DIR}/models ldsr
 
-sl_folder ${SD02_DIR}/webui outputs /outputs 02-sd-webui
+sl_folder ${SD02_DIR}/webui outputs /config/outputs 02-sd-webui
 
 echo "Run Stable-Diffusion-WebUI"
 cd ${SD02_DIR}/webui
 source venv/bin/activate
-export PATH="/opt/stable-diffusion/02-sd-webui/webui/venv/lib/python3.11/site-packages/onnxruntime/capi:$PATH"
+export PATH="/config/02-sd-webui/webui/venv/lib/python3.11/site-packages/onnxruntime/capi:$PATH"
 pip install --upgrade pip
 
 CMD="bash webui.sh"
@@ -86,4 +86,3 @@ while IFS= read -r param; do
     fi
 done < "${SD02_DIR}/parameters.txt"
 eval $CMD
-

@@ -1,10 +1,10 @@
 #!/bin/bash
 source /sl_folder.sh
 
-export PATH="/opt/miniconda3/bin:$PATH"
+export PATH="/home/abc/miniconda3/bin:$PATH"
 
 mkdir -p ${SD51_DIR}
-mkdir -p /outputs/51-facefusion
+mkdir -p /config/outputs/51-facefusion
 
 
 if [ ! -d ${SD51_DIR}/env ]; then
@@ -40,3 +40,5 @@ conda install -c conda-forge git python=3.11 pip gxx ffmpeg --solver=libmamba -y
  export GRADIO_SERVER_NAME=0.0.0.0 
  export GRADIO_SERVER_PORT=9000 
  CMD="python3 run.py"; while IFS= read -r param; do if [[ $param != \#* ]]; then CMD+=" ${param}"; fi; done < "${SD51_DIR}/parameters.txt"; eval $CMD
+
+
