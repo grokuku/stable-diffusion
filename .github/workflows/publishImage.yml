@@ -5,6 +5,7 @@ on:
     branches:
       - 'main'
       - 'test'
+      - 'Holaf_tests'
     tags:
       - '*.*.*'
     # don't trigger if just updating docs
