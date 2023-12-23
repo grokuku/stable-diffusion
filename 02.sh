@@ -41,6 +41,7 @@ if [ ! -d ${SD02_DIR}/webui/venv ]; then
     cd ${SD02_DIR}/webui
     source venv/bin/activate
     pip install --upgrade pip
+    pip install packaging
     pip install onnxruntime-gpu
     pip install insightface 
     pip install protobuf==3.20.3
