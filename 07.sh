@@ -38,7 +38,7 @@ sl_folder ${SD07_DIR}/StableSwarmUI/Models Embeddings ${BASE_DIR}/models embeddi
 sl_folder ${SD07_DIR}/StableSwarmUI/Models clip_vision ${BASE_DIR}/models clip_vision
 sl_folder ${SD07_DIR}/StableSwarmUI/Models controlnet ${BASE_DIR}/models controlnet
 
-sl_folder ${SD07_DIR}/StableSwarmUI Output /config/outputs 07-StableSwarm
+sl_folder ${SD07_DIR}/StableSwarmUI Output ${BASE_DIR}/outputs 07-StableSwarm
 
 cd ${SD07_DIR}/StableSwarmUI
 CMD="./launch-linux.sh"
