@@ -34,9 +34,9 @@ RUN apt-get update -y -q=2 && \
     python3-opencv \
     libopencv-dev \
     dotnet-sdk-7.0 \
-    git
-
-RUN apt-get clean &&     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+    git && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 RUN mkdir -p ${BASE_DIR}\temp ${SD_INSTALL_DIR} /config/outputs
 
