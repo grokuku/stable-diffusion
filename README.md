@@ -1,6 +1,7 @@
 # Easy Image Generation
 
-[![Docker Pulls](https://img.shields.io/docker/pulls/holaflenain/stable-diffusion)](https://hub.docker.com/r/holaflenain/stable-diffusion)
+/!\ FOLDERS PATH CHANGED since V3.0.0 /!\  
+be sure to check the usage section 
 
 The goal of this docker container is to provide an easy way to run different WebUI and other tools related to Image Generation (mostly stable-diffusion).
   
@@ -23,34 +24,10 @@ Please consult each respective website for a comprehensive description and usage
 
 ## Usage
 
+
 Unraid template available on superboki's Repository (search diffusion in community apps)
-
-### Using PUID and PGID
-
-If you are 
-
-* running on a **linux host** (ie unraid) and
-* **not** using [rootless containers with Podman](https://developers.redhat.com/blog/2020/09/25/rootless-containers-with-podman-the-basics#why_podman_)
-
-then you must set the [environmental variables **PUID** and **PGID**.](https://docs.linuxserver.io/general/understanding-puid-and-pgid) in the container in order for it to generate files/folders your normal user can interact it.
-
-Run these commands from your terminal
-
-* `id -u` -- prints UID for **PUID**
-* `id -g` -- prints GID for **PGID**
-
-Then add to your docker command like so:
-
-```shell
-docker run -d ... -e "PUID=1000" -e "PGID=1000" ... holaflenain/stable-diffusion
-```
-
-or substitute them in the docker-compose examples below.
-
-#### Docker Compose Example
-
   
-Using Easy-Diffusion as an example: 
+Docker-Compose example for Easy-Diffusion: 
 
 ```yaml
 version: '3.1'
@@ -62,19 +39,26 @@ services:
       - WEBUI_VERSION=01
       - NVIDIA_VISIBLE_DEVICES=all
       - TZ=Europe/Paris
-      - PUID=1000
-      - PGID=1000
+      - PUID=99
+      - PGID=100
     ports:
       - '9000:9000/tcp'
     volumes:
       - '/my/own/datadir:/config:rw'
-      # or specify individual dirs
-      #- '/my/own/datadir:/config:rw' # config/program dir
-      #- '/my/own/datadir/outputs:/config/outputs:rw'
-      #- '/my/own/datadir/cache:/config/cache:rw'
     runtime: nvidia
 
 ```
+Steps to migrate to V3 :  
+- Edit Stable-Diffusion UI Path :  
+    Container Path => /config  
+    Remove Outputs (Images will still be generated at /mnt/user/appdata/stable-diffusion/outputs)
+- Add Variables :  
+    Name/Key => PUID  
+    Value => 99  
+  
+    Name/Key => PGID  
+    Value => 100
+
 
 ## Directory Structure
 
@@ -107,6 +91,10 @@ By default, each user interface will save data in its own directory, which is au
 
 
 ## History
+- **Version 3.0.0** :  
+Rework base image to use Linuxserverio + Memory leak fix For SD-Next (thanks @FoxxMD)  
+Fix for Fooocus (thanks @dominickp)
+
 - **Version 2.0.2** :  
 move .cache folder to stable-diffusion/temp to avoid filling unraid's docker.img file.  
 (hopefully) fix all the things I broke in the last update :)  
