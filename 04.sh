@@ -67,7 +67,7 @@ sl_folder ${SD04_DIR}/webui/models GFPGAN ${BASE_DIR}/models gfpgan
 sl_folder ${SD04_DIR}/webui/models LDSR ${BASE_DIR}/models ldsr
 sl_folder ${SD04_DIR}/webui/models ControlNet ${BASE_DIR}/models controlnet
 
-sl_folder ${SD04_DIR}/webui outputs /config/outputs 04-SD-Next
+sl_folder ${SD04_DIR}/webui outputs ${BASE_DIR}/outputs 04-SD-Next
 
 cd ${SD04_DIR}/webui/
 source venv/bin/activate

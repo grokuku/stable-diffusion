@@ -41,6 +41,7 @@ if [ ! -d ${SD02_DIR}/webui/venv ]; then
     cd ${SD02_DIR}/webui
     source venv/bin/activate
     pip install --upgrade pip
+    pip install packaging
     pip install onnxruntime-gpu
     pip install insightface 
     pip install protobuf==3.20.3
@@ -60,7 +61,7 @@ sl_folder ${SD02_DIR}/webui/models Codeformer ${BASE_DIR}/models codeformer
 sl_folder ${SD02_DIR}/webui/models GFPGAN ${BASE_DIR}/models gfpgan
 sl_folder ${SD02_DIR}/webui/models LDSR ${BASE_DIR}/models ldsr
 
-sl_folder ${SD02_DIR}/webui outputs /config/outputs 02-sd-webui
+sl_folder ${SD02_DIR}/webui outputs ${BASE_DIR}/outputs 02-sd-webui
 
 echo "Run Stable-Diffusion-WebUI"
 cd ${SD02_DIR}/webui

@@ -37,7 +37,7 @@ sl_folder ${SD06_DIR}/Fooocus/models upscale_models ${BASE_DIR}/models upscale
 sl_folder ${SD06_DIR}/Fooocus/models clip_vision ${BASE_DIR}/models clip_vision
 sl_folder ${SD06_DIR}/Fooocus/models controlnet ${BASE_DIR}/models controlnet
 
-sl_folder ${SD06_DIR}/Fooocus Output /config/outputs 06-Fooocus
+sl_folder ${SD06_DIR}/Fooocus Output ${BASE_DIR}/outputs 06-Fooocus
 
 if [ -d ${SD06_DIR}/venv ]; then
     rm -rf ${SD06_DIR}/venv

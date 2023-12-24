@@ -22,7 +22,7 @@ sl_folder ${SD01_DIR}/models codeformer ${BASE_DIR}/models codeformer
 sl_folder ${SD01_DIR}/models embeddings ${BASE_DIR}/models embeddings
 sl_folder ${SD01_DIR}/models gfpgan ${BASE_DIR}/models gfpgan
 
-sl_folder /home/diffusion "Stable Diffusion UI" /config/outputs 01-Easy-Diffusion
+sl_folder ${HOME} "Stable Diffusion UI" ${BASE_DIR}/outputs 01-Easy-Diffusion
 
 if [ ! -f "$SD01_DIR/scripts/config.json" ]; then
     cp -v "${SD_INSTALL_DIR}/parameters/01.txt" "$SD01_DIR/scripts/config.json"
