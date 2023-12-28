@@ -34,7 +34,8 @@ RUN apt-get update -y -q=2 && \
     python3-opencv \
     libopencv-dev \
     dotnet-sdk-7.0 \
-    git && \
+    git \
+    libgoogle-perftools-dev && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
