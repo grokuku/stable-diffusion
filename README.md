@@ -114,8 +114,8 @@ When the container starts if the installed project is outdated compared to the _
 #### SD.Next (04) Notes
 
 * Uses [Clean Environment](#clean-environment) performance improvement
-* Uses an updated `malloc` library to fix a [memory leak](https://github.com/AUTOMATIC1111/stable-diffusion-webui/issues/6850#issuecomment-1432435503)
-  * This can be turned off by removing the line `export LD_PRELOAD=libtcmalloc.so` from `04-SD-Next/webui/webui-user.sh` (but do not delete the file!)
+* Uses an updated `malloc` library to fix a [memory leak](https://github.com/AUTOMATIC1111/stable-diffusion-webui/discussions/6722)
+  * This can be turned off by adding the docker environmental variable `NO_TCMALLOC=true`
 
 # History
 
