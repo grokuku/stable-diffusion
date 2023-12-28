@@ -2,8 +2,10 @@
 
 [![Docker Pulls](https://img.shields.io/docker/pulls/holaflenain/stable-diffusion)](https://hub.docker.com/r/holaflenain/stable-diffusion)
 
-The goal of this docker container is to provide an easy way to run different WebUI and other tools related to Image Generation (mostly stable-diffusion).
-  
+The goal of this docker container is to provide an easy way to run different WebUI/projects and other tools related to Image Generation (mostly stable-diffusion).
+
+# Projects 
+
 Please consult each respective website for a comprehensive description and usage guidelines.  
 | WEBUI | Name              |                                                                                                                                              |                                                         |
 |-------|-------------------|----------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------|
@@ -21,9 +23,23 @@ Please consult each respective website for a comprehensive description and usage
 | 70    | Kohya             | Kohya's GUI provides a Windows-focused Gradio GUI for Kohya's Stable Diffusion trainers                                                      | https://github.com/bmaltais/kohya_ss                    |
   
 
-## Usage
+# Usage
 
-Unraid template available on superboki's Repository (search diffusion in community apps)
+Unraid template available on [superboki's Repository](https://github.com/superboki/UNRAID-FR/tree/main/stable-diffusion-advanced) (search stable-diffusion in community apps)
+
+## Choosing a Project
+
+Use the environmental variable `WEBUI_VERSION` to choose which [project](#projects) to install and use based on the number in the **WEBUI** column. [easy diffusion](https://github.com/easydiffusion/easydiffusion) (`01`) is installed if none is specified. 
+
+Example: To use SD.Next => `WEBUI_VERSION=04`
+
+```
+docker run ... -e WEBUI_VERSION=04 ... holaflenain/stable-diffusion
+```
+
+or modify `WEBUI_VERSION` in [docker-compose.yml](/docker-compose.yml)
+
+## Docker Notes
 
 ### Using PUID and PGID
 
@@ -45,36 +61,11 @@ Then add to your docker command like so:
 docker run -d ... -e "PUID=1000" -e "PGID=1000" ... holaflenain/stable-diffusion
 ```
 
-or substitute them in the docker-compose examples below.
+or substitute them in [docker-compose.yml](/docker-compose.yml)
 
-#### Docker Compose Example
-
+### Docker Compose
   
-Using Easy-Diffusion as an example: 
-
-```yaml
-version: '3.1'
-services:
-  stable-diffusion-test:
-    image: holaflenain/stable-diffusion:latest
-    container_name: stable-diffusion
-    environment:
-      - WEBUI_VERSION=01
-      - NVIDIA_VISIBLE_DEVICES=all
-      - TZ=Europe/Paris
-      - PUID=1000
-      - PGID=1000
-    ports:
-      - '9000:9000/tcp'
-    volumes:
-      - '/my/own/datadir:/config:rw'
-      # or specify individual dirs
-      #- '/my/own/datadir:/config:rw' # config/program dir
-      #- '/my/own/datadir/outputs:/config/outputs:rw'
-      #- '/my/own/datadir/cache:/config/cache:rw'
-    runtime: nvidia
-
-```
+Reference [docker-compose.yml](/docker-compose.yml) which uses Easy-Diffusion as an example.
 
 ## Directory Structure
 
@@ -105,46 +96,36 @@ By default, each user interface will save data in its own directory, which is au
 ├── 50-lama-cleaner   
 └── 51-facefusion   
 
+## Project Notes
 
-## History
-- **Version 2.0.2** :  
-move .cache folder to stable-diffusion/temp to avoid filling unraid's docker.img file.  
-(hopefully) fix all the things I broke in the last update :)  
-  
-- **Version 2.0.0** :  
-Utilize Conda to manage dependencies efficiently.  
-Prepared for Reactor in Auto1111, SD-Next, and ComfyUI.  
-More common folders merged in the models folder.  
-Split install scripts for easier maintenance.  
-Implemented various fixes.  
-  
-- **Version 1.5.1** :  
-Added a fix for Automatic1111/dreambooth
-  
-- **Version 1.5.0** :  
-Added StableSwarm and VoltaML
-  
-- **Version 1.4.0** :  
-Added FaceFusion
-  
-- **Version 1.3.0** :  
-Added Kubin  (Kubin is only for testing, not production ready)
-Corrected update of ComfyUI at startup not working
-  
-- **Version 1.2.0** :  
-Added Lama-cleaner and Kohya
-  
-- **Version 1.1.0** :  
-Added Focus as interface 06  
-Small Fixes  
-  
-- **Version 1.0.0** :  
-Lots of modifications on directory structure.  
-Before using this version it's best to do a backup, do a clean install and restore models,loras, ect from the backup.
+Some projects have modified install/startup changes to address performance or suggested fixes. 
 
-## Troubleshoot :  
-First thing to try when a UI refuse to launch, remove the cache and the numbered folder (ex :02-sd-webui ) then relaunch the container  
+General changes are listed below and **specified in notes if they apply.** Specific project modifications are listed below these.
+
+###### Clean Environment
+
+When the container starts if the installed project is outdated compared to the _upstream project_ then the latest code is pulled and dependencies for installation are wiped and re-installed. Subsequent container starts will be much faster since the project will not be re-installed. This behavior can be **forced** by setting the docker environmental variable `CLEAN_ENV=true`.
+
+
+#### Stable Diffusion WebUI (02) Notes
+
+* Uses [Clean Environment](#clean-environment) performance improvement
+
+#### SD.Next (04) Notes
+
+* Uses [Clean Environment](#clean-environment) performance improvement
+* Uses an updated `malloc` library to fix a [memory leak](https://github.com/AUTOMATIC1111/stable-diffusion-webui/issues/6850#issuecomment-1432435503)
+  * This can be turned off by removing the line `export LD_PRELOAD=libtcmalloc.so` from `04-SD-Next/webui/webui-user.sh` (but do not delete the file!)
+
+# History
+
+See [**Changelog**](/CHANGELOG.md)
   
-## Support :  
+# Support
+
 Support for the container available here : https://forums.unraid.net/topic/143645-support-stable-diffusion-advanced/  
 Support for the WebUIs available on their respective pages.
+
+## Troubleshooting
+
+First thing to try when a UI refuse to launch, remove the cache and the numbered folder (ex :02-sd-webui ) then relaunch the container  

@@ -1,0 +1,20 @@
+version: '3.1'
+services:
+  stable-diffusion-test:
+    image: holaflenain/stable-diffusion:latest
+    container_name: stable-diffusion
+    environment:
+      - WEBUI_VERSION=01
+      - NVIDIA_VISIBLE_DEVICES=all
+      - TZ=Europe/Paris
+      - PUID=1000
+      - PGID=1000
+    ports:
+      - '9000:9000/tcp'
+    volumes:
+      - '/my/own/datadir:/config:rw'
+      # or specify individual dirs
+      #- '/my/own/datadir:/config:rw' # config/program dir
+      #- '/my/own/datadir/outputs:/config/outputs:rw'
+      #- '/my/own/datadir/cache:/config/cache:rw'
+    runtime: nvidia
