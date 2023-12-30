@@ -12,10 +12,14 @@ sl_folder()     {
     rm -rf "${1}/${2}"
   fi
   
+  # always remove previous symlink
+  # b/c if user changed target locations current symlink will be incorrect
   if [ -L "${1}/${2}" ]; then
-    rm -rf "${1}/${2}"
+    rm "${1}/${2}"
   fi
-
-  ln -s "${3}/${4}/" "/tmp"
-  mv "/tmp/${4}" "${1}/${2}"
+  # create symlink
+  ln -s "${3}/${4}/" "${1}"
+  if [ ! -L "${1}/${2}" ]; then
+    mv "${1}/${4}" "${1}/${2}"
+  fi
 }
