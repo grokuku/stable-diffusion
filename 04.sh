@@ -74,7 +74,7 @@ sl_folder ${SD04_DIR}/webui/models Stable-diffusion ${BASE_DIR}/models stable-di
 sl_folder ${SD04_DIR}/webui/models hypernetworks ${BASE_DIR}/models hypernetwork
 sl_folder ${SD04_DIR}/webui/models Lora ${BASE_DIR}/models lora
 sl_folder ${SD04_DIR}/webui/models VAE ${BASE_DIR}/models vae
-sl_folder ${SD04_DIR}/webui embeddings ${BASE_DIR}/models embeddings
+sl_folder ${SD04_DIR}/webui/models embeddings ${BASE_DIR}/models embeddings
 sl_folder ${SD04_DIR}/webui/models ESRGAN ${BASE_DIR}/models upscale
 sl_folder ${SD04_DIR}/webui/models Codeformer ${BASE_DIR}/models codeformer
 sl_folder ${SD04_DIR}/webui/models GFPGAN ${BASE_DIR}/models gfpgan
