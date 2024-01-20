@@ -37,6 +37,10 @@ case $WEBUI_VERSION in
   70)
     . /70.sh
     ;;
+  custom)
+    . /config/custom.sh
+    ;;
+  
   *)
     echo error in webui selection variable
     ;;
