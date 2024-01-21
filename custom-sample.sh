@@ -17,11 +17,9 @@ export CustomPATH="/config/$CustomBASE/$CustomNAME"
 # Parameters to pass at launch
 export CustomPARAMETERS="--listen 0.0.0.0 --port 9000"
 
-
 # Folders creation (Program files and output)
 mkdir -p ${CustomPATH}
-mkdir -p /config/outputs/$CustomBASE/$CustomNAME
-
+mkdir -p $BASE_DIR/outputs/$CustomBASE/$CustomNAME
 
 # Creation and Activation on the Conda Virtual Env
 if [ ! -d ${CustomPATH}/env ]; then
