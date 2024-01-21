@@ -24,12 +24,12 @@ sl_folder ${SD01_DIR}/models gfpgan ${BASE_DIR}/models gfpgan
 
 sl_folder ${HOME} "Stable Diffusion UI" ${BASE_DIR}/outputs 01-Easy-Diffusion
 
-if [ ! -f "$SD01_DIR/scripts/config.json" ]; then
+if [ ! -f "$SD01_DIR/config.yaml" ]; then
     cp -v "${SD_INSTALL_DIR}/parameters/01.txt" "$SD01_DIR/config.yaml"
 fi
 
 if [ ! -f "$SD01_DIR/start.sh" ]; then
-    curl -L https://github.com/easydiffusion/easydiffusion/releases/download/v2.5.41a/Easy-Diffusion-Linux.zip --output edui.zip
+    curl -L https://github.com/easydiffusion/easydiffusion/releases/download/v3.0.2/Easy-Diffusion-Linux.zip --output edui.zip
     unzip edui.zip
     cp -rf easy-diffusion/* .
     rm -rf easy-diffusion
