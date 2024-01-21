@@ -3,7 +3,6 @@
 --port 9000
 
 # Directories
---output-path ${BASE_DIR}/outputs/06-Fooocus
 
 # Options
 #--help
