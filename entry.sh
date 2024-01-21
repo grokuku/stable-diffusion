@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# Copy sample custom script in user folder if it doesn't exists
+
+if [ ! -f "$BASE_DIR/scripts/custom-sample.sh" ]; then
+    mkdir -p $BASE_DIR/scripts
+    cp -v "/custom-sample.sh" "$BASE_DIR/scripts/custom-sample.sh"
+fi
+
 case $WEBUI_VERSION in
   01)
     . /01.sh
@@ -38,6 +45,7 @@ case $WEBUI_VERSION in
     . /70.sh
     ;;
   *)
+    . $BASE_DIR/scripts/$WEBUI_VERSION
     echo error in webui selection variable
     ;;
 esac

@@ -4,7 +4,7 @@ source /sl_folder.sh
 export PATH="/home/abc/miniconda3/bin:$PATH"
 
 mkdir -p ${SD06_DIR}
-mkdir -p /config/outputs/06-Fooocus
+mkdir -p $BASE_DIR/outputs/06-Fooocus
 
 if [ ! -d ${SD06_DIR}/env ]; then
     conda create -p ${SD06_DIR}/env -y
