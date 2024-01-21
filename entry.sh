@@ -44,11 +44,8 @@ case $WEBUI_VERSION in
   70)
     . /70.sh
     ;;
-  custom)
-    . $BASE_DIR/scripts/custom.sh
-    ;;
-  
   *)
+    . $BASE_DIR/scripts/$WEBUI_VERSION
     echo error in webui selection variable
     ;;
 esac
