@@ -4,7 +4,7 @@
 
 if [ ! -f "$BASE_DIR/scripts/custom-sample.sh" ]; then
     mkdir -p $BASE_DIR/scripts
-    cp -v "/custom-example.sh" "$BASE_DIR/scripts/custom-sample.sh"
+    cp -v "/custom-sample.sh" "$BASE_DIR/scripts/custom-sample.sh"
 fi
 
 case $WEBUI_VERSION in
