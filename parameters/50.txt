@@ -1,8 +1,8 @@
 ##### Web + Network #####
+--host=0.0.0.0
 --port=9000
 
 ##### Directories #####
-#--output-dir /config/outputs/50-IOPaint
 
 ##### Options #####
 --device=cuda
