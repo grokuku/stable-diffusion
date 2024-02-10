@@ -3,7 +3,7 @@ source /sl_folder.sh
 
 export PATH="/home/abc/miniconda3/bin:$PATH"
 
-mkdir -p "${SD50_DIR}"
+mkdir -p "${SD50_DIR}/IOPaint"
 mkdir -p /config/outputs/50-IOPaint
 
 if [ ! -d ${SD50_DIR}/env ]; then
@@ -14,17 +14,17 @@ source activate ${SD50_DIR}/env
 conda install -n base conda-libmamba-solver -y
 conda install -c conda-forge git python=3.11 pip --solver=libmamba -y
 
-if [ ! -f "$SD50_DIR/parameters.txt" ]; then
-    cp -v "${SD_INSTALL_DIR}/parameters/50.txt" "$SD50_DIR/parameters.txt"
-fi
+#if [ ! -f "$SD50_DIR/parameters.txt" ]; then
+#    cp -v "${SD_INSTALL_DIR}/parameters/50.txt" "$SD50_DIR/parameters.txt"
+#fi
 
-if [ ! -d ${SD50_DIR}/IOPaint ]; then
-    cd "${SD50_DIR}" && git clone https://github.com/Sanster/IOPaint
-fi
+#if [ ! -d ${SD50_DIR}/IOPaint ]; then
+#    cd "${SD50_DIR}" && git clone https://github.com/Sanster/IOPaint
+#fi
 
-cd ${SD50_DIR}/IOPaint
+#cd ${SD50_DIR}/IOPaint
 #git config --global --add safe.directory ${SD50_DIR}/lama_cleaner
-git pull -X ours
+#git pull -X ours
 
 # chown -R diffusion:users ${BASE_DIR}
 
@@ -32,10 +32,14 @@ git pull -X ours
 #     su -w SD50_DIR - diffusion -c 'cd ${SD50_DIR} && python3 -m venv venv'
 # fi
 
-cd ${SD50_DIR}/IOPaint
-pip install -r requirements.txt
 
-CMD="python main.py"
+cd ${SD50_DIR}/IOPaint
+#pip install -r requirements.txt
+
+pip3 install iopaint
+
+
+CMD="iopaint start"
 while IFS= read -r param; do
     if [[ $param != \#* ]]; then
         CMD+=" ${param}"
