@@ -3,7 +3,7 @@
 --port=9000
 
 ##### Directories #####
-#--output-dir /config/outputs/50-Lama-Cleaner
+#--output-dir /config/outputs/50-IOPaint
 
 ##### Options #####
 --device cuda
