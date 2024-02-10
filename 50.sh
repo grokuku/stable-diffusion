@@ -14,9 +14,9 @@ source activate ${SD50_DIR}/env
 conda install -n base conda-libmamba-solver -y
 conda install -c conda-forge git python=3.11 pip --solver=libmamba -y
 
-#if [ ! -f "$SD50_DIR/parameters.txt" ]; then
-#    cp -v "${SD_INSTALL_DIR}/parameters/50.txt" "$SD50_DIR/parameters.txt"
-#fi
+if [ ! -f "$SD50_DIR/parameters.txt" ]; then
+    cp -v "${SD_INSTALL_DIR}/parameters/50.txt" "$SD50_DIR/parameters.txt"
+fi
 
 #if [ ! -d ${SD50_DIR}/IOPaint ]; then
 #    cd "${SD50_DIR}" && git clone https://github.com/Sanster/IOPaint
