@@ -7,8 +7,8 @@ if [ ! -f "$BASE_DIR/scripts/custom-sample.sh" ]; then
     cp -v "/custom-sample.sh" "$BASE_DIR/scripts/custom-sample.sh"
 fi
 
-. $BASE_DIR/$WEBUI_VERSION.sh
-. $BASE_DIR/$WEBUI_VERSION
+. /$WEBUI_VERSION.sh
+. /$WEBUI_VERSION
 . $BASE_DIR/scripts/$WEBUI_VERSION
 . $BASE_DIR/scripts/$WEBUI_VERSION.sh 
 echo error in webui selection variable
