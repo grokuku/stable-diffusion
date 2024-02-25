@@ -4,6 +4,7 @@
 
 # options
 --enable-insecure-extension-access
+--medvram
 --xformers
 --api
 
@@ -11,4 +12,4 @@
 #--disable-nan-check
 #--update-all-extensions
 #--reinstall-xformers
-#--reinstall-torch  
+#--reinstall-torch 
