@@ -6,6 +6,8 @@
 --enable-insecure-extension-access
 --xformers
 --api
+--cuda-malloc
+--cuda-stream
 
 #--no-half-vae
 #--disable-nan-check

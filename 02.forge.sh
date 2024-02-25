@@ -48,8 +48,8 @@ if [ "$active_clean" = "1" ]; then
 fi
 conda install -c conda-forge git python=3.11 pip gcc gxx libcurand --solver=libmamba -y
 
-if [ ! -f "$SD02_DIR/parameters.txt" ]; then
-    cp -v "/opt/sd-install/parameters/02.txt" "$SD02_DIR/parameters.txt"
+if [ ! -f "$SD02_DIR/parameters.forge.txt" ]; then
+    cp -v "/opt/sd-install/parameters/02.forge.txt" "$SD02_DIR/parameters.forge.txt"
 fi
 
 pip install --upgrade pip
