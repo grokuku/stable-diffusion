@@ -10,6 +10,8 @@ export venv_dir="-"
 # Install or update Stable-Diffusion-WebUI
 mkdir -p ${SD02_DIR}
 
+conda init
+
 if [ ! -d ${SD02_DIR}/conda-env ]; then
     conda create -p ${SD02_DIR}/conda-env -y
 fi
