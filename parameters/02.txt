@@ -4,9 +4,10 @@
 
 # options
 --enable-insecure-extension-access
---medvram
 --xformers
 --api
+--cuda-malloc
+--cuda-stream
 
 #--no-half-vae
 #--disable-nan-check
