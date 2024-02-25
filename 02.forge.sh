@@ -57,6 +57,7 @@ pip install packaging
 pip install onnxruntime-gpu
 pip install insightface 
 pip install protobuf==3.20.3
+export PATH="/config/02-sd-webui/conda-venv/lib/python3.11/site-packages/onnxruntime/capi:$PATH"
 
 # Merge Models, vae, lora, and hypernetworks, and outputs
 # Ignore move errors if they occur
