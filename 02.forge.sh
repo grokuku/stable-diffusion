@@ -10,13 +10,11 @@ export venv_dir="-"
 # Install or update Stable-Diffusion-WebUI
 mkdir -p ${SD02_DIR}
 
-conda init
-
 if [ ! -d ${SD02_DIR}/conda-env ]; then
     conda create -p ${SD02_DIR}/conda-env -y
 fi
 
-conda activate ${SD02_DIR}/conda-env
+source activate ${SD02_DIR}/conda-env
 conda install -n base conda-libmamba-solver -y
 conda install -c git python=3.11 pip --solver=libmamba -y
 
@@ -46,7 +44,7 @@ if [ "$active_clean" = "1" ]; then
     conda deactivate
     conda remove -p ${SD02_DIR}/conda-env --all -y
     conda create -p ${SD02_DIR}/conda-env -y
-    conda activate ${SD02_DIR}/conda-env
+    source activate ${SD02_DIR}/conda-env
 fi
 conda install -c conda-forge git python=3.11 pip gcc gxx libcurand --solver=libmamba -y
 
