@@ -6,4 +6,3 @@
 --insecure
 --medvram
 --allow-code
---no-download

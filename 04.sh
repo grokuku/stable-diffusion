@@ -45,11 +45,14 @@ if [ ! -f "$SD04_DIR/parameters.txt" ]; then
 fi
 # Load updated malloc to fix memory leak
 # https://github.com/AUTOMATIC1111/stable-diffusion-webui/issues/6850#issuecomment-1432435503
-if [ ! -f "$SD04_DIR/webui/webui-user.sh" ]; then
-cat >"$SD04_DIR/webui/webui-user.sh" <<EOL
-export LD_PRELOAD=libtcmalloc.so
-echo "libtcmalloc loaded"
-EOL
+# https://github.com/AUTOMATIC1111/stable-diffusion-webui/discussions/6722
+# https://github.com/AUTOMATIC1111/stable-diffusion-webui/discussions/6722#discussioncomment-6161333
+if [[ "${OSTYPE}" == "linux"* ]] && [[ -z "${NO_TCMALLOC}" ]] && [[ -z "${LD_PRELOAD}" ]]; then
+    TCMALLOC="$(ldconfig -p | grep -Po "libtcmalloc_minimal.so.\d" | head -n 1)"
+    if [[ ! -z "${TCMALLOC}" ]]; then
+       echo "Using TCMalloc: ${TCMALLOC}"
+       export LD_PRELOAD="${TCMALLOC}"
+    fi
 fi
 
 # Create venv
@@ -71,7 +74,7 @@ sl_folder ${SD04_DIR}/webui/models Stable-diffusion ${BASE_DIR}/models stable-di
 sl_folder ${SD04_DIR}/webui/models hypernetworks ${BASE_DIR}/models hypernetwork
 sl_folder ${SD04_DIR}/webui/models Lora ${BASE_DIR}/models lora
 sl_folder ${SD04_DIR}/webui/models VAE ${BASE_DIR}/models vae
-sl_folder ${SD04_DIR}/webui embeddings ${BASE_DIR}/models embeddings
+sl_folder ${SD04_DIR}/webui/models embeddings ${BASE_DIR}/models embeddings
 sl_folder ${SD04_DIR}/webui/models ESRGAN ${BASE_DIR}/models upscale
 sl_folder ${SD04_DIR}/webui/models Codeformer ${BASE_DIR}/models codeformer
 sl_folder ${SD04_DIR}/webui/models GFPGAN ${BASE_DIR}/models gfpgan
