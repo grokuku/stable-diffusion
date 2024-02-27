@@ -24,6 +24,7 @@ RUN apt-get update -y -q=2 && \
     apt-get install -y -q=2 curl \
     wget \
     mc \
+    bc \
     nano \
     rsync \
     libgl1-mesa-glx \
