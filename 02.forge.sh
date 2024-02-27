@@ -81,5 +81,5 @@ while IFS= read -r param; do
     if [[ $param != \#* ]]; then
         CMD+=" ${param}"
     fi
-done < "${SD02_DIR}/parameters.txt"
+done < "${SD02_DIR}/parameters.forge.txt"
 eval $CMD
