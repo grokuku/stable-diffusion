@@ -15,7 +15,7 @@ ENV BASE_DIR=/config \
     SD07_DIR=/config/07-StableSwarm \
     SD08_DIR=/config/08-voltaML \
     SD20_DIR=/config/20-kubin \
-    SD50_DIR=/config/50-lama-cleaner \
+    SD50_DIR=/config/50-IOPaint \
     SD51_DIR=/config/51-facefusion \
     SD70_DIR=/config/70-kohya \
     XDG_CACHE_HOME=/config/temp
@@ -24,6 +24,7 @@ RUN apt-get update -y -q=2 && \
     apt-get install -y -q=2 curl \
     wget \
     mc \
+    bc \
     nano \
     rsync \
     libgl1-mesa-glx \
