@@ -53,11 +53,11 @@ if [ ! -f "$SD02_DIR/parameters.txt" ]; then
 fi
 
 pip install --upgrade pip
-pip install packaging
-pip install onnxruntime-gpu --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/
-pip install insightface
-pip install basicsr 
-#pip install protobuf==3.20.3
+pip install coloredlogs flatbuffers numpy packaging protobuf==3.20.3 sympy
+pip install onnxruntime-gpu --index-url https://pkgs.dev.azure.com/onnxruntime/onnxruntime/_packaging/onnxruntime-cuda-12/pypi/simple --no-cache-dir
+pip install insightface 
+pip install basicsr
+pip install xformers --index-url https://download.pytorch.org/whl/cu121
 
 # Merge Models, vae, lora, and hypernetworks, and outputs
 # Ignore move errors if they occur
