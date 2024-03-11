@@ -34,7 +34,7 @@ RUN apt-get update -y -q=2 && \
     build-essential \
     python3-opencv \
     libopencv-dev \
-    dotnet-sdk-7.0 \
+    dotnet-sdk-8.0 \
     git && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
