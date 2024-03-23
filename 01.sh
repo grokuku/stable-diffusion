@@ -1,11 +1,15 @@
 #!/bin/bash
 source /sl_folder.sh
 
+export PATH="/home/abc/miniconda3/bin:$PATH"
+export active_clean=0
+
 SD01_DIR="${BASE_DIR}/01-easy-diffusion"
 
 #check if old install then move files
 if [ -f "$SD01_DIR/start.sh" ]; then
     mv ${SD01_DIR} ${BASE_DIR}/easy-diffusion
+    mkdir -p ${SD01_DIR}
     mv ${BASE_DIR}/easy-diffusion ${SD01_DIR}/easy-diffusion
 fi
 
