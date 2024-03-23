@@ -24,9 +24,8 @@ if [ ! -d ${SD06_DIR}/Fooocus ]; then
 fi
 
 cd ${SD06_DIR}/Fooocus
-git reset --hard HEAD
+#git reset --hard HEAD
 git pull -X ours
-
 
 sl_folder ${SD06_DIR}/Fooocus/models checkpoints ${BASE_DIR}/models stable-diffusion
 sl_folder ${SD06_DIR}/Fooocus/models loras ${BASE_DIR}/models lora
