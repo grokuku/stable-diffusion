@@ -28,6 +28,16 @@ if [ ! -f "$SD01_DIR/config.yaml" ]; then
     cp -v "${SD_INSTALL_DIR}/parameters/01.txt" "$SD01_DIR/config.yaml"
 fi
 
+#clean conda env
+if [ "$active_clean" = "1" ]; then
+    echo "-------------------------------------"
+    echo "Cleaning venv"
+    rm -rf ${SD02_DIR}/installer_files
+    echo "Done!"
+    echo -e "-------------------------------------\n"
+fi
+
+
 if [ ! -f "$SD01_DIR/start.sh" ]; then
     curl -L https://github.com/easydiffusion/easydiffusion/releases/download/v3.0.2/Easy-Diffusion-Linux.zip --output edui.zip
     unzip edui.zip

@@ -41,10 +41,14 @@ fi
 
 #clean conda env
 if [ "$active_clean" = "1" ]; then
+    echo "-------------------------------------"
+    echo "Cleaning venv"
     conda deactivate
     conda remove -p ${SD02_DIR}/conda-env --all -y
     conda create -p ${SD02_DIR}/conda-env -y
     source activate ${SD02_DIR}/conda-env
+    echo "Done!"
+    echo -e "-------------------------------------\n"
 fi
 conda install -c conda-forge git python=3.11 pip gcc gxx libcurand --solver=libmamba -y
 
