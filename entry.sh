@@ -7,8 +7,6 @@ if [ ! -f "$BASE_DIR/scripts/custom-sample.sh" ]; then
     cp -v "/custom-sample.sh" "$BASE_DIR/scripts/custom-sample.sh"
 fi
 
-# reset rights if file "Delete this file to reset access rights" isn't present
-
 . /$WEBUI_VERSION.sh
 . /$WEBUI_VERSION
 . $BASE_DIR/scripts/$WEBUI_VERSION

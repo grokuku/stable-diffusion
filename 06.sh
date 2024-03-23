@@ -24,6 +24,7 @@ if [ ! -d ${SD06_DIR}/Fooocus ]; then
 fi
 
 cd ${SD06_DIR}/Fooocus
+git reset --hard HEAD
 git pull -X ours
 
 
