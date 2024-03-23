@@ -4,5 +4,17 @@ echo "-------------------------------------"
 # permissions
 #echo "chown'ing home directory to ensure correct permissions."
 chown -R abc:abc /home/abc
+
+if [ ! -f "$BASE_DIR/Delete this file to reset access rights" ]; then
+echo "chown'ing directory to ensure correct permissions."
+chown -R abc:users $BASE_DIR
+chmod -R 774 $BASE_DIR
+chmod -R 664 $BASE_DIR/models
+chmod -R 664 $BASE_DIR/outputs
+find $BASE_DIR -type d -exec chmod 777 {} +
+echo Delete this file to reset access rights > $BASE_DIR/'Delete this file to reset access rights'
+echo "Done!"
+fi
+
 #echo "Done!"
 echo -e "-------------------------------------\n"
