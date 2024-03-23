@@ -6,7 +6,7 @@ SD01_DIR="${BASE_DIR}/01-easy-diffusion"
 #check if old install then move files
 if [ -f "$SD01_DIR/start.sh" ]; then
     mv ${SD01_DIR} ${BASE_DIR}/easy-diffusion
-    ${BASE_DIR}/easy-diffusion ${SD01_DIR}/easy-diffusion
+    mv ${BASE_DIR}/easy-diffusion ${SD01_DIR}/easy-diffusion
 fi
 
 #Create Conda Env
