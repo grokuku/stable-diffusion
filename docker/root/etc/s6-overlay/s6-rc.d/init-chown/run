@@ -2,8 +2,7 @@
 
 echo "-------------------------------------"
 # permissions
-#echo "chown'ing directory to ensure correct permissions."
+#echo "chown'ing home directory to ensure correct permissions."
 chown -R abc:abc /home/abc
-#chown -R abc:abc /config
 #echo "Done!"
 echo -e "-------------------------------------\n"
