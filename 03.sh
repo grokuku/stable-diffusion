@@ -7,6 +7,7 @@ export use_venv=0
 mkdir -p "$SD03_DIR"
 mkdir -p /config/outputs/03-InvokeAI
 
+# copy default parameters if absent
 if [ ! -f "$SD03_DIR/parameters.txt" ]; then
     cp -v "${SD_INSTALL_DIR}/parameters/03.txt" "$SD03_DIR/parameters.txt"
 fi
@@ -20,13 +21,15 @@ if [ "$active_clean" = "1" ]; then
     echo -e "-------------------------------------\n"
 fi
 
+# create conda env if absent
 if [ ! -d ${SD03_DIR}/env ]; then
     conda create -p ${SD03_DIR}/env -y
 fi
 
+# activate conda env and install basic tools
 source activate ${SD03_DIR}/env
 conda install -n base conda-libmamba-solver -y
-conda install -c conda-forge git python=3.10 --solver=libmamba -y
+conda install -c conda-forge python=3.10 --solver=libmamba -y
 
 cd ${SD03_DIR}
 
@@ -40,8 +43,7 @@ fi
 pip install --use-pep517 --upgrade InvokeAI
 invokeai-configure --yes --root ${SD03_DIR}/invokeai --skip-sd-weights
 
-# pip install ruamel.yaml==0.17.40 pillow==10.0.1 pypatchmatch
-
+# launch WebUI
 CMD="invokeai-web"
 while IFS= read -r param; do
     if [[ $param != \#* ]]; then

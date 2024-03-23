@@ -10,13 +10,10 @@ export venv_dir="-"
 # Install or update Stable-Diffusion-WebUI
 mkdir -p ${SD02_DIR}
 
+# Create Conda virtual env
 if [ ! -d ${SD02_DIR}/conda-env ]; then
     conda create -p ${SD02_DIR}/conda-env -y
 fi
-
-source activate ${SD02_DIR}/conda-env
-conda install -n base conda-libmamba-solver -y
-conda install -c git python=3.11 pip --solver=libmamba -y
 
 if [ ! -d ${SD02_DIR}/forge ]; then
     git clone https://github.com/lllyasviel/stable-diffusion-webui-forge.git ${SD02_DIR}/forge
@@ -46,16 +43,20 @@ if [ "$active_clean" = "1" ]; then
     conda deactivate
     conda remove -p ${SD02_DIR}/conda-env --all -y
     conda create -p ${SD02_DIR}/conda-env -y
-    source activate ${SD02_DIR}/conda-env
     echo "Done!"
     echo -e "-------------------------------------\n"
 fi
-conda install -c conda-forge git python=3.11 pip gcc gxx libcurand --solver=libmamba -y
+
+#activate conda env + install base tools
+source activate ${SD02_DIR}/conda-env
+conda install -n base conda-libmamba-solver -y
+conda install -c conda-forge python=3.11 pip gcc gxx libcurand --solver=libmamba -y
 
 if [ ! -f "$SD02_DIR/parameters.forge.txt" ]; then
     cp -v "/opt/sd-install/parameters/02.forge.txt" "$SD02_DIR/parameters.forge.txt"
 fi
 
+#install dependencies 
 pip install --upgrade pip
 pip install coloredlogs flatbuffers numpy packaging protobuf==3.20.3 sympy
 pip install packaging
@@ -81,6 +82,7 @@ sl_folder ${SD02_DIR}/forge/models ControlNet ${BASE_DIR}/models controlnet
 
 sl_folder ${SD02_DIR}/forge output ${BASE_DIR}/outputs 02-sd-webui
 
+# Run webUI
 echo "Run Stable-Diffusion-WebUI-forge"
 cd ${SD02_DIR}/forge
 CMD="bash webui.sh"

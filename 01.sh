@@ -4,8 +4,6 @@ source /sl_folder.sh
 export PATH="/home/abc/miniconda3/bin:$PATH"
 export active_clean=0
 
-SD01_DIR="${BASE_DIR}/01-easy-diffusion"
-
 #check if old install then move files
 if [ -f "$SD01_DIR/start.sh" ]; then
     mv ${SD01_DIR} ${BASE_DIR}/easy-diffusion
@@ -43,8 +41,10 @@ sl_folder ${HOME} "Stable Diffusion UI" ${BASE_DIR}/outputs 01-Easy-Diffusion
 
 #copy default parameters if they don't exists
 if [ ! -f "$SD01_DIR/easy-diffusion/config.yaml" ]; then
-    cp -v "${SD_INSTALL_DIR}/parameters/01.txt" "$SD01_DIR/easy-diffusion/config.yaml"
+    cp -v "${SD_INSTALL_DIR}/parameters/01.txt" "$SD01_DIR/parameters.txt"
 fi
+#apply parameters
+cp -v "${SD01_DIR}/parameters.txt" "$SD01_DIR/easy-diffusion/config.yaml"
 
 #clean conda env
 if [ "$active_clean" = "1" ]; then

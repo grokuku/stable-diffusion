@@ -10,16 +10,14 @@ export venv_dir="-"
 # Install or update Stable-Diffusion-WebUI
 mkdir -p ${SD02_DIR}
 
+# create conda env if needed
 if [ ! -d ${SD02_DIR}/conda-env ]; then
     conda create -p ${SD02_DIR}/conda-env -y
 fi
 
-source activate ${SD02_DIR}/conda-env
-conda install -n base conda-libmamba-solver -y
-conda install -c git python=3.11 pip --solver=libmamba -y
-
+# clone repository
 if [ ! -d ${SD02_DIR}/webui ]; then
-    git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui ${SD02_DIR}/webui
+    git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git ${SD02_DIR}/webui
 fi
 
 cd ${SD02_DIR}/webui
@@ -46,16 +44,21 @@ if [ "$active_clean" = "1" ]; then
     conda deactivate
     conda remove -p ${SD02_DIR}/conda-env --all -y
     conda create -p ${SD02_DIR}/conda-env -y
-    source activate ${SD02_DIR}/conda-env
     echo "Done!"
     echo -e "-------------------------------------\n"
 fi
-conda install -c conda-forge git python=3.11 pip gcc gxx libcurand --solver=libmamba -y
 
+# activate conda env and install base tools
+source activate ${SD02_DIR}/conda-env
+conda install -n base conda-libmamba-solver -y
+conda install -c conda-forge python=3.11 pip gcc gxx libcurand --solver=libmamba -y
+
+#copy default parameters if absent
 if [ ! -f "$SD02_DIR/parameters.txt" ]; then
     cp -v "/opt/sd-install/parameters/02.txt" "$SD02_DIR/parameters.txt"
 fi
 
+# install dependencies
 pip install --upgrade pip
 pip install coloredlogs flatbuffers numpy packaging protobuf==3.20.3 sympy
 pip install packaging
@@ -82,6 +85,7 @@ sl_folder ${SD02_DIR}/webui/models ControlNet ${BASE_DIR}/models controlnet
 
 sl_folder ${SD02_DIR}/webui outputs ${BASE_DIR}/outputs 02-sd-webui
 
+# run webUI
 echo "Run Stable-Diffusion-WebUI"
 cd ${SD02_DIR}/webui
 CMD="bash webui.sh"
