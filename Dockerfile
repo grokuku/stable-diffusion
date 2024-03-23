@@ -18,7 +18,7 @@ ENV BASE_DIR=/config \
     SD50_DIR=${BASE_DIR}/50-IOPaint \
     SD51_DIR=${BASE_DIR}/51-facefusion \
     SD70_DIR=${BASE_DIR}/70-kohya \
-    XDG_CACHE_HOME=${BASE_DIR}/temp
+    XDG_CACHE_HOME=/config/temp
 
 RUN apt-get update -y -q=2 && \
     apt-get install -y -q=2 curl \
