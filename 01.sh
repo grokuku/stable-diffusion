@@ -8,9 +8,7 @@ export SD01_DIR=${BASE_DIR}/01-easy-diffusion
 if [ "$active_clean" = "1" ]; then
     echo "-------------------------------------"
     echo "Cleaning venv"
-    conda deactivate
-    conda remove -p ${SD01_DIR}/conda-env --all -y
-    conda create -p ${SD01_DIR}/conda-env -y
+    rm -rf ${SD01_DIR}/conda-env
     rm -rf ${SD01_DIR}/installer_files
     export active_clean=0
     echo "Done!"
