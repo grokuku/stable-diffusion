@@ -8,16 +8,7 @@ echo "Install and run Comfy-UI"
 mkdir -p ${SD05_DIR}
 mkdir -p /config/outputs/05-comfy-ui
 
-if [ ! -d ${SD05_DIR}/env ]; then
-    conda create -p ${SD05_DIR}/env -y
-fi
 
-source activate ${SD05_DIR}/env
-conda install -n base conda-libmamba-solver -y
-conda install -c conda-forge git python=3.11 pip gxx libcurand --solver=libmamba -y
-conda install -c nvidia cuda-cudart --solver=libmamba -y
-pip install onnxruntime-gpu
-pip install insightface torch torchvision
 
 if [ ! -f "$SD05_DIR/parameters.txt" ]; then
     cp -v "${SD_INSTALL_DIR}/parameters/05.txt" "$SD05_DIR/parameters.txt"
@@ -49,13 +40,39 @@ sl_folder ${SD05_DIR}/ComfyUI/models clip_vision ${BASE_DIR}/models clip_vision
 sl_folder ${SD05_DIR}/ComfyUI/models clip ${BASE_DIR}/models clip
 sl_folder ${SD05_DIR}/ComfyUI/models controlnet ${BASE_DIR}/models controlnet
 
+#clean conda env
+if [ "$active_clean" = "1" ]; then
+    echo "-------------------------------------"
+    echo "Cleaning venv"
+    rm -rf ${SD01_DIR}/env
+    export active_clean=0
+    echo "Done!"
+    echo -e "-------------------------------------\n"
+fi
+
+#create conda env if needed
+if [ ! -d ${SD05_DIR}/env ]; then
+    conda create -p ${SD05_DIR}/env -y
+fi
+
+#activate env and install basic dependencies
+source activate ${SD05_DIR}/env
+conda install -n base conda-libmamba-solver -y
+conda install -c conda-forge git python=3.11 pip gxx libcurand --solver=libmamba -y
+conda install -c nvidia cuda-cudart --solver=libmamba -y
+pip install onnxruntime-gpu
+pip install insightface torch torchvision
+
+#clean old venv if it still exists
 if [ -d ${SD05_DIR}/venv ]; then
     rm -rf ${SD05_DIR}/venv
 fi
 
+#install requirements
 cd ${SD05_DIR}/ComfyUI
 pip install -r requirements.txt
 
+#run webui
 CMD="python3 main.py"
 while IFS= read -r param; do
     if [[ $param != \#* ]]; then
