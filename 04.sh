@@ -51,6 +51,15 @@ source activate ${SD04_DIR}/env
 conda install -n base conda-libmamba-solver -y
 conda install -c conda-forge python=3.11 pip gcc gxx --solver=libmamba -y
 
+# install dependencies
+pip install --upgrade pip
+pip install coloredlogs flatbuffers numpy packaging protobuf==3.20.3 sympy
+pip install packaging
+pip install onnxruntime-gpu --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/
+pip install insightface
+pip install basicsr
+pip install xformers --index-url https://download.pytorch.org/whl/cu121
+
 #copy default parameters if absent
 if [ ! -f "$SD04_DIR/parameters.txt" ]; then
     cp -v "${SD_INSTALL_DIR}/parameters/04.txt" "$SD04_DIR/parameters.txt"
