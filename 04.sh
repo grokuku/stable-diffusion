@@ -52,14 +52,16 @@ source activate ${SD04_DIR}/env
 conda install -n base conda-libmamba-solver -y
 conda install -c conda-forge python=3.11 pip gcc gxx --solver=libmamba -y
 
-# Create and activate venv
+# Create venv
 if [ ! -d ${SD04_DIR}/webui/venv ]; then
-    echo "Activating venv"
+    echo "create venv"
     cd ${SD04_DIR}/webui
     python -m venv venv
+fi
+
+# install dependencies
     cd ${SD04_DIR}/webui
     source venv/bin/activate
-# install dependencies
     pip install --upgrade pip
     pip install coloredlogs flatbuffers numpy packaging protobuf==3.20.3 sympy
     pip install packaging
@@ -72,9 +74,6 @@ if [ ! -d ${SD04_DIR}/webui/venv ]; then
     pip install protobuf==3.20.3
     pip install sqlalchemy
     deactivate
-fi
-
-
 
 #copy default parameters if absent
 if [ ! -f "$SD04_DIR/parameters.txt" ]; then
