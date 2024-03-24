@@ -42,7 +42,7 @@ if [ "$active_clean" = "1" ]; then
     echo "-------------------------------------"
     echo "Cleaning venv"
     conda deactivate
-    conda remove -p ${SD02_DIR}/conda-env --all -y
+    rm -rf ${SD02_DIR}/conda-env
     conda create -p ${SD02_DIR}/conda-env -y
     export active_clean=0
     echo "Done!"
@@ -66,7 +66,6 @@ pip install packaging
 pip install onnxruntime-gpu --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/
 pip install insightface
 pip install basicsr
-pip install torch==2.2.0 torchvision==0.17.0 torchaudio==2.2.0 --index-url https://download.pytorch.org/whl/cu121
 pip install xformers --index-url https://download.pytorch.org/whl/cu121
 
 
