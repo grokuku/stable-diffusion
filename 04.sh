@@ -3,6 +3,7 @@ source /sl_folder.sh
 
 export PATH="/home/abc/miniconda3/bin:$PATH"
 export SD04_DIR=${BASE_DIR}/04-SD-Next
+export use_venv=1
 
 echo "Install and run SD-Next"
 
@@ -46,19 +47,34 @@ if [ ! -d ${SD04_DIR}/env ]; then
     conda create -p ${SD04_DIR}/env -y
 fi
 
-#install basic tools
+#activate and install basic tools
 source activate ${SD04_DIR}/env
 conda install -n base conda-libmamba-solver -y
 conda install -c conda-forge python=3.11 pip gcc gxx --solver=libmamba -y
 
+# Create and activate venv
+if [ ! -d ${SD04_DIR}/webui/venv ]; then
+    echo "Activating venv"
+    cd ${SD04_DIR}/webui
+    python -m venv venv
+    cd ${SD04_DIR}/webui
+    source venv/bin/activate
 # install dependencies
-pip install --upgrade pip
-pip install coloredlogs flatbuffers numpy packaging protobuf==3.20.3 sympy
-pip install packaging
-pip install onnxruntime-gpu --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/
-pip install insightface
-pip install basicsr
-pip install xformers --index-url https://download.pytorch.org/whl/cu121
+    pip install --upgrade pip
+    pip install coloredlogs flatbuffers numpy packaging protobuf==3.20.3 sympy
+    pip install packaging
+    pip install onnxruntime-gpu --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/
+    pip install insightface
+    pip install basicsr
+    pip install xformers --index-url https://download.pytorch.org/whl/cu121
+    pip install onnxruntime-gpu
+    pip install insightface
+    pip install protobuf==3.20.3
+    pip install sqlalchemy
+    deactivate
+fi
+
+
 
 #copy default parameters if absent
 if [ ! -f "$SD04_DIR/parameters.txt" ]; then
