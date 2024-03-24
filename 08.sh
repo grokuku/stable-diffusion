@@ -2,6 +2,7 @@
 source /sl_folder.sh
 
 export PATH="/home/abc/miniconda3/bin:$PATH"
+export SD08_DIR=${BASE_DIR}/08-voltaML
 
 mkdir -p ${SD08_DIR}
 mkdir -p /config/outputs/08-voltaML

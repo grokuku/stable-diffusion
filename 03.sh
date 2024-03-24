@@ -3,6 +3,7 @@ source /sl_folder.sh
 
 export PATH="/home/abc/miniconda3/bin:$PATH"
 export use_venv=0
+export SD03_DIR=${BASE_DIR}/03-invokeai
 
 mkdir -p "$SD03_DIR"
 mkdir -p /config/outputs/03-InvokeAI

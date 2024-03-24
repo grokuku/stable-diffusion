@@ -3,6 +3,7 @@ source /sl_folder.sh
 
 export PATH="/home/abc/miniconda3/bin:$PATH"
 export use_venv=1
+export SD04_DIR=${BASE_DIR}/04-SD-Next
 
 echo "Install and run SD-Next"
 

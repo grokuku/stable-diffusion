@@ -2,6 +2,7 @@
 source /sl_folder.sh
 
 export PATH="/home/abc/miniconda3/bin:$PATH"
+export SD06_DIR=${BASE_DIR}/06-Fooocus
 
 mkdir -p ${SD06_DIR}
 mkdir -p $BASE_DIR/outputs/06-Fooocus

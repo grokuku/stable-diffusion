@@ -3,6 +3,7 @@
 source /sl_folder.sh
 
 export PATH="/home/abc/miniconda3/bin:$PATH"
+export SD20_DIR=${BASE_DIR}/20-kubin
 
 mkdir -p "${SD20_DIR}"
 mkdir -p /config/outputs/20-kubin

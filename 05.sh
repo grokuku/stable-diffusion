@@ -2,6 +2,7 @@
 source /sl_folder.sh
 
 export PATH="/home/abc/miniconda3/bin:$PATH"
+export SD05_DIR=${BASE_DIR}/05-comfy-ui
 
 echo "Install and run Comfy-UI"
 mkdir -p ${SD05_DIR}

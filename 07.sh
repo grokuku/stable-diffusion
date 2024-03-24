@@ -2,6 +2,7 @@
 source /sl_folder.sh
 
 export PATH="/home/abc/miniconda3/bin:$PATH"
+export SD07_DIR=${BASE_DIR}/07-StableSwarm
 
 mkdir -p ${SD07_DIR}
 mkdir -p /config/outputs/07-StableSwarm

@@ -2,6 +2,7 @@
 source /sl_folder.sh
 
 export PATH="/home/abc/miniconda3/bin:$PATH"
+export SD70_DIR=${BASE_DIR}/70-kohya
 
 mkdir -p ${SD70_DIR}
 mkdir -p /config/outputs/70-kohya
