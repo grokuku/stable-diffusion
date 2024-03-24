@@ -58,6 +58,7 @@ python ./setup/setup_linux.py
 cd ${SD70_DIR}/kohya_ss
 
 #launch Kohya
+echo LAUNCHING KOHYA_SS !
 CMD="python kohya_gui.py"; while IFS= read -r param; do if [[ $param != \#* ]]; then CMD+=" ${param}"; fi; done < "${SD70_DIR}/parameters.txt"; eval $CMD
 
 
