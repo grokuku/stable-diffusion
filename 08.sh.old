@@ -62,13 +62,19 @@ fi
 
 cd ${SD08_DIR}/voltaML-fast-stable-diffusion
 source venv/bin/activate
-#pip install --upgrade pip
-pip install onnxruntime-gpu
 
 for fichier in ${SD08_DIR}/voltaML-fast-stable-diffusion/requirements/*.txt; do
     echo "installation of requirements"
     pip install -r $fichier
 done
+
+pip install --upgrade pip
+pip install coloredlogs flatbuffers numpy packaging protobuf==3.20.3 sympy
+pip install packaging
+pip install onnxruntime-gpu --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/
+pip install insightface
+pip install basicsr
+pip install xformers --index-url https://download.pytorch.org/whl/cu121
 
 #move models to common folders and create symlinks
 sl_folder ${SD08_DIR}/voltaML-fast-stable-diffusion/data models ${BASE_DIR}/models stable-diffusion

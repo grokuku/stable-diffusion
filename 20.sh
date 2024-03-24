@@ -22,7 +22,7 @@ if [ ! -f "$SD20_DIR/parameters.txt" ]; then
 fi
 
 if [ ! -d ${SD20_DIR}/kuby ]; then
-    cd "${SD20_DIR}" && git clone https://github.com/seruva19/kubin
+    cd "${SD20_DIR}" && git clone https://github.com/seruva19/kubin.git
 fi
 
 cd ${SD20_DIR}/kubin
