@@ -3,6 +3,7 @@ source /sl_folder.sh
 
 export PATH="/home/abc/miniconda3/bin:$PATH"
 export active_clean=0
+export SD01_DIR=${BASE_DIR}/01-easy-diffusion
 
 #Create Conda Env
 if [ ! -d ${SD01_DIR}/conda-env ]; then
@@ -15,7 +16,6 @@ cd ${SD01_DIR}
 
 #install manager plugin
 if [ ! -f ${SD01_DIR}/plugins/ui/plugin-manager.plugin.js ]; then
-    mkdir -p ${SD01_DIR}/plugins/ui/
     curl -L https://raw.githubusercontent.com/patriceac/Easy-Diffusion-Plugins/main/plugin-manager.plugin.js --output ${SD01_DIR}/plugins/ui/plugin-manager.plugin.js
 fi
 
