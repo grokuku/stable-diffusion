@@ -23,7 +23,8 @@ if [ ! -d ${SD05_DIR}/ComfyUI/custom_nodes/ComfyUI-Manager ]; then
 fi
 
 cd ${SD05_DIR}/ComfyUI/custom_nodes/ComfyUI-Manager
-git reset --hard HEAD
+#git reset --hard HEAD
+git pull -X ours
 
 # check if remote is ahead of local
 # https://stackoverflow.com/a/25109122/1469797
@@ -37,8 +38,8 @@ sed 's/\// /g') | cut -f1) ]; then
         echo "Remote branch is ahead. Wiping venv for clean packages install"
         fi
     export active_clean=1
-    git reset --hard HEAD
-    #git pull -X ours
+#    git reset --hard HEAD
+    git pull -X ours
 fi
 
 # Merge Models, vae, lora, hypernetworks, and outputs
