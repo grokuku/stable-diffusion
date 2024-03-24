@@ -2,6 +2,7 @@
 source /sl_folder.sh
 
 export PATH="/home/abc/miniconda3/bin:$PATH"
+export SD51_DIR=${BASE_DIR}/51-facefusion
 
 mkdir -p ${SD51_DIR}
 mkdir -p /config/outputs/51-facefusion

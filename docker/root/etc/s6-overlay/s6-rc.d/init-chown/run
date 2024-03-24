@@ -1,9 +1,22 @@
 #!/usr/bin/with-contenv bash
 
-echo "-------------------------------------"
+#echo "-------------------------------------"
 # permissions
-echo "chown'ing directory to ensure correct permissions."
+#echo "chown'ing home directory to ensure correct permissions."
 chown -R abc:abc /home/abc
-chown -R abc:abc /config
+#echo "Done!"
+#echo -e "-------------------------------------\n"
+
+# reset rights if file "Delete this file to reset access rights at next launch" isn't present
+if [ ! -f "$BASE_DIR/Delete this file to reset access rights at next launch" ]; then
+echo "-------------------------------------"
+echo "chown'ing directory to ensure correct permissions."
+chown -R abc:users $BASE_DIR
+chmod -R 774 $BASE_DIR
+chmod -R 664 $BASE_DIR/models
+chmod -R 664 $BASE_DIR/outputs
+find $BASE_DIR -type d -exec chmod 777 {} +
+echo Delete this file to reset access rights at next launch > $BASE_DIR/'Delete this file to reset access rights at next launch'
 echo "Done!"
 echo -e "-------------------------------------\n"
+fi

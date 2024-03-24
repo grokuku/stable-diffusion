@@ -2,6 +2,7 @@
 source /sl_folder.sh
 
 export PATH="/home/abc/miniconda3/bin:$PATH"
+export SD50_DIR=${BASE_DIR}/50-IOPaint
 
 mkdir -p "${SD50_DIR}/IOPaint"
 mkdir -p /config/outputs/50-IOPaint
