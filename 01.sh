@@ -2,13 +2,30 @@
 source /sl_folder.sh
 
 export PATH="/home/abc/miniconda3/bin:$PATH"
-export active_clean=0
 export SD01_DIR=${BASE_DIR}/01-easy-diffusion
+
+#clean conda env
+if [ "$active_clean" = "1" ]; then
+    echo "-------------------------------------"
+    echo "Cleaning venv"
+    conda deactivate
+    conda remove -p ${SD01_DIR}/conda-env --all -y
+    conda create -p ${SD01_DIR}/conda-env -y
+    rm -rf ${SD01_DIR}/installer_files
+    export active_clean=0
+    echo "Done!"
+    echo -e "-------------------------------------\n"
+fi
 
 #Create Conda Env
 if [ ! -d ${SD01_DIR}/conda-env ]; then
     conda create -p ${SD01_DIR}/conda-env -y
 fi
+
+#active env and install python
+source activate ${SD01_DIR}/conda-env
+conda install -n base conda-libmamba-solver -y
+conda install -c python=3.11 pip --solver=libmamba -y
 
 #create 'models' folders
 mkdir -p ${SD01_DIR}/{models,version,plugins/ui,scripts}
@@ -36,23 +53,6 @@ sl_folder ${HOME} "Stable Diffusion UI" ${BASE_DIR}/outputs 01-Easy-Diffusion
 if [ ! -f "$SD01_DIR/config.yaml" ]; then
     cp -v "${SD_INSTALL_DIR}/parameters/01.txt" "$SD01_DIR/config.yaml"
 fi
-
-#clean conda env
-if [ "$active_clean" = "1" ]; then
-    echo "-------------------------------------"
-    echo "Cleaning venv"
-    conda deactivate
-    conda remove -p ${SD01_DIR}/conda-env --all -y
-    conda create -p ${SD01_DIR}/conda-env -y
-    rm -rf ${SD01_DIR}/installer_files
-    echo "Done!"
-    echo -e "-------------------------------------\n"
-fi
-
-#active env and install git + python
-source activate ${SD01_DIR}/conda-env
-conda install -n base conda-libmamba-solver -y
-conda install -c git python=3.11 pip --solver=libmamba -y
 
 #download installer if it isn't present
 if [ ! -f "$SD01_DIR/start.sh" ]; then

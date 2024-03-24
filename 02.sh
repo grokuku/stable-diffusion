@@ -2,7 +2,6 @@
 source /sl_folder.sh
 
 export PATH="/home/abc/miniconda3/bin:$PATH"
-export active_clean=0
 
 # disable the use of a python venv
 export venv_dir="-"
@@ -44,6 +43,7 @@ if [ "$active_clean" = "1" ]; then
     conda deactivate
     conda remove -p ${SD02_DIR}/conda-env --all -y
     conda create -p ${SD02_DIR}/conda-env -y
+    export active_clean=0
     echo "Done!"
     echo -e "-------------------------------------\n"
 fi

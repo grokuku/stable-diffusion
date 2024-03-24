@@ -3,7 +3,6 @@ source /sl_folder.sh
 
 export PATH="/home/abc/miniconda3/bin:$PATH"
 export use_venv=0
-export active_clean=0
 
 mkdir -p "$SD03_DIR"
 mkdir -p /config/outputs/03-InvokeAI
@@ -18,6 +17,7 @@ if [ "$active_clean" = "1" ]; then
     echo "-------------------------------------"
     echo "Cleaning venv"
     rm -rf ${SD03_DIR}/env
+    export active_clean=0
     echo "Done!"
     echo -e "-------------------------------------\n"
 fi
