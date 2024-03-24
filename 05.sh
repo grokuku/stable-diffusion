@@ -15,7 +15,7 @@ if [ ! -f "$SD05_DIR/parameters.txt" ]; then
 fi
 
 if [ ! -d ${SD05_DIR}/ComfyUI ]; then
-    git clone https://github.com/comfyanonymous/ComfyUI ${SD05_DIR}/ComfyUI
+    git clone https://github.com/comfyanonymous/ComfyUI.git ${SD05_DIR}/ComfyUI
 fi
 
 if [ ! -d ${SD05_DIR}/ComfyUI/custom_nodes/ComfyUI-Manager ]; then
@@ -23,10 +23,23 @@ if [ ! -d ${SD05_DIR}/ComfyUI/custom_nodes/ComfyUI-Manager ]; then
 fi
 
 cd ${SD05_DIR}/ComfyUI/custom_nodes/ComfyUI-Manager
-git pull -X ours
+git reset --hard HEAD
 
-cd ${SD05_DIR}/ComfyUI
-git pull -X ours
+# check if remote is ahead of local
+# https://stackoverflow.com/a/25109122/1469797
+if [ "$CLEAN_ENV" != "true" ] && [ $(git rev-parse HEAD) = $(git ls-remote $(git rev-parse --abbrev-ref @{u} | \
+sed 's/\// /g') | cut -f1) ]; then
+    echo "Local branch up-to-date, keeping existing venv"
+    else
+        if [ "$CLEAN_ENV" = "true" ]; then
+        echo "Forced wiping venv for clean packages install"
+        else
+        echo "Remote branch is ahead. Wiping venv for clean packages install"
+        fi
+    export active_clean=1
+    git reset --hard HEAD
+    #git pull -X ours
+fi
 
 # Merge Models, vae, lora, hypernetworks, and outputs
 sl_folder ${SD05_DIR}/ComfyUI/models checkpoints ${BASE_DIR}/models stable-diffusion
