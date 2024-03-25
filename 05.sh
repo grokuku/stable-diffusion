@@ -76,3 +76,4 @@ while IFS= read -r param; do
     fi
 done < "${SD05_DIR}/parameters.txt"
 eval $CMD
+wait 99999

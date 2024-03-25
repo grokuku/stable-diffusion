@@ -42,3 +42,4 @@ CMD="python kohya_gui.py"; while IFS= read -r param; do if [[ $param != \#* ]]; 
 
 
 
+wait 99999
