@@ -8,7 +8,7 @@ chown -R abc:abc /home/abc
 #echo -e "-------------------------------------\n"
 
 # reset rights if file "Delete this file to reset access rights at next launch" isn't present
-if [ ! -f "$BASE_DIR/Delete this file to reset access rights at next launch" ]; then
+if [ ! -f "$BASE_DIR/Delete_this_file_to_reset_access_rights_at_next_launch" ]; then
 echo "-------------------------------------"
 echo "chown'ing directory to ensure correct permissions."
 chown -R abc:users $BASE_DIR
@@ -16,7 +16,7 @@ chmod -R 774 $BASE_DIR
 chmod -R 664 $BASE_DIR/models
 chmod -R 664 $BASE_DIR/outputs
 find $BASE_DIR -type d -exec chmod 777 {} +
-echo Delete this file to reset access rights at next launch > $BASE_DIR/'Delete this file to reset access rights at next launch'
+echo Delete this file to reset access rights at next launch > $BASE_DIR/'Delete_this_file_to_reset_access_rights_at_next_launch'
 echo "Done!"
 echo -e "-------------------------------------\n"
 fi

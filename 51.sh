@@ -1,5 +1,5 @@
 #!/bin/bash
-source /sl_folder.sh
+source /functions.sh
 
 export PATH="/home/abc/miniconda3/bin:$PATH"
 export SD51_DIR=${BASE_DIR}/51-facefusion
@@ -28,12 +28,6 @@ conda install -c conda-forge git python=3.11 pip gxx ffmpeg --solver=libmamba -y
     cd ${SD51_DIR}/facefusion
     git config --global --add safe.directory ${SD51_DIR}/facefusion
     git pull -X ours
-
-#    chown -R diffusion:users ${BASE_DIR}
-
-#    if [ ! -d ${SD51_DIR}/venv ]; then
-#      su -w SD51_DIR - diffusion -c 'cd ${SD51_DIR} && python3 -m venv venv'
-#    fi
 
  
  cd ${SD51_DIR}/facefusion 

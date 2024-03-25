@@ -1,5 +1,5 @@
 #!/bin/bash
-source /sl_folder.sh
+source /functions.sh
 
 export PATH="/home/abc/miniconda3/bin:$PATH"
 export SD70_DIR=${BASE_DIR}/70-kohya
@@ -16,31 +16,10 @@ if [ ! -d ${SD70_DIR}/kohya_ss ]; then
 fi
 
 # check if remote is ahead of local
-# https://stackoverflow.com/a/25109122/1469797
-cd ${SD70_DIR}/kohya_ss
-if [ "$CLEAN_ENV" != "true" ] && [ $(git rev-parse HEAD) = $(git ls-remote $(git rev-parse --abbrev-ref @{u} | \
-sed 's/\// /g') | cut -f1) ]; then
-    echo "Local branch up-to-date, keeping existing venv"
-    else
-        if [ "$CLEAN_ENV" = "true" ]; then
-        echo "Forced wiping venv for clean packages install"
-        else
-        echo "Remote branch is ahead. Wiping venv for clean packages install"
-        fi
-    export active_clean=1
-#    git reset --hard HEAD
-    git pull -X ours
-fi
+check_remote
 
 #clean conda env if needed
-if [ "$active_clean" = "1" ]; then
-    echo "-------------------------------------"
-    echo "Cleaning venv"
-    rm -rf ${SD70_DIR}/env
-    export active_clean=0
-    echo "Done!"
-    echo -e "-------------------------------------\n"
-fi
+clean_env ${SD70_DIR}/env
 
 #create conda env
 if [ ! -d ${SD70_DIR}/env ]; then

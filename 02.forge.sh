@@ -1,5 +1,6 @@
 #!/bin/bash
-source /sl_folder.sh
+source /functions.sh
+
 
 export PATH="/home/abc/miniconda3/bin:$PATH"
 export SD02_DIR=${BASE_DIR}/02-sd-webui
@@ -10,42 +11,20 @@ export venv_dir="-"
 # Install or update Stable-Diffusion-WebUI
 mkdir -p ${SD02_DIR}
 
-# Create Conda virtual env
-if [ ! -d ${SD02_DIR}/conda-env ]; then
-    conda create -p ${SD02_DIR}/conda-env -y
-fi
-
 if [ ! -d ${SD02_DIR}/forge ]; then
     git clone https://github.com/lllyasviel/stable-diffusion-webui-forge.git ${SD02_DIR}/forge
 fi
 
 cd ${SD02_DIR}/forge
 
-# check if remote is ahead of local
-# https://stackoverflow.com/a/25109122/1469797
-if [ "$CLEAN_ENV" != "true" ] && [ $(git rev-parse HEAD) = $(git ls-remote $(git rev-parse --abbrev-ref @{u} | \
-sed 's/\// /g') | cut -f1) ]; then
-    echo "Local branch up-to-date, keeping existing venv"
-    else
-        if [ "$CLEAN_ENV" = "true" ]; then
-        echo "Forced wiping venv for clean packages install"
-        else
-        echo "Remote branch is ahead. Wiping venv for clean packages install"
-        fi
-    export active_clean=1
-    git pull -X ours
-fi
+check_remote
 
 #clean conda env
-if [ "$active_clean" = "1" ]; then
-    echo "-------------------------------------"
-    echo "Cleaning venv"
-    conda deactivate
-    rm -rf ${SD02_DIR}/conda-env
+clean_env ${SD02_DIR}/conda-env
+
+# Create Conda virtual env
+if [ ! -d ${SD02_DIR}/conda-env ]; then
     conda create -p ${SD02_DIR}/conda-env -y
-    export active_clean=0
-    echo "Done!"
-    echo -e "-------------------------------------\n"
 fi
 
 #activate conda env + install base tools
@@ -92,3 +71,4 @@ while IFS= read -r param; do
     fi
 done < "${SD02_DIR}/parameters.forge.txt"
 eval $CMD
+wait 99999

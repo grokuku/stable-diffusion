@@ -8,11 +8,11 @@ if [ ! -f "$BASE_DIR/scripts/custom-sample.sh" ]; then
 fi
 
 #  if file "Delete this file to clean virtual env and dependencies at next launch" isn't present
-if [ -f "$BASE_DIR/Delete this file to clean virtual env and dependencies at next launch" ]; then
+if [ -f "$BASE_DIR/Delete_this_file_to_clean_virtual_env_and_dependencies_at_next_launch" ]; then
 export active_clean=0
 else
 export active_clean=1
-echo Delete this file to clean virtual env and dependencies at next launch > $BASE_DIR/'Delete this file to clean virtual env and dependencies at next launch'
+echo Delete this file to clean virtual env and dependencies at next launch > $BASE_DIR/Delete_this_file_to_clean_virtual_env_and_dependencies_at_next_launch
 fi
 
 . /$WEBUI_VERSION.sh

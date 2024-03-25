@@ -1,19 +1,12 @@
 #!/bin/bash
-source /sl_folder.sh
+source /functions.sh
 
 export PATH="/home/abc/miniconda3/bin:$PATH"
 export SD01_DIR=${BASE_DIR}/01-easy-diffusion
 
 #clean conda env
-if [ "$active_clean" = "1" ]; then
-    echo "-------------------------------------"
-    echo "Cleaning venv"
-    rm -rf ${SD01_DIR}/conda-env
-    rm -rf ${SD01_DIR}/installer_files
-    export active_clean=0
-    echo "Done!"
-    echo -e "-------------------------------------\n"
-fi
+clean_env ${SD01_DIR}/conda-env
+clean_env ${SD01_DIR}/installer_files
 
 #Create Conda Env
 if [ ! -d ${SD01_DIR}/conda-env ]; then
@@ -64,3 +57,4 @@ fi
 #run easy-diffusion
 cd $SD01_DIR
 bash start.sh
+wait 99999
