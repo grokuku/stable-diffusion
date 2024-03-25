@@ -15,8 +15,8 @@ if [ ! -d ${SD02_DIR}/forge ]; then
     git clone https://github.com/lllyasviel/stable-diffusion-webui-forge.git ${SD02_DIR}/forge
 fi
 
+# check if remote is ahead of local
 cd ${SD02_DIR}/forge
-
 check_remote
 
 #clean conda env

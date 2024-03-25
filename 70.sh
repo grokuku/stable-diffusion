@@ -16,6 +16,7 @@ if [ ! -d ${SD70_DIR}/kohya_ss ]; then
 fi
 
 # check if remote is ahead of local
+cd ${SD70_DIR}/kohya_ss
 check_remote
 
 #clean conda env if needed

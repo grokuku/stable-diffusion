@@ -23,6 +23,7 @@ if [ ! -d ${SD06_DIR}/Fooocus ]; then
 fi
 
 # check if remote is ahead of local
+cd ${SD06_DIR}/Fooocus
 check_remote
 
 #clean conda env if needed

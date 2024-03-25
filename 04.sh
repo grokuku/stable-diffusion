@@ -14,9 +14,9 @@ if [ ! -d ${SD04_DIR}/webui ]; then
     git clone https://github.com/vladmandic/automatic ${SD04_DIR}/webui
 fi
 
-cd ${SD04_DIR}/webui
 
 # check if remote is ahead of local
+cd ${SD04_DIR}/webui
 check_remote
 
 #clean virtual env

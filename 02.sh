@@ -15,9 +15,9 @@ if [ ! -d ${SD02_DIR}/webui ]; then
     git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git ${SD02_DIR}/webui
 fi
 
-cd ${SD02_DIR}/webui
 
 # check if remote is ahead of local
+cd ${SD02_DIR}/webui
 check_remote
 
 #clean conda env

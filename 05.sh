@@ -27,6 +27,7 @@ cd ${SD05_DIR}/ComfyUI/custom_nodes/ComfyUI-Manager
 git pull -X ours
 
 # check if remote is ahead of local
+cd ${SD05_DIR}/ComfyUI
 check_remote
 
 #clean conda env

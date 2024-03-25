@@ -23,6 +23,7 @@ if [ ! -d ${SD07_DIR}/StableSwarmUI ]; then
 fi
 
 # check if remote is ahead of local
+cd ${SD07_DIR}/StableSwarmUI
 check_remote
 
 #clean conda env if needed
