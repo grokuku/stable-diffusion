@@ -47,6 +47,7 @@ sed 's/\// /g') | cut -f1) ]; then
         echo "Remote branch is ahead. Wiping venv for clean packages install"
         fi
     export active_clean=1
+    git reset --hard HEAD
     git pull -X ours
 fi
 }
