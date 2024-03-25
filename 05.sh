@@ -1,5 +1,5 @@
 #!/bin/bash
-source /sl_folder.sh
+source /functions.sh
 
 export PATH="/home/abc/miniconda3/bin:$PATH"
 export SD05_DIR=${BASE_DIR}/05-comfy-ui
@@ -27,42 +27,11 @@ cd ${SD05_DIR}/ComfyUI/custom_nodes/ComfyUI-Manager
 git pull -X ours
 
 # check if remote is ahead of local
-# https://stackoverflow.com/a/25109122/1469797
-if [ "$CLEAN_ENV" != "true" ] && [ $(git rev-parse HEAD) = $(git ls-remote $(git rev-parse --abbrev-ref @{u} | \
-sed 's/\// /g') | cut -f1) ]; then
-    echo "Local branch up-to-date, keeping existing venv"
-    else
-        if [ "$CLEAN_ENV" = "true" ]; then
-        echo "Forced wiping venv for clean packages install"
-        else
-        echo "Remote branch is ahead. Wiping venv for clean packages install"
-        fi
-    export active_clean=1
-#    git reset --hard HEAD
-    git pull -X ours
-fi
-
-# Merge Models, vae, lora, hypernetworks, and outputs
-sl_folder ${SD05_DIR}/ComfyUI/models checkpoints ${BASE_DIR}/models stable-diffusion
-sl_folder ${SD05_DIR}/ComfyUI/models hypernetworks ${BASE_DIR}/models hypernetwork
-sl_folder ${SD05_DIR}/ComfyUI/models loras ${BASE_DIR}/models lora
-sl_folder ${SD05_DIR}/ComfyUI/models vae ${BASE_DIR}/models vae
-sl_folder ${SD05_DIR}/ComfyUI/models vae_approx ${BASE_DIR}/models vae_approx
-sl_folder ${SD05_DIR}/ComfyUI/models embeddings ${BASE_DIR}/models embeddings
-sl_folder ${SD05_DIR}/ComfyUI/models upscale_models ${BASE_DIR}/models upscale
-sl_folder ${SD05_DIR}/ComfyUI/models clip_vision ${BASE_DIR}/models clip_vision
-sl_folder ${SD05_DIR}/ComfyUI/models clip ${BASE_DIR}/models clip
-sl_folder ${SD05_DIR}/ComfyUI/models controlnet ${BASE_DIR}/models controlnet
+cd ${SD05_DIR}/ComfyUI
+check_remote
 
 #clean conda env
-if [ "$active_clean" = "1" ]; then
-    echo "-------------------------------------"
-    echo "Cleaning venv"
-    rm -rf ${SD01_DIR}/env
-    export active_clean=0
-    echo "Done!"
-    echo -e "-------------------------------------\n"
-fi
+clean_env ${SD05_DIR}/env
 
 #create conda env if needed
 if [ ! -d ${SD05_DIR}/env ]; then
@@ -82,6 +51,20 @@ if [ -d ${SD05_DIR}/venv ]; then
     rm -rf ${SD05_DIR}/venv
 fi
 
+# Merge Models, vae, lora, hypernetworks, and outputs
+sl_folder ${SD05_DIR}/ComfyUI/models checkpoints ${BASE_DIR}/models stable-diffusion
+sl_folder ${SD05_DIR}/ComfyUI/models hypernetworks ${BASE_DIR}/models hypernetwork
+sl_folder ${SD05_DIR}/ComfyUI/models loras ${BASE_DIR}/models lora
+sl_folder ${SD05_DIR}/ComfyUI/models vae ${BASE_DIR}/models vae
+sl_folder ${SD05_DIR}/ComfyUI/models vae_approx ${BASE_DIR}/models vae_approx
+sl_folder ${SD05_DIR}/ComfyUI/models embeddings ${BASE_DIR}/models embeddings
+sl_folder ${SD05_DIR}/ComfyUI/models upscale_models ${BASE_DIR}/models upscale
+sl_folder ${SD05_DIR}/ComfyUI/models clip_vision ${BASE_DIR}/models clip_vision
+sl_folder ${SD05_DIR}/ComfyUI/models clip ${BASE_DIR}/models clip
+sl_folder ${SD05_DIR}/ComfyUI/models controlnet ${BASE_DIR}/models controlnet
+
+
+
 #install requirements
 cd ${SD05_DIR}/ComfyUI
 pip install -r requirements.txt
@@ -94,3 +77,4 @@ while IFS= read -r param; do
     fi
 done < "${SD05_DIR}/parameters.txt"
 eval $CMD
+wait 99999

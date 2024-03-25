@@ -1,5 +1,5 @@
 #!/bin/bash
-source /sl_folder.sh
+source /functions.sh
 
 export PATH="/home/abc/miniconda3/bin:$PATH"
 export use_venv=0
@@ -14,14 +14,7 @@ if [ ! -f "$SD03_DIR/parameters.txt" ]; then
 fi
 
 #clean conda env
-if [ "$active_clean" = "1" ]; then
-    echo "-------------------------------------"
-    echo "Cleaning venv"
-    rm -rf ${SD03_DIR}/env
-    export active_clean=0
-    echo "Done!"
-    echo -e "-------------------------------------\n"
-fi
+clean_env ${SD03_DIR}/env
 
 # create conda env if absent
 if [ ! -d ${SD03_DIR}/env ]; then
@@ -53,3 +46,4 @@ while IFS= read -r param; do
     fi
 done < "${SD03_DIR}/parameters.txt"
 eval $CMD
+wait 99999
