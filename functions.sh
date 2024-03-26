@@ -43,10 +43,11 @@ sed 's/\// /g') | cut -f1) ]; then
     else
         if [ "$CLEAN_ENV" = "true" ]; then
         echo "Forced wiping venv for clean packages install"
+        export active_clean=1
         else
-        echo "Remote branch is ahead. Wiping venv for clean packages install"
+        echo "Remote branch is ahead. If you encouter any issue after upgrade, try to clean venv for clean packages install"
         fi
-    export active_clean=1
+    
     git reset --hard HEAD
     git pull -X ours
 fi
