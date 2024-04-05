@@ -38,7 +38,7 @@ fi
 
 # Update if the folder is present
 pip install --use-pep517 --upgrade InvokeAI
-invokeai-configure --yes --root ${SD03_DIR}/invokeai --skip-sd-weights
+#invokeai-configure --yes --root ${SD03_DIR}/invokeai --skip-sd-weights
 
 # launch WebUI
 CMD="invokeai-web"
