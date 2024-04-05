@@ -17,8 +17,6 @@ Please consult each respective website for a comprehensive description and usage
 | 05    | ComfyUI           | A powerful and modular stable diffusion GUI and backend                                                                                      | https://github.com/comfyanonymous/ComfyUI               |
 | 06    | Fooocus           | Fooocus is a rethinking of Stable Diffusion and Midjourney’s designs                                                                         | https://github.com/lllyasviel/Fooocus                   |
 | 07    | StableSwarm       | A Modular Stable Diffusion Web-User-Interface, with an emphasis on making powertools easily accessible, high performance, and extensibility. | https://github.com/Stability-AI/StableSwarmUI           |
-| 08    | VoltaML           | Stable Diffusion WebUI and API accelerated by AITemplate                                                                                     | https://github.com/lllyasviel/Fooocus                   |
-| 20    | kubin (Kandinsky) | Kubin is a Web-GUI for Kandinsky 2.x 🚧 WIP 🚧 NOT PRODUCTION-READY 🚧                                                                      | https://github.com/seruva19/kubin                       |
 | 50    | Lama Cleaner      | A free and open-source inpainting tool powered by SOTA AI model.                                                                             | https://github.com/Sanster/lama-cleaner                 |
 | 51    | FaceFusion        | Next generation face swapper and enhancer                                                                                                    | https://github.com/facefusion/facefusion                |
 | 70    | Kohya             | Kohya's GUI provides a Windows-focused Gradio GUI for Kohya's Stable Diffusion trainers                                                      | https://github.com/bmaltais/kohya_ss                    |
@@ -99,24 +97,22 @@ By default, each user interface will save data in its own directory, which is au
 
 ## Project Notes
 
-Some projects have modified install/startup changes to address performance or suggested fixes. 
+Due to the initial emphasis on simplifying the container's usability and setup process, certain project-specific details, such as the variable for triggering environment cleanup, have been left out.   
+VoltaML (08) and Kubin (20) have been excluded to maintain focus on Stable-Diffusion for image generation.
 
 General changes are listed below and **specified in notes if they apply.** Specific project modifications are listed below these.
 
 ###### Clean Environment
 
-When the container starts if the installed project is outdated compared to the _upstream project_ then the latest code is pulled and dependencies for installation are wiped and re-installed. Subsequent container starts will be much faster since the project will not be re-installed. This behavior can be **forced** by setting the docker environmental variable `CLEAN_ENV=true`.
+Auto-clean of environment when a project is behind the remote branch is removed.
+To trigger a clean, now you have to delete the file names "Delete_this_file_to_clean_virtual_env_and_dependencies_at_next_launch" in the root folder.
+This applies to the launching project only.
 
 
-#### Stable Diffusion WebUI (02) Notes
+#### Access rights reset
 
-* Uses [Clean Environment](#clean-environment) performance improvement
-
-#### SD.Next (04) Notes
-
-* Uses [Clean Environment](#clean-environment) performance improvement
-* Uses an updated `malloc` library to fix a [memory leak](https://github.com/AUTOMATIC1111/stable-diffusion-webui/discussions/6722)
-  * This can be turned off by adding the docker environmental variable `NO_TCMALLOC=true`
+If something went wrong and you can't access certain files, you can reset access rights by deleting the file named 'Delete_this_file_to_reset_access_rights_at_next_launch' in the root folder.   
+This applies to all the /config folder.   
 
 # History
 
