@@ -97,17 +97,15 @@ By default, each user interface will save data in its own directory, which is au
 
 ## Project Notes
 
-Due to the initial emphasis on simplifying the container's usability and setup process, certain project-specific details, such as the variable for triggering environment cleanup, have been left out.   
 VoltaML (08) and Kubin (20) have been excluded to maintain focus on Stable-Diffusion for image generation.
 
 General changes are listed below and **specified in notes if they apply.** Specific project modifications are listed below these.
 
 ###### Clean Environment
 
-Auto-clean of environment when a project is behind the remote branch is removed.
+Auto-clean of environment when a project is behind the remote branch is only launched if varaible CLEAN_ENV is set to true.  
 To trigger a clean, now you have to delete the file names "Delete_this_file_to_clean_virtual_env_and_dependencies_at_next_launch" in the root folder.
 This applies to the launching project only.
-
 
 #### Access rights reset
 

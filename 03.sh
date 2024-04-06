@@ -7,7 +7,7 @@ export SD03_DIR=${BASE_DIR}/03-invokeai
 export INVOKEAI_ROOT=${SD03_DIR}/invokeai
 
 mkdir -p "$SD03_DIR"
-mkdir -p /config/outputs/03-InvokeAI
+mkdir -p /config/outputs/03-InvokeAI/tensors
 
 #rename old parameters file
 if [ -f "$SD03_DIR/parameters.txt" ]; then
