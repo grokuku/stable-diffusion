@@ -1,25 +1,11 @@
 #!/bin/bash
-source /sl_folder.sh
+source /functions.sh
 
 export PATH="/home/abc/miniconda3/bin:$PATH"
+export SD70_DIR=${BASE_DIR}/70-kohya
 
 mkdir -p ${SD70_DIR}
 mkdir -p /config/outputs/70-kohya
-
-if [ ! -d ${SD70_DIR}/env ]; then
-    conda create -p ${SD70_DIR}/env -y
-fi
-
-source activate ${SD70_DIR}/env
-conda install -n base conda-libmamba-solver -y
-conda install -c conda-forge git python=3.10 pip --solver=libmamba -y
-
-# Create venv
-if [ ! -d ${SD70_DIR}/venv ]; then
-    cd ${SD70_DIR}
-    python -m venv venv
-    cd ${SD70_DIR}
-fi
 
 if [ ! -f "$SD70_DIR/parameters.txt" ]; then
   cp -v "${SD_INSTALL_DIR}/parameters/70.txt" "$SD70_DIR/parameters.txt"
@@ -29,21 +15,30 @@ if [ ! -d ${SD70_DIR}/kohya_ss ]; then
   cd "${SD70_DIR}" && git clone https://github.com/bmaltais/kohya_ss
 fi
 
-    cd ${SD70_DIR}/kohya_ss
-    git config --global --add safe.directory ${SD70_DIR}/kohya_ss
-    git pull -X ours
+# check if remote is ahead of local
+cd ${SD70_DIR}/kohya_ss
+check_remote
 
-#    if [ ! -d ${SD70_DIR}/venv ]; then
-#      su -w SD70_DIR - diffusion -c 'cd ${SD70_DIR} && python3 -m venv venv'
-#    fi
+#clean conda env if needed
+clean_env ${SD70_DIR}/env
 
-cd ${SD70_DIR}
-source venv/bin/activate
+#create conda env
+if [ ! -d ${SD70_DIR}/env ]; then
+    conda create -p ${SD70_DIR}/env -y
+fi
+
+source activate ${SD70_DIR}/env
+conda install -n base conda-libmamba-solver -y
+conda install -c conda-forge python=3.10 pip --solver=libmamba -y
+
+#install dependencies
 pip install --upgrade pip
 cd ${SD70_DIR}/kohya_ss
-pip install -r requirements.txt
+python ./setup/setup_linux.py
 cd ${SD70_DIR}/kohya_ss
-CMD="bash gui.sh"; while IFS= read -r param; do if [[ $param != \#* ]]; then CMD+=" ${param}"; fi; done < "${SD70_DIR}/parameters.txt"; eval $CMD
 
+#launch Kohya
+echo LAUNCHING KOHYA_SS !
+CMD="python kohya_gui.py"; while IFS= read -r param; do if [[ $param != \#* ]]; then CMD+=" ${param}"; fi; done < "${SD70_DIR}/parameters.txt"; eval $CMD
 
-
+wait 99999

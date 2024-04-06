@@ -1,8 +1,8 @@
 #!/bin/bash
-source /sl_folder.sh
+source /functions.sh
 
 export PATH="/home/abc/miniconda3/bin:$PATH"
-export active_clean=0
+export SD02_DIR=${BASE_DIR}/02-sd-webui
 
 # disable the use of a python venv
 export venv_dir="-"
@@ -10,55 +10,41 @@ export venv_dir="-"
 # Install or update Stable-Diffusion-WebUI
 mkdir -p ${SD02_DIR}
 
+# clone repository
+if [ ! -d ${SD02_DIR}/webui ]; then
+    git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git ${SD02_DIR}/webui
+fi
+
+
+# check if remote is ahead of local
+cd ${SD02_DIR}/webui
+check_remote
+
+#clean conda env
+clean_env ${SD02_DIR}/conda-env
+
+# create conda env if needed
 if [ ! -d ${SD02_DIR}/conda-env ]; then
     conda create -p ${SD02_DIR}/conda-env -y
 fi
 
+# activate conda env and install base tools
 source activate ${SD02_DIR}/conda-env
 conda install -n base conda-libmamba-solver -y
-conda install -c git python=3.11 pip --solver=libmamba -y
+conda install -c conda-forge python=3.11 pip gcc gxx libcurand --solver=libmamba -y
 
-if [ ! -d ${SD02_DIR}/webui ]; then
-    git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui ${SD02_DIR}/webui
-fi
-
-cd ${SD02_DIR}/webui
-
-# check if remote is ahead of local
-# https://stackoverflow.com/a/25109122/1469797
-if [ "$CLEAN_ENV" != "true" ] && [ $(git rev-parse HEAD) = $(git ls-remote $(git rev-parse --abbrev-ref @{u} | \
-sed 's/\// /g') | cut -f1) ]; then
-    echo "Local branch up-to-date, keeping existing venv"
-    else
-        if [ "$CLEAN_ENV" = "true" ]; then
-        echo "Forced wiping venv for clean packages install"
-        else
-        echo "Remote branch is ahead. Wiping venv for clean packages install"
-        fi
-    export active_clean=1
-    git pull -X ours
-fi
-
-#clean conda env
-if [ "$active_clean" = "1" ]; then
-    conda deactivate
-    conda remove -p ${SD02_DIR}/conda-env --all -y
-    conda create -p ${SD02_DIR}/conda-env -y
-    source activate ${SD02_DIR}/conda-env
-fi
-conda install -c conda-forge git python=3.11 pip gcc gxx libcurand --solver=libmamba -y
-
+#copy default parameters if absent
 if [ ! -f "$SD02_DIR/parameters.txt" ]; then
     cp -v "/opt/sd-install/parameters/02.txt" "$SD02_DIR/parameters.txt"
 fi
 
+# install dependencies
 pip install --upgrade pip
 pip install coloredlogs flatbuffers numpy packaging protobuf==3.20.3 sympy
 pip install packaging
 pip install onnxruntime-gpu --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/
 pip install insightface
 pip install basicsr
-pip install torch==2.2.0 torchvision==0.17.0 torchaudio==2.2.0 --index-url https://download.pytorch.org/whl/cu121
 pip install xformers --index-url https://download.pytorch.org/whl/cu121
 
 
@@ -76,8 +62,9 @@ sl_folder ${SD02_DIR}/webui/models GFPGAN ${BASE_DIR}/models gfpgan
 sl_folder ${SD02_DIR}/webui/models LDSR ${BASE_DIR}/models ldsr
 sl_folder ${SD02_DIR}/webui/models ControlNet ${BASE_DIR}/models controlnet
 
-sl_folder ${SD02_DIR}/webui outputs ${BASE_DIR}/outputs 02-sd-webui
+sl_folder ${SD02_DIR}/webui output ${BASE_DIR}/outputs 02-sd-webui
 
+# run webUI
 echo "Run Stable-Diffusion-WebUI"
 cd ${SD02_DIR}/webui
 CMD="bash webui.sh"
@@ -87,3 +74,4 @@ while IFS= read -r param; do
     fi
 done < "${SD02_DIR}/parameters.txt"
 eval $CMD
+wait 99999
