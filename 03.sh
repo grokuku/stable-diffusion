@@ -37,6 +37,7 @@ cd ${SD03_DIR}
 
 # Install if the folder is not present
 if [ ! -d "${SD03_DIR}/invokeai" ]; then
+    mkdir -p ${SD03_DIR}/invokeai
     pip install "InvokeAI" --use-pep517 --extra-index-url https://download.pytorch.org/whl/cu121
 #    invokeai-configure --yes --root ${SD03_DIR}/invokeai
 fi
@@ -52,7 +53,7 @@ sl_folder ${SD03_DIR}/invokeai/models/any lora ${BASE_DIR}/models lora
 sl_folder ${SD03_DIR}/invokeai/models/any controlnet ${BASE_DIR}/models controlnet
 sl_folder ${SD03_DIR}/invokeai/models/any vae ${BASE_DIR}/models vae
 
-sl_folder ${SD03_DIR}/invokeai outputs ${BASE_DIR}/outputs 03-InvokeAI
+sl_folder ${SD03_DIR}/invokeai/outputs/images ${BASE_DIR}/outputs/03-InvokeAI images
 
 # launch WebUI
 invokeai-web --config ${SD03_DIR}/config.yaml
