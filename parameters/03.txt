@@ -1,14 +1,51 @@
-# Web + Network
---web
---host=0.0.0.0
---port=9000
+# Internal metadata - do not edit:
+schema_version: 4.0.0
 
-# Directories
---outdir=/config/outputs/03-InvokeAI
---embedding_dir=/config/models/embeddings/
---lora_dir=/config/models/lora/
---root=${SD03_DIR}/invokeai
+# Put user settings here - see https://invoke-ai.github.io/InvokeAI/features/CONFIGURATION/:
 
-# Options
---precision=auto
---xformers_enabled
+host: 0.0.0.0
+port: 9000
+allow_origins: []
+allow_credentials: true
+allow_methods:
+- '*'
+allow_headers:
+- '*'
+log_tokenization: false
+patchmatch: true
+models_dir: models
+convert_cache_dir: models/.cache
+legacy_conf_dir: configs
+db_dir: databases
+outputs_dir: /config/outputs/03-InvokeAI
+custom_nodes_dir: nodes
+log_handlers:
+- console
+log_format: color
+log_level: info
+log_sql: false
+use_memory_db: false
+dev_reload: false
+profile_graphs: false
+profiles_dir: profiles
+ram: 15.0
+vram: 0.25
+convert_cache: 20.0
+lazy_offload: true
+log_memory_usage: false
+device: auto
+precision: auto
+sequential_guidance: false
+attention_type: auto
+attention_slice_size: auto
+force_tiled_decode: false
+pil_compress_level: 1
+max_queue_size: 10000
+node_cache_size: 512
+hashing_algorithm: blake3_single
+remote_api_tokens:
+- url_regex: cool-models.com
+  token: my_secret_token
+- url_regex: nifty-models.com
+  token: some_other_token
+scan_models_on_startup: false

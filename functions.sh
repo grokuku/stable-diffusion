@@ -37,7 +37,8 @@ fi
 # check if remote is ahead of local
 # https://stackoverflow.com/a/25109122/1469797
 check_remote()     {
-  if [ "$CLEAN_ENV" != "true" ] && [ $(git rev-parse HEAD) = $(git ls-remote $(git rev-parse --abbrev-ref @{u} | \
+#  if [ "$CLEAN_ENV" != "true" ] && [ $(git rev-parse HEAD) = $(git ls-remote $(git rev-parse --abbrev-ref @{u} | \
+  if [ $(git rev-parse HEAD) = $(git ls-remote $(git rev-parse --abbrev-ref @{u} | \
 sed 's/\// /g') | cut -f1) ]; then
     echo "Local branch up-to-date, keeping existing venv"
     else
