@@ -46,15 +46,6 @@ fi
 pip install --use-pep517 --upgrade InvokeAI
 #invokeai-configure --yes --root ${SD03_DIR}/invokeai --skip-sd-weights
 
-# Merge Models, vae, lora, hypernetworks, and outputs
-sl_folder ${SD03_DIR}/invokeai/models/any embedding ${BASE_DIR}/models embeddings
-sl_folder ${SD03_DIR}/invokeai/models/any clip_vision ${BASE_DIR}/models clip_vision
-sl_folder ${SD03_DIR}/invokeai/models/any lora ${BASE_DIR}/models lora
-sl_folder ${SD03_DIR}/invokeai/models/any controlnet ${BASE_DIR}/models controlnet
-sl_folder ${SD03_DIR}/invokeai/models/any vae ${BASE_DIR}/models vae
-
-sl_folder ${SD03_DIR}/invokeai/outputs/images ${BASE_DIR}/outputs/03-InvokeAI images
-
 # launch WebUI
 invokeai-web --config ${SD03_DIR}/config.yaml
 wait 99999
