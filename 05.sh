@@ -46,6 +46,8 @@ conda install -c nvidia cuda-cudart --solver=libmamba -y
 pip install onnxruntime-gpu
 pip install insightface torch torchvision
 
+install_requirements ${SD05_DIR}/ComfyUI/custom_nodes
+
 #clean old venv if it still exists
 if [ -d ${SD05_DIR}/venv ]; then
     rm -rf ${SD05_DIR}/venv
