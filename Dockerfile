@@ -21,6 +21,7 @@ RUN apt-get update -y -q=2 && \
     cmake \
     build-essential \
     python3-opencv \
+    ffmpeg \
     libopencv-dev \
     dotnet-sdk-8.0 \
     git && \
