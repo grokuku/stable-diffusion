@@ -62,7 +62,7 @@ sl_folder ${SD02_DIR}/webui/models GFPGAN ${BASE_DIR}/models gfpgan
 sl_folder ${SD02_DIR}/webui/models LDSR ${BASE_DIR}/models ldsr
 sl_folder ${SD02_DIR}/webui/models ControlNet ${BASE_DIR}/models controlnet
 
-sl_folder ${SD02_DIR}/webui output ${BASE_DIR}/outputs 02-sd-webui
+sl_folder ${SD02_DIR}/webui outputs ${BASE_DIR}/outputs 02-sd-webui
 
 # run webUI
 echo "Run Stable-Diffusion-WebUI"
