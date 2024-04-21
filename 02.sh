@@ -46,6 +46,8 @@ pip install onnxruntime-gpu --extra-index-url https://aiinfra.pkgs.visualstudio.
 pip install insightface
 pip install basicsr
 pip install xformers --index-url https://download.pytorch.org/whl/cu121
+pip install albumentations==1.4.3
+pip install pydantic==1.10.15
 
 
 # Merge Models, vae, lora, and hypernetworks, and outputs
