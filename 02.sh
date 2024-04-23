@@ -46,6 +46,8 @@ pip install onnxruntime-gpu --extra-index-url https://aiinfra.pkgs.visualstudio.
 pip install insightface
 pip install basicsr
 pip install xformers --index-url https://download.pytorch.org/whl/cu121
+pip install albumentations==1.4.3
+pip install pydantic==1.10.15
 
 
 # Merge Models, vae, lora, and hypernetworks, and outputs
@@ -62,7 +64,7 @@ sl_folder ${SD02_DIR}/webui/models GFPGAN ${BASE_DIR}/models gfpgan
 sl_folder ${SD02_DIR}/webui/models LDSR ${BASE_DIR}/models ldsr
 sl_folder ${SD02_DIR}/webui/models ControlNet ${BASE_DIR}/models controlnet
 
-sl_folder ${SD02_DIR}/webui output ${BASE_DIR}/outputs 02-sd-webui
+sl_folder ${SD02_DIR}/webui outputs ${BASE_DIR}/outputs 02-sd-webui
 
 # run webUI
 echo "Run Stable-Diffusion-WebUI"

@@ -59,7 +59,7 @@ sl_folder ${SD02_DIR}/forge/models GFPGAN ${BASE_DIR}/models gfpgan
 sl_folder ${SD02_DIR}/forge/models LDSR ${BASE_DIR}/models ldsr
 sl_folder ${SD02_DIR}/forge/models ControlNet ${BASE_DIR}/models controlnet
 
-sl_folder ${SD02_DIR}/forge output ${BASE_DIR}/outputs 02-sd-webui
+sl_folder ${SD02_DIR}/forge outputs ${BASE_DIR}/outputs 02-sd-webui
 
 # Run webUI
 echo "Run Stable-Diffusion-WebUI-forge"

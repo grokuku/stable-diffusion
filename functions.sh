@@ -53,3 +53,22 @@ sed 's/\// /g') | cut -f1) ]; then
     git pull -X ours
 fi
 }
+
+# Fonction récursive pour installer les requirements.txt
+install_requirements() {
+    local directory="$1"
+    local requirements_file="$directory/requirements.txt"
+
+    if [ -f "$requirements_file" ]; then
+        echo "Installation des dépendances dans $directory ..."
+        pip install -r "$requirements_file"
+        echo "Dépendances installées avec succès dans $directory."
+    fi
+
+    # Parcours récursif des sous-dossiers
+    for subdir in "$directory"/*; do
+        if [ -d "$subdir" ]; then
+            install_requirements "$subdir"
+        fi
+    done
+}
