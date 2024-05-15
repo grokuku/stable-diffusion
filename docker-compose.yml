@@ -1,20 +1,122 @@
-version: '3.1'
+x-service: &default-service
+  image: holaflenain/stable-diffusion:latest
+  runtime: nvidia
+  volumes:
+    - '/data/stable-diffusion:/config:rw'
+
+x-environment: &default-environment
+  NVIDIA_VISIBLE_DEVICES: all
+  TZ: ${TZ:-America/New_York}
+  PUID: ${PUID:-1000}
+  PGID: ${PGID:-1000}
+
 services:
-  stable-diffusion-test:
-    image: holaflenain/stable-diffusion:latest
-    container_name: stable-diffusion
+  stable-diffusion-easy-diffusion:
+    <<: *default-service
+    profiles: [easy-diffusion]
+    container_name: stable-diffusion-easy-diffusion
     environment:
-      - WEBUI_VERSION=01
-      - NVIDIA_VISIBLE_DEVICES=all
-      - TZ=Europe/Paris
-      - PUID=1000
-      - PGID=1000
+      <<: *default-environment
+      WEBUI_VERSION: '00'
     ports:
-      - '9000:9000/tcp'
-    volumes:
-      - '/my/own/datadir:/config:rw'
-      # or specify individual dirs
-      #- '/my/own/datadir:/config:rw' # config/program dir
-      #- '/my/own/datadir/outputs:/config/outputs:rw'
-      #- '/my/own/datadir/cache:/config/cache:rw'
-    runtime: nvidia
+      - 9001:9000/tcp
+
+  stable-diffusion-automatic1111:
+    <<: *default-service
+    profiles: [automatic1111]
+    container_name: stable-diffusion-automatic1111
+    environment:
+      <<: *default-environment
+      WEBUI_VERSION: '02'
+    ports:
+      - 9002:9000/tcp
+
+  stable-diffusion-forge:
+    <<: *default-service
+    profiles: [forge]
+    container_name: stable-diffusion-forge
+    environment:
+      <<: *default-environment
+      WEBUI_VERSION: '02.forge'
+    ports:
+      - 9022:9000/tcp
+
+  stable-diffusion-invoke-ai:
+    <<: *default-service
+    profiles: [invoke-ai]
+    container_name: stable-diffusion-invoke-ai
+    environment:
+      <<: *default-environment
+      WEBUI_VERSION: '03'
+    ports:
+      - 9003:9000/tcp
+
+  stable-diffusion-sd-next:
+    <<: *default-service
+    profiles: [sd-next]
+    container_name: stable-diffusion-sd-next
+    environment:
+      <<: *default-environment
+      WEBUI_VERSION: '04'
+    ports:
+      - 9004:9000/tcp
+
+  stable-diffusion-comfy-ui:
+    <<: *default-service
+    profiles: [comfy-ui]
+    container_name: stable-diffusion-comfy-ui
+    environment:
+      <<: *default-environment
+      WEBUI_VERSION: '05'
+    ports:
+      - 9005:9000/tcp
+
+  stable-diffusion-fooocus:
+    <<: *default-service
+    profiles: [fooocus]
+    container_name: stable-diffusion-fooocus
+    environment:
+      <<: *default-environment
+      WEBUI_VERSION: '06'
+    ports:
+      - 9006:9000/tcp
+
+  stable-diffusion-stable-swarm:
+    <<: *default-service
+    profiles: [stable-swarm]
+    container_name: stable-diffusion-stable-swarm
+    environment:
+      <<: *default-environment
+      WEBUI_VERSION: '07'
+    ports:
+      - 9007:9000/tcp
+
+  stable-diffusion-lama-cleaner:
+    <<: *default-service
+    profiles: [lama-cleaner]
+    container_name: stable-diffusion-lama-cleaner
+    environment:
+      <<: *default-environment
+      WEBUI_VERSION: '50'
+    ports:
+      - 9050:9000/tcp
+
+  stable-diffusion-face-fusion:
+    <<: *default-service
+    profiles: [face-fusion]
+    container_name: stable-diffusion-face-fusion
+    environment:
+      <<: *default-environment
+      WEBUI_VERSION: '51'
+    ports:
+      - 9051:9000/tcp
+
+  stable-diffusion-kohya:
+    <<: *default-service
+    profiles: [kohya] 
+    container_name: stable-diffusion-kohya
+    environment:
+      <<: *default-environment
+      WEBUI_VERSION: '51'
+    ports:
+      - 9070:9000/tcp
