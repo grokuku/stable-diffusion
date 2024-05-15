@@ -30,7 +30,7 @@ Unraid template available on [superboki's Repository](https://github.com/superbo
 
 ```
 docker compose --profile easy-diffusion up    # http://<server_ip>:9001
-docker compose --profile automatic1111 up     # http://<server_ip>:9002
+docker compose --profile automatic up         # http://<server_ip>:9002
 docker compose --profile forge up             # http://<server_ip>:9022
 docker compose --profile invoke-ai up         # http://<server_ip>:9003
 docker compose --profile sd-next up           # http://<server_ip>:9004

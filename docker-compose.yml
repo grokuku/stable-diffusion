@@ -17,14 +17,14 @@ services:
     container_name: stable-diffusion-easy-diffusion
     environment:
       <<: *default-environment
-      WEBUI_VERSION: '00'
+      WEBUI_VERSION: '01'
     ports:
       - 9001:9000/tcp
 
-  stable-diffusion-automatic1111:
+  stable-diffusion-automatic:
     <<: *default-service
-    profiles: [automatic1111]
-    container_name: stable-diffusion-automatic1111
+    profiles: [automatic]
+    container_name: stable-diffusion-automatic
     environment:
       <<: *default-environment
       WEBUI_VERSION: '02'
@@ -117,6 +117,6 @@ services:
     container_name: stable-diffusion-kohya
     environment:
       <<: *default-environment
-      WEBUI_VERSION: '51'
+      WEBUI_VERSION: '70'
     ports:
       - 9070:9000/tcp
