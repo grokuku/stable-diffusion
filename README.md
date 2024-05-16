@@ -43,7 +43,8 @@ docker compose --profile kohya up             # http://<server_ip>:9070
 
 ```
 
-or
+or 
+( Although not recommended as it will requires significant system resources, 64GB+ system memory and at bare minimum 16GB VRAM card, you have been warned! ) 
 
 ```
 docker compose up       # to run all the services at once
