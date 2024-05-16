@@ -2,10 +2,10 @@ x-service: &default-service
   image: holaflenain/stable-diffusion:latest
   runtime: nvidia
   volumes:
-    - '/data/stable-diffusion:/config:rw'
+    - "${STABLE_DIFFUSION_DATA_DIRECTORY:-./data/stable-diffusion}:/config:rw"
 
 x-environment: &default-environment
-  NVIDIA_VISIBLE_DEVICES: all
+  NVIDIA_VISIBLE_DEVICES: ${NVIDIA_VISIBLE_DEVICES:-all}
   TZ: ${TZ:-America/New_York}
   PUID: ${PUID:-1000}
   PGID: ${PGID:-1000}
@@ -19,7 +19,7 @@ services:
       <<: *default-environment
       WEBUI_VERSION: '01'
     ports:
-      - 9001:9000/tcp
+      - ${EASY_DIFFUSION_PORT:-9001}:9000/tcp
 
   stable-diffusion-automatic:
     <<: *default-service
@@ -29,7 +29,7 @@ services:
       <<: *default-environment
       WEBUI_VERSION: '02'
     ports:
-      - 9002:9000/tcp
+      - ${AUTOMATIC_PORT:-9002}:9000/tcp
 
   stable-diffusion-forge:
     <<: *default-service
@@ -39,7 +39,7 @@ services:
       <<: *default-environment
       WEBUI_VERSION: '02.forge'
     ports:
-      - 9022:9000/tcp
+      - ${FORGE_PORT:-9022}:9000/tcp
 
   stable-diffusion-invoke-ai:
     <<: *default-service
@@ -49,7 +49,7 @@ services:
       <<: *default-environment
       WEBUI_VERSION: '03'
     ports:
-      - 9003:9000/tcp
+      - ${INVOKE_AI_PORT:-9003}:9000/tcp
 
   stable-diffusion-sd-next:
     <<: *default-service
@@ -59,7 +59,7 @@ services:
       <<: *default-environment
       WEBUI_VERSION: '04'
     ports:
-      - 9004:9000/tcp
+      - ${SD_NEXT_PORT:-9004}:9000/tcp
 
   stable-diffusion-comfy-ui:
     <<: *default-service
@@ -69,7 +69,7 @@ services:
       <<: *default-environment
       WEBUI_VERSION: '05'
     ports:
-      - 9005:9000/tcp
+      - ${COMFY_UI_PORT:-}9005:9000/tcp
 
   stable-diffusion-fooocus:
     <<: *default-service
@@ -79,7 +79,7 @@ services:
       <<: *default-environment
       WEBUI_VERSION: '06'
     ports:
-      - 9006:9000/tcp
+      - ${FOOOCUS_PORT:-9006}:9000/tcp
 
   stable-diffusion-stable-swarm:
     <<: *default-service
@@ -89,7 +89,7 @@ services:
       <<: *default-environment
       WEBUI_VERSION: '07'
     ports:
-      - 9007:9000/tcp
+      - ${STABLE_SWARM_PORT:-9007}:9000/tcp
 
   stable-diffusion-lama-cleaner:
     <<: *default-service
@@ -99,7 +99,7 @@ services:
       <<: *default-environment
       WEBUI_VERSION: '50'
     ports:
-      - 9050:9000/tcp
+      - ${LAMA_CLEANER_PORT:-9050}:9000/tcp
 
   stable-diffusion-face-fusion:
     <<: *default-service
@@ -109,7 +109,7 @@ services:
       <<: *default-environment
       WEBUI_VERSION: '51'
     ports:
-      - 9051:9000/tcp
+      - ${FACE_FUSION_PORT:-9051}:9000/tcp
 
   stable-diffusion-kohya:
     <<: *default-service
@@ -119,4 +119,4 @@ services:
       <<: *default-environment
       WEBUI_VERSION: '70'
     ports:
-      - 9070:9000/tcp
+      - ${KOHYA_PORT:-9070}:9000/tcp
