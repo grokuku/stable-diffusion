@@ -46,7 +46,14 @@ conda install -c nvidia cuda-cudart --solver=libmamba -y
 pip install onnxruntime-gpu
 pip install insightface torch>=2.2.2 torchvision opencv-python-headless>=4.9.0.80 huggingface-hub>=0.20.2 numpy>=1.24.4
 
-#install_requirements ${SD05_DIR}/ComfyUI/custom_nodes
+#Install custom nodes dependencies if a clean Venv has been done
+if [ "$active_clean" = "1" ]; then
+    echo "-------------------------------------"
+    echo "Install Custom Nodes Dependencies"
+    install_requirements ${SD05_DIR}/ComfyUI/custom_nodes
+    echo "Done!"
+    echo -e "-------------------------------------\n"
+fi
 
 #clean old venv if it still exists
 if [ -d ${SD05_DIR}/venv ]; then
