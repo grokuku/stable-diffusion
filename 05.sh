@@ -44,7 +44,7 @@ conda install -n base conda-libmamba-solver -y
 conda install -c conda-forge git python=3.11 pip gxx libcurand --solver=libmamba -y
 conda install -c nvidia cuda-cudart --solver=libmamba -y
 pip install onnxruntime-gpu
-pip install insightface torch torchvision
+pip install insightface torch>=2.2.2 torchvision opencv-python-headless>=4.9.0.80 huggingface-hub>=0.20.2 numpy>=1.24.4
 
 install_requirements ${SD05_DIR}/ComfyUI/custom_nodes
 
