@@ -28,43 +28,56 @@ Unraid template available on [superboki's Repository](https://github.com/superbo
 
 ## Choosing a Project
 
-Use the environmental variable `WEBUI_VERSION` to choose which [project](#projects) to install and use based on the number in the **WEBUI** column. [easy diffusion](https://github.com/easydiffusion/easydiffusion) (`01`) is installed if none is specified. 
-
-Example: To use SD.Next => `WEBUI_VERSION=04`
+```
+docker compose --profile easy-diffusion up    # http://<server_ip>:9001
+docker compose --profile automatic up         # http://<server_ip>:9002
+docker compose --profile forge up             # http://<server_ip>:9022
+docker compose --profile invoke-ai up         # http://<server_ip>:9003
+docker compose --profile sd-next up           # http://<server_ip>:9004
+docker compose --profile comfy-ui up          # http://<server_ip>:9005
+docker compose --profile fooocus up           # http://<server_ip>:9006
+docker compose --profile stable-swarm up      # http://<server_ip>:9007
+docker compose --profile lama-cleaner up      # http://<server_ip>:9050
+docker compose --profile face-fusion up       # http://<server_ip>:9051
+docker compose --profile kohya up             # http://<server_ip>:9070
 
 ```
-docker run ... -e WEBUI_VERSION=04 ... holaflenain/stable-diffusion
+
+or 
+( Although not recommended as it will requires significant system resources, 64GB+ system memory and at bare minimum 16GB VRAM card, you have been warned! ) 
+
+```
+docker compose up       # to run all the services at once
 ```
 
-or modify `WEBUI_VERSION` in [docker-compose.yml](/docker-compose.yml)
+## Make
 
-## Docker Notes
+alternatively you can use make to start and stop the services
 
-### Using PUID and PGID
+there are two variations 
 
-If you are 
+```
+# will start the service detached from the terminal (running in the background)
+make start <profile_name> 
 
-* running on a **linux host** (ie unraid) and
-* **not** using [rootless containers with Podman](https://developers.redhat.com/blog/2020/09/25/rootless-containers-with-podman-the-basics#why_podman_)
-
-then you must set the [environmental variables **PUID** and **PGID**.](https://docs.linuxserver.io/general/understanding-puid-and-pgid) in the container in order for it to generate files/folders your normal user can interact it.
-
-Run these commands from your terminal
-
-* `id -u` -- prints UID for **PUID**
-* `id -g` -- prints GID for **PGID**
-
-Then add to your docker command like so:
-
-```shell
-docker run -d ... -e "PUID=1000" -e "PGID=1000" ... holaflenain/stable-diffusion
+# will start the service and leave its output attached to the terminal
+make up <profile_name>
+```
+Here is a complete list for starting services
+```
+make start easy-diffusion    # http://<server_ip>:9001
+make start automatic         # http://<server_ip>:9002
+make start forge             # http://<server_ip>:9022
+make start invoke-ai         # http://<server_ip>:9003
+make start sd-next           # http://<server_ip>:9004
+make start comfy-ui          # http://<server_ip>:9005
+make start fooocus           # http://<server_ip>:9006
+make start stable-swarm      # http://<server_ip>:9007
+make start lama-cleaner      # http://<server_ip>:9050
+make start face-fusion       # http://<server_ip>:9051
+make start kohya             # http://<server_ip>:9070
 ```
 
-or substitute them in [docker-compose.yml](/docker-compose.yml)
-
-### Docker Compose
-  
-Reference [docker-compose.yml](/docker-compose.yml) which uses Easy-Diffusion as an example.
 
 ## Directory Structure
 
