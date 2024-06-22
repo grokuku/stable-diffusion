@@ -81,15 +81,15 @@ services:
     ports:
       - ${FOOOCUS_PORT:-9006}:9000/tcp
 
-  stable-diffusion-stable-swarm:
+  stable-diffusion-swarmui:
     <<: *default-service
-    profiles: [stable-swarm]
-    container_name: stable-diffusion-stable-swarm
+    profiles: [swarmui]
+    container_name: stable-diffusion-swarmui
     environment:
       <<: *default-environment
       WEBUI_VERSION: '07'
     ports:
-      - ${STABLE_SWARM_PORT:-9007}:9000/tcp
+      - ${SWARMUI_PORT:-9007}:9000/tcp
 
   stable-diffusion-lama-cleaner:
     <<: *default-service

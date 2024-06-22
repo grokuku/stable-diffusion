@@ -22,7 +22,7 @@ fi
 cd ${SD50_DIR}/IOPaint
 #pip install -r requirements.txt
 
-pip3 install iopaint
+pip3 install --upgrade iopaint
 
 CMD="iopaint start"
 while IFS= read -r param; do
