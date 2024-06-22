@@ -2,10 +2,10 @@
 source /functions.sh
 
 export PATH="/home/abc/miniconda3/bin:$PATH"
-export SD07_DIR=${BASE_DIR}/07-Swarm
+export SD07_DIR=${BASE_DIR}/07-SwarmUI
 
 mkdir -p ${SD07_DIR}
-mkdir -p /config/outputs/07-Swarm
+mkdir -p /config/outputs/07-SwarmUI
 
 #remove old venv if still exists
 if [ -d ${SD07_DIR}/venv ]; then
