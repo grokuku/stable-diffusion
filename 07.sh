@@ -19,7 +19,7 @@ fi
 
 #clone repository if new install
 if [ ! -d ${SD07_DIR}/StableSwarmUI ]; then
-    cd "${SD07_DIR}" && git clone https://github.com/Stability-AI/StableSwarmUI.git
+    cd "${SD07_DIR}" && git clone https://github.com/mcmonkeyprojects/SwarmUI.git
 fi
 
 # check if remote is ahead of local
