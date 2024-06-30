@@ -54,6 +54,9 @@ sl_folder ${SD06_DIR}/Fooocus outputs ${BASE_DIR}/outputs 06-Fooocus
 #install requirements
 cd ${SD06_DIR}/Fooocus
 pip install -r requirements_versions.txt
+if [ -f ${SD06_DIR}/requirements.txt ]; then
+    pip install -r ${SD06_DIR}/requirements.txt
+fi
 
 #Launch webUI
 CMD="python launch.py"

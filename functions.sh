@@ -55,6 +55,23 @@ fi
 }
 
 # Fonction récursive pour installer les requirements.txt
+#install_requirements() {
+#    local directory="$1"
+#    local requirements_file="$directory/requirements.txt"
+
+#    if [ -f "$requirements_file" ]; then
+#        echo "Installation des dépendances dans $directory ..."
+#        pip install -r "$requirements_file"
+#        echo "Dépendances installées avec succès dans $directory."
+#    fi
+
+#    # Parcours récursif des sous-dossiers
+#    for subdir in "$directory"/*; do
+#        if [ -d "$subdir" ]; then
+#            install_requirements "$subdir"
+#        fi
+#    done
+#}
 install_requirements() {
     local directory="$1"
     local requirements_file="$directory/requirements.txt"
@@ -65,10 +82,15 @@ install_requirements() {
         echo "Dépendances installées avec succès dans $directory."
     fi
 
-    # Parcours récursif des sous-dossiers
+    # Parcours des sous-dossiers du premier niveau uniquement
     for subdir in "$directory"/*; do
         if [ -d "$subdir" ]; then
-            install_requirements "$subdir"
+            local subdir_requirements_file="$subdir/requirements.txt"
+            if [ -f "$subdir_requirements_file" ]; then
+                echo "Installation des dépendances dans $subdir ..."
+                pip install -r "$subdir_requirements_file"
+                echo "Dépendances installées avec succès dans $subdir."
+            fi
         fi
     done
 }

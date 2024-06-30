@@ -16,7 +16,7 @@ Please consult each respective website for a comprehensive description and usage
 | 04    | SD.Next           | This project started as a fork from Automatic1111 WebUI and it grew significantly                                                            | https://github.com/vladmandic/automatic                 |
 | 05    | ComfyUI           | A powerful and modular stable diffusion GUI and backend                                                                                      | https://github.com/comfyanonymous/ComfyUI               |
 | 06    | Fooocus           | Fooocus is a rethinking of Stable Diffusion and Midjourney’s designs                                                                         | https://github.com/lllyasviel/Fooocus                   |
-| 07    | StableSwarm       | A Modular Stable Diffusion Web-User-Interface, with an emphasis on making powertools easily accessible, high performance, and extensibility. | https://github.com/Stability-AI/StableSwarmUI           |
+| 07    | SwarmUI       | A Modular Stable Diffusion Web-User-Interface, with an emphasis on making powertools easily accessible, high performance, and extensibility. | https://github.com/mcmonkeyprojects/SwarmUI           |
 | 50    | Lama Cleaner      | A free and open-source inpainting tool powered by SOTA AI model.                                                                             | https://github.com/Sanster/lama-cleaner                 |
 | 51    | FaceFusion        | Next generation face swapper and enhancer                                                                                                    | https://github.com/facefusion/facefusion                |
 | 70    | Kohya             | Kohya's GUI provides a Windows-focused Gradio GUI for Kohya's Stable Diffusion trainers                                                      | https://github.com/bmaltais/kohya_ss                    |
@@ -36,7 +36,7 @@ docker compose --profile invoke-ai up         # http://<server_ip>:9003
 docker compose --profile sd-next up           # http://<server_ip>:9004
 docker compose --profile comfy-ui up          # http://<server_ip>:9005
 docker compose --profile fooocus up           # http://<server_ip>:9006
-docker compose --profile stable-swarm up      # http://<server_ip>:9007
+docker compose --profile swarmui up           # http://<server_ip>:9007
 docker compose --profile lama-cleaner up      # http://<server_ip>:9050
 docker compose --profile face-fusion up       # http://<server_ip>:9051
 docker compose --profile kohya up             # http://<server_ip>:9070
@@ -72,7 +72,7 @@ make start invoke-ai         # http://<server_ip>:9003
 make start sd-next           # http://<server_ip>:9004
 make start comfy-ui          # http://<server_ip>:9005
 make start fooocus           # http://<server_ip>:9006
-make start stable-swarm      # http://<server_ip>:9007
+make start swarmui           # http://<server_ip>:9007
 make start lama-cleaner      # http://<server_ip>:9050
 make start face-fusion       # http://<server_ip>:9051
 make start kohya             # http://<server_ip>:9070

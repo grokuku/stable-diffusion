@@ -40,15 +40,20 @@ if [ ! -d ${SD04_DIR}/webui/venv ]; then
     python -m venv venv
 fi
 
-# install dependencies
+# install custom requirements
     cd ${SD04_DIR}/webui
     source venv/bin/activate
     pip install --upgrade pip
-    pip install coloredlogs flatbuffers numpy packaging protobuf==3.20.3 sympy
-    pip install onnxruntime-gpu --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/
-    pip install insightface
-    pip install basicsr
-    pip install sqlalchemy
+
+    if [ -f ${SD04_DIR}/requirements.txt ]; then
+        pip install -r ${SD04_DIR}/requirements.txt
+    fi
+
+#    pip install coloredlogs flatbuffers numpy packaging protobuf==3.20.3 sympy
+#    pip install onnxruntime-gpu --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/
+#    pip install insightface
+#    pip install basicsr
+#    pip install sqlalchemy
     deactivate
 
 #copy default parameters if absent
