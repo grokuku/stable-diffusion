@@ -32,6 +32,7 @@ fi
 source activate ${SD02_DIR}/conda-env
 conda install -n base conda-libmamba-solver -y
 conda install -c conda-forge python=3.11 pip gcc gxx libcurand --solver=libmamba -y
+conda install pytorch==2.3.0 torchvision==0.18.0 torchaudio==2.3.0 pytorch-cuda=12.1 -c pytorch -c nvidia --solver=libmamba -y
 
 #copy default parameters if absent
 if [ ! -f "$SD02_DIR/parameters.txt" ]; then
