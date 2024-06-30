@@ -32,7 +32,7 @@ fi
 source activate ${SD02_DIR}/conda-env
 conda install -n base conda-libmamba-solver -y
 conda install -c conda-forge python=3.11 pip gcc gxx libcurand --solver=libmamba -y
-conda install pytorch==2.3.0 torchvision==0.18.0 torchaudio==2.3.0 pytorch-cuda=12.1 -c pytorch -c nvidia --solver=libmamba -y
+#conda install pytorch==2.3.0 torchvision==0.18.0 torchaudio==2.3.0 pytorch-cuda=12.1 -c pytorch -c nvidia --solver=libmamba -y
 
 #copy default parameters if absent
 if [ ! -f "$SD02_DIR/parameters.txt" ]; then
@@ -41,14 +41,14 @@ fi
 
 # install dependencies
 pip install --upgrade pip
-pip install coloredlogs flatbuffers numpy packaging protobuf==3.20.3 sympy
-pip install packaging
-pip install onnxruntime-gpu --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/
-pip install insightface
-pip install basicsr
-pip install xformers --index-url https://download.pytorch.org/whl/cu121
-pip install albumentations==1.4.3
-pip install pydantic==1.10.15
+#pip install coloredlogs flatbuffers numpy packaging protobuf==3.20.3 sympy
+#pip install packaging
+#pip install onnxruntime-gpu --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/
+#pip install insightface
+#pip install basicsr
+#pip install xformers --index-url https://download.pytorch.org/whl/cu121
+#pip install albumentations==1.4.3
+#pip install pydantic==1.10.15
 
 
 # Merge Models, vae, lora, and hypernetworks, and outputs
