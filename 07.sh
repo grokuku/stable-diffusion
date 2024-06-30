@@ -51,6 +51,13 @@ sl_folder ${SD07_DIR}/SwarmUI/Models controlnet ${BASE_DIR}/models controlnet
 
 sl_folder ${SD07_DIR}/SwarmUI Output ${BASE_DIR}/outputs 07-Swarm
 
+# install dependencies
+pip install --upgrade pip
+
+if [ -f ${SD07_DIR}/requirements.txt ]; then
+    pip install -r ${SD07_DIR}/requirements.txt
+fi
+
 #launch SwarmUI
 cd ${SD07_DIR}/SwarmUI
 CMD="./launch-linux.sh"
