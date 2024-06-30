@@ -37,8 +37,14 @@ if [ ! -f "$SD02_DIR/parameters.forge.txt" ]; then
     cp -v "/opt/sd-install/parameters/02.forge.txt" "$SD02_DIR/parameters.forge.txt"
 fi
 
-#install dependencies 
+#install custom requirements 
 pip install --upgrade pip
+
+if [ -f ${SD02_DIR}/requirements.txt ]; then
+    pip install -r ${SD02_DIR}/requirements.txt
+fi
+
+
 #pip install coloredlogs flatbuffers numpy packaging protobuf==3.20.3 sympy
 #pip install packaging
 #pip install onnxruntime-gpu --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/

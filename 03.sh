@@ -46,6 +46,13 @@ fi
 pip install --use-pep517 --upgrade InvokeAI
 #invokeai-configure --yes --root ${SD03_DIR}/invokeai --skip-sd-weights
 
+# install custom requirements
+pip install --upgrade pip
+
+if [ -f ${SD03_DIR}/requirements.txt ]; then
+    pip install -r ${SD03_DIR}/requirements.txt
+fi
+
 # launch WebUI
 invokeai-web --config ${SD03_DIR}/config.yaml
 wait 99999

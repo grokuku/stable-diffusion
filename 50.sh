@@ -20,9 +20,15 @@ if [ ! -f "$SD50_DIR/parameters.txt" ]; then
 fi
 
 cd ${SD50_DIR}/IOPaint
-#pip install -r requirements.txt
 
 pip3 install --upgrade iopaint
+
+# install custom requirements
+pip install --upgrade pip
+
+if [ -f ${SD50_DIR}/requirements.txt ]; then
+    pip install -r ${SD50_DIR}/requirements.txt
+fi
 
 CMD="iopaint start"
 while IFS= read -r param; do

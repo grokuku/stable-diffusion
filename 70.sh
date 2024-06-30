@@ -37,6 +37,11 @@ cd ${SD70_DIR}/kohya_ss
 python ./setup/setup_linux.py
 cd ${SD70_DIR}/kohya_ss
 
+# install custom requirements
+if [ -f ${SD70_DIR}/requirements.txt ]; then
+    pip install -r ${SD70_DIR}/requirements.txt
+fi
+
 #launch Kohya
 echo LAUNCHING KOHYA_SS !
 CMD="python kohya_gui.py"; while IFS= read -r param; do if [[ $param != \#* ]]; then CMD+=" ${param}"; fi; done < "${SD70_DIR}/parameters.txt"; eval $CMD
