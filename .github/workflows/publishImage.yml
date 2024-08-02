@@ -3,7 +3,6 @@ name: Publish Docker image to Dockerhub and GHCR
 on:
   push:
     branches:
-#      - 'main'
       - 'test'
       - 'Holaf_tests'
     tags:
