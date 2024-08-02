@@ -50,7 +50,7 @@ jobs:
             ${{ vars.GHCR_IMAGE_NAME }}
           # generate Docker tags based on the following events/attributes
           tags: |
-            type=raw,value=latest,enable=${{ {{tag}} }}
+            type=raw,value=latest,enable=${{ tag != '' }}
             type=ref,event=branch,enable=${{ !endsWith(github.ref, 'main') }}
             type=semver,pattern={{version}}
 #            type=raw,value=latest,enable=${{ endsWith(github.ref, 'main') }}
