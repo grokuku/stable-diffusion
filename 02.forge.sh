@@ -31,7 +31,6 @@ fi
 source activate ${SD02_DIR}/conda-env
 conda install -n base conda-libmamba-solver -y
 conda install -c conda-forge python=3.11 pip gcc gxx libcurand --solver=libmamba -y
-#conda install pytorch==2.3.0 torchvision==0.18.0 torchaudio==2.3.0 pytorch-cuda=12.1 -c pytorch -c nvidia --solver=libmamba -y
 
 if [ ! -f "$SD02_DIR/parameters.forge.txt" ]; then
     cp -v "/opt/sd-install/parameters/02.forge.txt" "$SD02_DIR/parameters.forge.txt"
@@ -43,14 +42,6 @@ pip install --upgrade pip
 if [ -f ${SD02_DIR}/requirements.txt ]; then
     pip install -r ${SD02_DIR}/requirements.txt
 fi
-
-
-#pip install coloredlogs flatbuffers numpy packaging protobuf==3.20.3 sympy
-#pip install packaging
-#pip install onnxruntime-gpu --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/
-#pip install insightface
-#pip install basicsr
-#pip install xformers --index-url https://download.pytorch.org/whl/cu121
 
 # Merge Models, vae, lora, and hypernetworks, and outputs
 # Ignore move errors if they occur
