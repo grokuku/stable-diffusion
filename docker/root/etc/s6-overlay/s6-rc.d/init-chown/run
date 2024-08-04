@@ -3,8 +3,8 @@
 #echo "-------------------------------------"
 # permissions
 #echo "chown'ing home directory to ensure correct permissions."
-find /home/abc -type d \( ! -user abc -o ! -group abc \) -exec chown -R {} \;
-find /home/abc -type f \( ! -user abc -o ! -group abc \) -exec chown {} \;
+find /home/abc -type d \( ! -user abc -o ! -group abc \) -exec chown -R abc:abc {} \;
+find /home/abc -type f \( ! -user abc -o ! -group abc \) -exec chown abc:abc {} \;
 #echo "Done!"
 #echo -e "-------------------------------------\n"
 
