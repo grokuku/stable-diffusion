@@ -25,7 +25,7 @@ RUN apt-get update -y -q=2 && \
     libopencv-dev \
     dotnet-sdk-8.0 \
     git && \
-#    apt-get purge python3 && \
+    apt-get purge python3 && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
@@ -46,8 +46,6 @@ RUN cd /tmp && \
     wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh && \
     bash Miniconda3-latest-Linux-x86_64.sh -b && \
     rm Miniconda3-latest-Linux-x86_64.sh && \
-    apt-get purge python3 && \
-    apt-get autoremove && \
     chown -R abc:abc /root && \
     chown -R abc:abc ${SD_INSTALL_DIR}
 
