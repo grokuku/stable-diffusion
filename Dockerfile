@@ -25,7 +25,6 @@ RUN apt-get update -y -q=2 && \
     libopencv-dev \
     dotnet-sdk-8.0 \
     git && \
-    apt-get purge python3 && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
