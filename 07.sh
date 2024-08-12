@@ -49,7 +49,7 @@ sl_folder ${SD07_DIR}/SwarmUI/Models Embeddings ${BASE_DIR}/models embeddings
 sl_folder ${SD07_DIR}/SwarmUI/Models clip_vision ${BASE_DIR}/models clip_vision
 sl_folder ${SD07_DIR}/SwarmUI/Models controlnet ${BASE_DIR}/models controlnet
 
-sl_folder ${SD07_DIR}/SwarmUI Output ${BASE_DIR}/outputs 07-Swarm
+sl_folder ${SD07_DIR}/SwarmUI Output ${BASE_DIR}/outputs 07-SwarmUI
 
 # install dependencies
 pip install --upgrade pip
