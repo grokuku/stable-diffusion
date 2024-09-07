@@ -49,7 +49,7 @@ fi
 
 #launch fluxgym
 cd ${SD71_DIR}/fluxgym/
-echo LAUNCHING KOHYA_SS !
+echo LAUNCHING fluxgym !
 CMD="python app.py"; while IFS= read -r param; do if [[ $param != \#* ]]; then CMD+=" ${param}"; fi; done < "${SD71_DIR}/parameters.txt"; eval $CMD
 
 wait 99999
