@@ -47,6 +47,11 @@ if [ -f ${SD71_DIR}/requirements.txt ]; then
     pip install -r ${SD71_DIR}/requirements.txt
 fi
 
+# Merge Models, vae, lora, hypernetworks, and outputs
+sl_folder ${SD71_DIR}/fluxgym/models vae ${BASE_DIR}/models vae
+sl_folder ${SD71_DIR}/fluxgym/models clip ${BASE_DIR}/models t5
+sl_folder ${SD71_DIR}/fluxgym/models unet ${BASE_DIR}/models unet
+
 #launch fluxgym
 cd ${SD71_DIR}/fluxgym/
 echo LAUNCHING fluxgym !
