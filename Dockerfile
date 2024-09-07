@@ -32,6 +32,9 @@ RUN mkdir -p ${BASE_DIR}\temp ${SD_INSTALL_DIR} ${BASE_DIR}/outputs
 
 ADD parameters/* ${SD_INSTALL_DIR}/parameters/
 
+RUN groupmod -g 1000 abc && \
+    usermod -u 1000 abc
+
 COPY --chown=abc:abc *.sh ./
 
 RUN chmod +x /entry.sh
@@ -46,7 +49,7 @@ RUN cd /tmp && \
     bash Miniconda3-latest-Linux-x86_64.sh -b && \
     rm Miniconda3-latest-Linux-x86_64.sh && \
     chown -R abc:abc /root && \
-    chown -R abc:abc ${SD_INSTALL_DIR}
-
+    chown -R abc:abc ${SD_INSTALL_DIR} && \
+    chown -R abc:abc /home/abc
 
 EXPOSE 9000/tcp
