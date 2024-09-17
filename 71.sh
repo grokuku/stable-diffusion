@@ -49,8 +49,11 @@ fi
 
 # Merge Models, vae, lora, hypernetworks, and outputs
 sl_folder ${SD71_DIR}/fluxgym/models vae ${BASE_DIR}/models vae
-sl_folder ${SD71_DIR}/fluxgym/models clip ${BASE_DIR}/models t5
+sl_folder ${SD71_DIR}/fluxgym/models clip ${BASE_DIR}/models clip
 sl_folder ${SD71_DIR}/fluxgym/models unet ${BASE_DIR}/models unet
+
+sl_folder ${SD71_DIR}/fluxgym outputs ${BASE_DIR}/outputs 71-fluxgym
+
 
 #launch fluxgym
 cd ${SD71_DIR}/fluxgym/
