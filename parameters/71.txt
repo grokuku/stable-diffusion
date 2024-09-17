@@ -1,8 +1,1 @@
-##### Web + Network #####
---listen 0.0.0.0
---server_port 9000
-
-##### Directories #####
-
-##### Options #####
---headless
+##### No Options available for now #####
