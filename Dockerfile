@@ -26,7 +26,8 @@ RUN apt-get update -y -q=2 && \
     ffmpeg \
     libopencv-dev \
     dotnet-sdk-8.0 \
-    git && \
+    git \
+    lsof && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
