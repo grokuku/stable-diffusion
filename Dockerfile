@@ -33,8 +33,8 @@ RUN mkdir -p ${BASE_DIR}\temp ${SD_INSTALL_DIR} ${BASE_DIR}/outputs
 
 ADD parameters/* ${SD_INSTALL_DIR}/parameters/
 
-RUN groupmod -g 1000 abc && \
-    usermod -u 1000 abc
+#RUN groupmod -g 1000 abc && \
+#    usermod -u 1000 abc
 
 COPY --chown=abc:abc *.sh ./
 
