@@ -1,4 +1,5 @@
-FROM lsiobase/ubuntu:jammy as base
+#FROM lsiobase/ubuntu:jammy as base
+FROM ghcr.io/linuxserver/baseimage-kasmvnc:jammy as base
 
 COPY docker/root/ /
 
