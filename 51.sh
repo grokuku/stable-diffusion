@@ -45,4 +45,4 @@ conda install -c conda-forge git python=3.11 pip gxx ffmpeg --solver=libmamba -y
  export GRADIO_SERVER_PORT=9000 
  CMD="python3 run.py"; while IFS= read -r param; do if [[ $param != \#* ]]; then CMD+=" ${param}"; fi; done < "${SD51_DIR}/parameters.txt"; eval $CMD
 
-wait 99999
+sleep infinity

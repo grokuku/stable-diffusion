@@ -62,4 +62,4 @@ export GRADIO_SERVER_NAME="0.0.0.0"
 export GRADIO_SERVER_PORT=9000
 #CMD="python app.py"; while IFS= read -r param; do if [[ $param != \#* ]]; then CMD+=" ${param}"; fi; done < "${SD71_DIR}/parameters.txt"; eval $CMD
 python app.py
-wait 99999
+sleep infinity

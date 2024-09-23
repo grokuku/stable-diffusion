@@ -58,4 +58,4 @@ fi
 cd ${SD72_DIR}/OneTrainer/
 echo LAUNCHING OneTrainer !
 bash start-ui.sh
-wait 99999
+sleep infinity
