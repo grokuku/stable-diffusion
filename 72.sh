@@ -4,6 +4,10 @@ source /functions.sh
 export PATH="/home/abc/miniconda3/bin:$PATH"
 export SD72_DIR=${BASE_DIR}/72-OneTrainer
 
+#Switch NGINX to PORT 9000
+sudo cp /opt/sd-install/parameters/nginx.txt /etc/nginx/sites-enabled/default
+sudo nginx -s reload
+
 mkdir -p ${SD72_DIR}
 mkdir -p /config/outputs/72-OneTrainer
 
