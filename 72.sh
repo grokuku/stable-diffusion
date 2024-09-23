@@ -57,5 +57,6 @@ fi
 #launch OneTrainer
 cd ${SD72_DIR}/OneTrainer/
 echo LAUNCHING OneTrainer !
-bash start-ui.sh
+#bash start-ui.sh
+xterm -hold -e "${SD72_DIR}/OneTrainer/start-ui.sh"
 sleep infinity
