@@ -5,7 +5,7 @@ COPY docker/root/ /
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV WEBUI_VERSION=01
-ENV CUSTOM_PORT=9000
+ENV CUSTOM_PORT=3000
 ENV BASE_DIR=/config \
     SD_INSTALL_DIR=/opt/sd-install \
     XDG_CACHE_HOME=/config/temp
