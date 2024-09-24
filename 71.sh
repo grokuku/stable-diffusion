@@ -54,12 +54,11 @@ sl_folder ${SD71_DIR}/fluxgym/models unet ${BASE_DIR}/models unet
 
 sl_folder ${SD71_DIR}/fluxgym outputs ${BASE_DIR}/outputs 71-fluxgym
 
-
 #launch fluxgym
-cd ${SD71_DIR}/fluxgym/
-echo LAUNCHING fluxgym !
+export LD_LIBRARY_PATH=${SD71_DIR}/env/lib/python3.10/site-packages/nvidia/cuda_nvrtc/lib:$LD_LIBRARY_PATH
 export GRADIO_SERVER_NAME="0.0.0.0"
 export GRADIO_SERVER_PORT=9000
-#CMD="python app.py"; while IFS= read -r param; do if [[ $param != \#* ]]; then CMD+=" ${param}"; fi; done < "${SD71_DIR}/parameters.txt"; eval $CMD
+cd ${SD71_DIR}/fluxgym/
+echo LAUNCHING fluxgym !
 python app.py
 sleep infinity
