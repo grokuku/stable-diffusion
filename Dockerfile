@@ -1,9 +1,11 @@
-FROM lsiobase/ubuntu:jammy as base
+#FROM lsiobase/ubuntu:jammy as base
+FROM ghcr.io/linuxserver/baseimage-kasmvnc:ubuntujammy as base
 
 COPY docker/root/ /
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV WEBUI_VERSION=01
+ENV CUSTOM_PORT=3000
 ENV BASE_DIR=/config \
     SD_INSTALL_DIR=/opt/sd-install \
     XDG_CACHE_HOME=/config/temp
@@ -22,9 +24,10 @@ RUN apt-get update -y -q=2 && \
     build-essential \
 #    python3-opencv \
     ffmpeg \
-    libopencv-dev \
+#    libopencv-dev \
     dotnet-sdk-8.0 \
-    git && \
+    git \
+    lsof && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
@@ -32,8 +35,8 @@ RUN mkdir -p ${BASE_DIR}\temp ${SD_INSTALL_DIR} ${BASE_DIR}/outputs
 
 ADD parameters/* ${SD_INSTALL_DIR}/parameters/
 
-RUN groupmod -g 1000 abc && \
-    usermod -u 1000 abc
+#RUN groupmod -g 1000 abc
+#RUN  usermod -u 1000 abc
 
 COPY --chown=abc:abc *.sh ./
 

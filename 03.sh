@@ -55,4 +55,4 @@ fi
 
 # launch WebUI
 invokeai-web --config ${SD03_DIR}/config.yaml
-wait 99999
+sleep infinity

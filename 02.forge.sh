@@ -69,4 +69,4 @@ while IFS= read -r param; do
     fi
 done < "${SD02_DIR}/parameters.forge.txt"
 eval $CMD
-wait 99999
+sleep infinity

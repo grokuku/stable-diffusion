@@ -57,4 +57,4 @@ fi
 #run easy-diffusion
 cd $SD01_DIR
 bash start.sh
-wait 99999
+sleep infinity
