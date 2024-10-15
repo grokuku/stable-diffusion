@@ -1,4 +1,6 @@
 #!/bin/bash
+cp /dummy.sh /usr/bin/openbox-session
+chmod +x /usr/bin/openbox-session
 source /functions.sh
 
 export PATH="/home/abc/miniconda3/bin:$PATH"
@@ -31,7 +33,11 @@ conda install -c conda-forge git python=3.11 pip gxx ffmpeg --solver=libmamba -y
 
  
  cd ${SD51_DIR}/facefusion 
- pip install -r requirements.txt 
+ pip install -r requirements.txt
+ python3 install.py --onnxruntime cuda
+ 
+ conda deactivate
+ source activate ${SD51_DIR}/env
  
  # install custom requirements
   pip install --upgrade pip
@@ -43,6 +49,6 @@ conda install -c conda-forge git python=3.11 pip gxx ffmpeg --solver=libmamba -y
   
  export GRADIO_SERVER_NAME=0.0.0.0 
  export GRADIO_SERVER_PORT=9000 
- CMD="python3 run.py"; while IFS= read -r param; do if [[ $param != \#* ]]; then CMD+=" ${param}"; fi; done < "${SD51_DIR}/parameters.txt"; eval $CMD
+ CMD="python3 facefusion.py"; while IFS= read -r param; do if [[ $param != \#* ]]; then CMD+=" ${param}"; fi; done < "${SD51_DIR}/parameters.txt"; eval $CMD
 
 sleep infinity
