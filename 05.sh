@@ -1,4 +1,6 @@
 #!/bin/bash
+cp /dummy.sh /usr/bin/openbox-session
+chmod +x /usr/bin/openbox-session
 source /functions.sh
 
 export PATH="/home/abc/miniconda3/bin:$PATH"
