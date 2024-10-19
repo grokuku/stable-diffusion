@@ -30,7 +30,7 @@ fi
 #activate conda env + install base tools
 source activate ${SD02_DIR}/conda-env
 conda install -n base conda-libmamba-solver -y
-conda install -c conda-forge python=3.11 pip gcc gxx libcurand --solver=libmamba -y
+conda install -c conda-forge python=3.10 pip gcc gxx libcurand --solver=libmamba -y
 
 if [ ! -f "$SD02_DIR/parameters.forge.txt" ]; then
     cp -v "/opt/sd-install/parameters/02.forge.txt" "$SD02_DIR/parameters.forge.txt"
