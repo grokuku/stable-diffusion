@@ -39,8 +39,8 @@ ADD parameters/* ${SD_INSTALL_DIR}/parameters/
 #RUN groupmod -g 1000 abc
 #RUN  usermod -u 1000 abc
 COPY /root /
-MKDIR -p root/defaults
-ECHO "firefox" > root/defaults/autostart
+RUN mkdir -p root/defaults
+RUN echo "firefox" > root/defaults/autostart
 COPY --chown=abc:abc *.sh ./
 
 RUN chmod +x /entry.sh
