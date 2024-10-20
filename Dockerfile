@@ -1,5 +1,5 @@
-FROM lsiobase/ubuntu:jammy as base
-#FROM ghcr.io/linuxserver/baseimage-kasmvnc:ubuntujammy as base
+#FROM lsiobase/ubuntu:jammy as base
+FROM ghcr.io/linuxserver/baseimage-kasmvnc:ubuntunoble as base
 
 COPY docker/root/ /
 
@@ -26,6 +26,7 @@ RUN apt-get update -y -q=2 && \
     ffmpeg \
 #    libopencv-dev \
     dotnet-sdk-8.0 \
+    firefox \
     git \
     lsof && \
     apt-get clean && \
@@ -37,7 +38,9 @@ ADD parameters/* ${SD_INSTALL_DIR}/parameters/
 
 #RUN groupmod -g 1000 abc
 #RUN  usermod -u 1000 abc
-
+COPY /root /
+mkdir -p root/defaults
+echo "firefox" > root/defaults/autostart
 COPY --chown=abc:abc *.sh ./
 
 RUN chmod +x /entry.sh
