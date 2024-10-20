@@ -33,6 +33,7 @@ ENV BASE_DIR=/config \
 
 RUN add-apt-repository -y ppa:mozillateam/ppa && apt-get update
 RUN echo 'Package: firefox* \nPin: release o=LP-PPA-mozillateam \nPin-Priority: 1001' > /etc/apt/preferences.d/mozillateamppa
+RUN apt-get update
 RUN apt-get install -y firefox
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
