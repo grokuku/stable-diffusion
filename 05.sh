@@ -1,6 +1,9 @@
 #!/bin/bash
 #cp /dummy.sh /usr/bin/openbox-session
 #chmod +x /usr/bin/openbox-session
+apt-get update -y
+apt-get install -y firefox
+
 source /functions.sh
 
 export PATH="/home/abc/miniconda3/bin:$PATH"
