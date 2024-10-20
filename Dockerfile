@@ -34,10 +34,6 @@ ENV BASE_DIR=/config \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-#RUN add-apt-repository -y ppa:mozillateam/ppa && apt-get update
-#RUN echo 'Package: firefox* \nPin: release o=LP-PPA-mozillateam \nPin-Priority: 1001' > /etc/apt/preferences.d/mozillateamppa
-#RUN apt-get clean && rm -rf /var/lib/apt/lists/*
-
 RUN wget https://dot.net/v1/dotnet-install.sh -O dotnet-install.sh
 RUN chmod +x ./dotnet-install.sh
 RUN ./dotnet-install.sh  --channel 8.0
@@ -46,9 +42,6 @@ RUN mkdir -p ${BASE_DIR}\temp ${SD_INSTALL_DIR} ${BASE_DIR}/outputs
 
 ADD parameters/* ${SD_INSTALL_DIR}/parameters/
 
-#RUN groupmod -g 1000 abc
-#RUN  usermod -u 1000 abc
-RUN apt-get update -y && apt-get install -y firefox
 RUN mkdir -p /root/defaults
 #RUN echo "firefox" > root/defaults/autostart
 COPY --chown=abc:abc *.sh ./
