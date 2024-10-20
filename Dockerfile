@@ -16,7 +16,6 @@ ENV BASE_DIR=/config \
     echo 'Package: firefox* \nPin: release o=LP-PPA-mozillateam \nPin-Priority: 1001' > /etc/apt/preferences.d/mozillateamppa && \
     apt-get update -y -q=2 && \
     apt-get install -y -q=2 curl \
-    firefox \
     wget \
     mc \
     bc \
@@ -49,6 +48,8 @@ ADD parameters/* ${SD_INSTALL_DIR}/parameters/
 
 #RUN groupmod -g 1000 abc
 #RUN  usermod -u 1000 abc
+RUN apg-get update
+RUN apt-get install firefox
 RUN mkdir -p /root/defaults
 RUN echo "firefox" > root/defaults/autostart
 COPY --chown=abc:abc *.sh ./
