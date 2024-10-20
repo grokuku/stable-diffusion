@@ -48,7 +48,7 @@ ADD parameters/* ${SD_INSTALL_DIR}/parameters/
 
 #RUN groupmod -g 1000 abc
 #RUN  usermod -u 1000 abc
-RUN apt-get update && apt-get install firefox
+RUN apt-get update -y && apt-get install -y firefox
 RUN mkdir -p /root/defaults
 RUN echo "firefox" > root/defaults/autostart
 COPY --chown=abc:abc *.sh ./
