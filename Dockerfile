@@ -1,5 +1,5 @@
 #FROM lsiobase/ubuntu:jammy as base
-FROM ghcr.io/linuxserver/baseimage-kasmvnc:ubuntujammy as base
+FROM ghcr.io/linuxserver/baseimage-kasmvnc:debianbookworm as base
 
 COPY docker/root/ /
 
@@ -9,26 +9,6 @@ ENV CUSTOM_PORT=3000
 ENV BASE_DIR=/config \
     SD_INSTALL_DIR=/opt/sd-install \
     XDG_CACHE_HOME=/config/temp
-
-#    RUN install -d -m 0755 /etc/apt/keyrings
-#    RUN wget -q https://packages.mozilla.org/apt/repo-signing-key.gpg -O- | sudo tee /etc/apt/keyrings/packages.mozilla.org.asc > /dev/null
-#    RUN echo "deb [signed-by=/etc/apt/keyrings/packages.mozilla.org.asc] https://packages.mozilla.org/apt mozilla main" | sudo tee -a /etc/apt/sources.list.d/mozilla.list > /dev/null
-#    RUN echo ' \
-#    Package: * \n\
-#    Pin: origin packages.mozilla.org \n\
-#    Pin-Priority: 1000 \n\
-#    \n\
-#    Package: firefox* \n\
-#    Pin: release o=Ubuntu \n\
-#    Pin-Priority: -1' > /etc/apt/preferences.d/mozilla
- 
-    RUN add-apt-repository ppa:mozillateam/ppa
-    
-    # Créer le fichier de préférences avec la priorité pour le PPA Mozilla
-    RUN echo ' \
-    Package: firefox* \n\
-    Pin: release o=LP-PPA-mozillateam \n\
-    Pin-Priority: 1001' > /etc/apt/preferences.d/mozillateamppa
 
     RUN apt-get update -y -q=2 && \
     apt-get install -y -q=2 curl \
@@ -78,3 +58,4 @@ RUN cd /tmp && \
     chown -R abc:abc /home/abc
 
 EXPOSE 9000/tcp
+EXPOSE 3000/tcp
