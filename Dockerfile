@@ -1,5 +1,5 @@
 #FROM lsiobase/ubuntu:jammy as base
-FROM ghcr.io/linuxserver/baseimage-kasmvnc:ubuntunoble as base
+FROM ghcr.io/linuxserver/baseimage-kasmvnc:ubuntujammy as base
 
 COPY docker/root/ /
 
@@ -26,7 +26,7 @@ RUN apt-get update -y -q=2 && \
     ffmpeg \
 #    libopencv-dev \
     dotnet-sdk-8.0 \
-    firefox \
+#    firefox \
     git \
     lsof && \
     apt-get clean && \
