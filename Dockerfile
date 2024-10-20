@@ -10,7 +10,19 @@ ENV BASE_DIR=/config \
     SD_INSTALL_DIR=/opt/sd-install \
     XDG_CACHE_HOME=/config/temp
 
-RUN apt-get update -y -q=2 && \
+    RUN install -d -m 0755 /etc/apt/keyrings
+    RUN wget -q https://packages.mozilla.org/apt/repo-signing-key.gpg -O- | sudo tee /etc/apt/keyrings/packages.mozilla.org.asc > /dev/null
+    RUN echo "deb [signed-by=/etc/apt/keyrings/packages.mozilla.org.asc] https://packages.mozilla.org/apt mozilla main" | sudo tee -a /etc/apt/sources.list.d/mozilla.list > /dev/null
+    RUN echo ' \
+    Package: * \n\
+    Pin: origin packages.mozilla.org \n\
+    Pin-Priority: 1000 \n\
+    \n\
+    Package: firefox* \n\
+    Pin: release o=Ubuntu \n\
+    Pin-Priority: -1' > /etc/apt/preferences.d/mozilla
+    
+    RUN apt-get update -y -q=2 && \
     apt-get install -y -q=2 curl \
     wget \
     mc \
@@ -26,7 +38,7 @@ RUN apt-get update -y -q=2 && \
     ffmpeg \
 #    libopencv-dev \
     dotnet-sdk-8.0 \
-#    firefox \
+    firefox \
     git \
     lsof && \
     apt-get clean && \
