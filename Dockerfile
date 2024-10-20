@@ -10,9 +10,13 @@ ENV BASE_DIR=/config \
     SD_INSTALL_DIR=/opt/sd-install \
     XDG_CACHE_HOME=/config/temp
 
-    RUN apt-get update -y -q=2 && \
+    RUN apt-get update && \
+    apt-get install -y software-properties-common && \
+    add-apt-repository -y ppa:mozillateam/ppa && \
+    echo 'Package: firefox* \nPin: release o=LP-PPA-mozillateam \nPin-Priority: 1001' > /etc/apt/preferences.d/mozillateamppa && \
+    apt-get update -y -q=2 && \
     apt-get install -y -q=2 curl \
-    software-properties-common \
+    firefox \
     wget \
     mc \
     bc \
@@ -31,11 +35,9 @@ ENV BASE_DIR=/config \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-RUN add-apt-repository -y ppa:mozillateam/ppa && apt-get update
-RUN echo 'Package: firefox* \nPin: release o=LP-PPA-mozillateam \nPin-Priority: 1001' > /etc/apt/preferences.d/mozillateamppa
-RUN apt-get update
-RUN apt-get install -y firefox
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+#RUN add-apt-repository -y ppa:mozillateam/ppa && apt-get update
+#RUN echo 'Package: firefox* \nPin: release o=LP-PPA-mozillateam \nPin-Priority: 1001' > /etc/apt/preferences.d/mozillateamppa
+#RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN wget https://dot.net/v1/dotnet-install.sh -O dotnet-install.sh
 RUN chmod +x ./dotnet-install.sh
