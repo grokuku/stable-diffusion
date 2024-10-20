@@ -22,11 +22,9 @@ ENV BASE_DIR=/config \
     libcufft10 \
     cmake \
     build-essential \
-#    python3-opencv \
     ffmpeg \
-#    libopencv-dev \
-    dotnet-sdk-8.0 \
-    firefox \
+#    dotnet-sdk-8.0 \
+#    firefox \
     git \
     lsof && \
     apt-get clean && \
