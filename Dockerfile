@@ -12,6 +12,7 @@ ENV BASE_DIR=/config \
 
     RUN apt-get update -y -q=2 && \
     apt-get install -y -q=2 curl \
+    software-properties-common \
     wget \
     mc \
     bc \
@@ -29,6 +30,14 @@ ENV BASE_DIR=/config \
     lsof && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+RUN add-apt-repository -y ppa:mozillateam/ppa && apt-get update
+RUN echo ' \
+Package: firefox* \n\
+Pin: release o=LP-PPA-mozillateam \n\
+Pin-Priority: 1001' > /etc/apt/preferences.d/mozillateamppa
+RUN apt-get install -y firefox
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN wget https://dot.net/v1/dotnet-install.sh -O dotnet-install.sh
 RUN chmod +x ./dotnet-install.sh
