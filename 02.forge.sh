@@ -5,6 +5,9 @@ source /functions.sh
 export PATH="/home/abc/miniconda3/bin:$PATH"
 export SD02_DIR=${BASE_DIR}/02-sd-webui
 
+#restart nginx
+sudo nginx -s reload
+
 # disable the use of a python venv
 export venv_dir="-"
 
