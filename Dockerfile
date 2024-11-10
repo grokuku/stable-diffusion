@@ -49,7 +49,6 @@ RUN mkdir -p /root/defaults
 COPY --chown=abc:abc *.sh ./
 
 RUN chmod +x /entry.sh
-RUN chmod +x /OneTrainer.sh
 
 ENV XDG_CONFIG_HOME=/home/abc
 ENV HOME=/home/abc
