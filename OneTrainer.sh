@@ -24,14 +24,14 @@ cd ${SD72_DIR}/OneTrainer
 check_remote
 
 #clean conda env if needed
-clean_env ${SD72_DIR}/env
+clean_env ${SD72_DIR}/OneTrainer/conda_env
 
 #create conda env
-if [ ! -d ${SD72_DIR}/env ]; then
-    conda create -p ${SD72_DIR}/env -y
+if [ ! -d ${SD72_DIR}/OneTrainer/conda_env ]; then
+    conda create -p ${SD72_DIR}/OneTrainer/conda_env -y
 fi
 
-source activate ${SD72_DIR}/env
+source activate ${SD72_DIR}/OneTrainer/conda_env
 conda install -n base conda-libmamba-solver -y
 conda install -c conda-forge python=3.10 pip tk --solver=libmamba -y
 

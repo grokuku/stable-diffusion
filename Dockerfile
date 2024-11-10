@@ -25,6 +25,7 @@ ENV BASE_DIR=/config \
     libtcmalloc-minimal4 \
     libcufft10 \
     libxft2 \
+    xfvb \
     cmake \
     build-essential \
     ffmpeg \
@@ -48,6 +49,7 @@ RUN mkdir -p /root/defaults
 COPY --chown=abc:abc *.sh ./
 
 RUN chmod +x /entry.sh
+RUN chmod +x /OneTrainer.sh
 
 ENV XDG_CONFIG_HOME=/home/abc
 ENV HOME=/home/abc
