@@ -25,7 +25,7 @@ ENV BASE_DIR=/config \
     libtcmalloc-minimal4 \
     libcufft10 \
     libxft2 \
-    xfvb \
+    xvfb \
     cmake \
     build-essential \
     ffmpeg \
