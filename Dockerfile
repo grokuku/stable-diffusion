@@ -13,7 +13,7 @@ ENV BASE_DIR=/config \
     RUN apt-get update && \
     apt-get install -y software-properties-common && \
     add-apt-repository -y ppa:mozillateam/ppa && \
-    echo 'Package: firefox* \nPin: release o=LP-PPA-mozillateam \nPin-Priority: 1001' > /etc/apt/preferences.d/mozillateamppa && \
+#    echo 'Package: firefox* \nPin: release o=LP-PPA-mozillateam \nPin-Priority: 1001' > /etc/apt/preferences.d/mozillateamppa && \
     apt-get update -y -q=2 && \
     apt-get install -y -q=2 curl \
     wget \
@@ -24,6 +24,7 @@ ENV BASE_DIR=/config \
     libgl1-mesa-glx \
     libtcmalloc-minimal4 \
     libcufft10 \
+    libxft2 \
     cmake \
     build-essential \
     ffmpeg \

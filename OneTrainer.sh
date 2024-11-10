@@ -33,7 +33,7 @@ fi
 
 source activate ${SD72_DIR}/env
 conda install -n base conda-libmamba-solver -y
-conda install -c conda-forge python=3.10 pip --solver=libmamba -y
+conda install -c conda-forge python=3.10 pip tk --solver=libmamba -y
 
 
 #install dependencies
@@ -57,6 +57,6 @@ fi
 #launch OneTrainer
 cd ${SD72_DIR}/OneTrainer/
 echo LAUNCHING OneTrainer !
-#bash start-ui.sh
+./start-ui.sh
 #xterm -hold -e "${SD72_DIR}/OneTrainer/start-ui.sh"
 sleep infinity
