@@ -1,5 +1,5 @@
 ##### Directories #####
---output /config/outputs/51-facefusion
+-o /config/outputs/51-facefusion
 
 ##### Options #####
 
