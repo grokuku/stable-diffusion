@@ -61,6 +61,9 @@ sl_folder ${SD02_DIR}/webui/models ControlNet ${BASE_DIR}/models controlnet
 
 sl_folder ${SD02_DIR}/webui outputs ${BASE_DIR}/outputs 02-sd-webui
 
+#Force using correct version of Python
+export python_cmd="$(which python)"
+
 # run webUI
 echo "Run Stable-Diffusion-WebUI"
 cd ${SD02_DIR}/webui
