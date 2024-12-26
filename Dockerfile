@@ -32,8 +32,9 @@ RUN apt-get update && \
     ffmpeg \
     dotnet-sdk-8.0 \
 #    firefox \
-    lsof && \
-    git
+    git && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Télécharger et installer le package cuda-keyring
 RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb && \
@@ -42,7 +43,9 @@ RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86
 
 # Mettre à jour les dépôts et installer le CUDA Toolkit
 RUN apt-get update && \
-    apt-get install -y cuda-toolkit-12-6
+    apt-get install -y cuda-toolkit-12-6 && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 RUN wget https://dot.net/v1/dotnet-install.sh -O dotnet-install.sh
 RUN chmod +x ./dotnet-install.sh
