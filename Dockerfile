@@ -1,5 +1,35 @@
-#FROM lsiobase/ubuntu:jammy as base
-FROM ghcr.io/linuxserver/baseimage-kasmvnc:ubuntujammy as base
+FROM nvidia/cuda:12.6-devel-ubuntu22.04 AS builder
+
+# Installer les dépendances nécessaires pour la compilation
+RUN apt-get update && apt-get install -y \
+    git \
+    python3 \
+    python3-pip \
+    python3-venv \
+    build-essential \
+    gcc-12 g++-12 && \
+    rm -rf /var/lib/apt/lists/*
+
+# Configurer gcc et g++
+ENV CC=/usr/bin/gcc-12
+ENV CXX=/usr/bin/g++-12
+
+# Créer un dossier pour les artefacts
+WORKDIR /build
+
+# Compiler et installer nvdiffrast
+RUN git clone https://github.com/NVlabs/nvdiffrast.git && \
+    cd nvdiffrast && \
+    python3 setup.py bdist_wheel && \
+    cp dist/*.whl /build/
+
+# Compiler et installer kaolin
+RUN git clone https://github.com/NVIDIAGameWorks/kaolin.git && \
+    cd kaolin && \
+    python3 setup.py bdist_wheel && \
+    cp dist/*.whl /build/
+    
+FROM ghcr.io/linuxserver/baseimage-kasmvnc:ubuntujammy
 
 COPY docker/root/ /
 
@@ -38,15 +68,15 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Télécharger et installer le package cuda-keyring
-RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb && \
-    dpkg -i cuda-keyring_1.1-1_all.deb && \
-    rm cuda-keyring_1.1-1_all.deb  # Supprimer le fichier .deb après installation
+#RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb && \
+#    dpkg -i cuda-keyring_1.1-1_all.deb && \
+#    rm cuda-keyring_1.1-1_all.deb  # Supprimer le fichier .deb après installation
 
 # Mettre à jour les dépôts et installer le CUDA Toolkit
-RUN apt-get update && \
-    apt-get install -y cuda-toolkit-12-6 && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+#RUN apt-get update && \
+#    apt-get install -y cuda-toolkit-12-6 && \
+#    apt-get clean && \
+#    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 RUN wget https://dot.net/v1/dotnet-install.sh -O dotnet-install.sh
 RUN chmod +x ./dotnet-install.sh
@@ -58,8 +88,10 @@ ADD parameters/* ${SD_INSTALL_DIR}/parameters/
 
 RUN mkdir -p /root/defaults
 #RUN echo "firefox" > root/defaults/autostart
-COPY --chown=abc:abc *.sh ./
 
+COPY --from=builder /build/*.whl /wheels/
+
+COPY --chown=abc:abc *.sh ./
 RUN chmod +x /entry.sh
 
 ENV XDG_CONFIG_HOME=/home/abc
