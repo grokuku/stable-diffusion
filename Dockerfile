@@ -1,4 +1,4 @@
-FROM nvidia/cuda:12.6-devel-ubuntu22.04 AS builder
+FROM nvidia/cuda:12.6.3-cudnn-devel-ubuntu22.04 AS builder
 
 # Installer les dépendances nécessaires pour la compilation
 RUN apt-get update && apt-get install -y \
