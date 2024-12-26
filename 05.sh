@@ -106,12 +106,18 @@ pip install /opt/modules/kaolin
 pip install diso
 pip install flash-attn
 
-#install gaussian-rasterization + knn
+#install diff-gaussian-rasterization
 cd /tmp
-git clone https://github.com/graphdeco-inria/gaussian-splatting --recurse
-cd gaussian-splatting
-pip install submodules/diff-gaussian-rasterization/
-pip install submodules/simple-knn/
+git clone https://github.com/graphdeco-inria/diff-gaussian-rasterization --recurse
+cd diff-gaussian-rasterization
+python setup.py install
+
+#install simple-knn
+cd /tmp
+git clone https://github.com/camenduru/simple-knn --recurse
+cd simple-knn
+python setup.py install
+
 pip install plyfile
 pip install tqdm
 
