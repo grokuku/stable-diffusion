@@ -1,25 +1,6 @@
-FROM nvidia/cuda:12.4-devel AS build
-RUN apt-get update && apt-get install -y \
-    git \
-    python3-pip \
-    python3-dev \
-    build-essential
-
-RUN git clone https://github.com/NVlabs/nvdiffrast.git /tmp/nvdiffrast && \
-    cd /tmp/nvdiffrast && \
-    python setup.py build && python setup.py install --prefix=/tmp/output/nvdiffrast
-
-RUN git clone https://github.com/NVIDIAGameWorks/kaolin /tmp/kaolin && \
-    cd /tmp/kaolin && \
-    python setup.py build && python setup.py install --prefix=/tmp/output/kaolin
-
-
-
-
 #FROM lsiobase/ubuntu:jammy as base
 FROM ghcr.io/linuxserver/baseimage-kasmvnc:ubuntujammy as base
 
-COPY --from=build /tmp/output /opt/modules
 COPY docker/root/ /
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -57,15 +38,15 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Télécharger et installer le package cuda-keyring
-#RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb && \
-#    dpkg -i cuda-keyring_1.1-1_all.deb && \
-#    rm cuda-keyring_1.1-1_all.deb  # Supprimer le fichier .deb après installation
+RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb && \
+    dpkg -i cuda-keyring_1.1-1_all.deb && \
+    rm cuda-keyring_1.1-1_all.deb  # Supprimer le fichier .deb après installation
 
 # Mettre à jour les dépôts et installer le CUDA Toolkit
-#RUN apt-get update && \
-#    apt-get install -y cuda-toolkit-12-6 && \
-#    apt-get clean && \
-#    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+RUN apt-get update && \
+    apt-get install -y cuda-toolkit-12-6 && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 RUN wget https://dot.net/v1/dotnet-install.sh -O dotnet-install.sh
 RUN chmod +x ./dotnet-install.sh
