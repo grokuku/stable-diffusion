@@ -52,9 +52,35 @@ RUN wget https://dot.net/v1/dotnet-install.sh -O dotnet-install.sh
 RUN chmod +x ./dotnet-install.sh
 RUN ./dotnet-install.sh  --channel 8.0
 
-#RUN apt-get clean && \
-#rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+# compilation des modules python pour trellis
+ENV CC=/usr/bin/gcc-12
+ENV CXX=/usr/bin/g++-12
+WORKDIR /build
+RUN git clone https://github.com/NVlabs/nvdiffrast.git && \
+    cd nvdiffrast && \
+    python3 setup.py bdist_wheel && \
+    cp dist/*.whl /build/
+RUN git clone https://github.com/NVIDIAGameWorks/kaolin.git && \
+    cd kaolin && \
+    python3 setup.py bdist_wheel && \
+    cp dist/*.whl /build/
+RUN git clone https://github.com/graphdeco-inria/diff-gaussian-rasterization && \
+    cd diff-gaussian-rasterization && \
+    python3 setup.py bdist_wheel && \
+    cp dist/*.whl /build/
 
+RUN git clone https://github.com/camenduru/simple-knn && \
+    cd simple-knn && \
+    python3 setup.py bdist_wheel && \
+    cp dist/*.whl /build/
+
+COPY --from=builder /build/*.whl /wheels/
+
+#clean cuda toolkit
+RUN apt-get update && \
+    apt-get purge -y cuda-toolkit-12-6 && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 RUN mkdir -p ${BASE_DIR}\temp ${SD_INSTALL_DIR} ${BASE_DIR}/outputs
 

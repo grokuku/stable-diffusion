@@ -108,11 +108,12 @@ pip install flash-attn
 
 #install gaussian-rasterization + knn
 cd /tmp
-git clone https://github.com/graphdeco-inria/gaussian-splatting --recurse-submodules
+git clone https://github.com/graphdeco-inria/gaussian-splatting --recurse
 cd gaussian-splatting
 pip install submodules/diff-gaussian-rasterization/
 pip install submodules/simple-knn/
-
+pip install plyfile
+pip install tqdm
 
 
 #run webui
