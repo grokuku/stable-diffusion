@@ -92,6 +92,14 @@ git clone https://github.com/NVlabs/nvdiffrast.git
 cd nvdiffrast/
 python setup.py install
 
+#install kaolin
+#cd /tmp
+#git clone https://github.com/NVIDIAGameWorks/kaolin
+#cd kaolin/
+#python setup.py install
+
+
+
 
 #run webui
 cd ${SD05_DIR}/ComfyUI
