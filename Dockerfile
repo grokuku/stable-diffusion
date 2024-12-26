@@ -29,7 +29,7 @@ ENV BASE_DIR=/config \
     cmake \
     build-essential \
     ffmpeg \
-#    dotnet-sdk-8.0 \
+    dotnet-sdk-8.0 \
 #    firefox \
     git \
     lsof && \
