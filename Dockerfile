@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y \
     gcc-12 g++-12 && \
     rm -rf /var/lib/apt/lists/*
 
-RUN pip install torch torchvision torchaudio
+RUN pip install torch torchvision
 
 # Configurer gcc et g++
 ENV CC=/usr/bin/gcc-12
