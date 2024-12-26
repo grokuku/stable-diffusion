@@ -86,8 +86,15 @@ if [ -f ${SD05_DIR}/requirements.txt ]; then
     pip install -r ${SD05_DIR}/requirements.txt
 fi
 
+#install nvdiffrast
+cd /tmp
+git clone https://github.com/NVlabs/nvdiffrast.git
+cd nvdiffrast/
+python setup.py install
+
 
 #run webui
+cd ${SD05_DIR}/ComfyUI
 CMD="python3 main.py"
 while IFS= read -r param; do
     if [[ $param != \#* ]]; then

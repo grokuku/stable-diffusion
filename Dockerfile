@@ -10,13 +10,14 @@ ENV BASE_DIR=/config \
     SD_INSTALL_DIR=/opt/sd-install \
     XDG_CACHE_HOME=/config/temp
 
-    RUN apt-get update && \
+RUN apt-get update && \
     apt-get install -y software-properties-common && \
     add-apt-repository -y ppa:mozillateam/ppa && \
 #    echo 'Package: firefox* \nPin: release o=LP-PPA-mozillateam \nPin-Priority: 1001' > /etc/apt/preferences.d/mozillateamppa && \
     apt-get update -y -q=2 && \
     apt-get install -y -q=2 curl \
     wget \
+    gnupg \
     mc \
     bc \
     nano \
@@ -32,13 +33,24 @@ ENV BASE_DIR=/config \
     dotnet-sdk-8.0 \
 #    firefox \
     git \
-    lsof && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+    lsof &&
+
+# Télécharger et installer le package cuda-keyring
+RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb && \
+    dpkg -i cuda-keyring_1.1-1_all.deb && \
+    rm cuda-keyring_1.1-1_all.deb  # Supprimer le fichier .deb après installation
+
+# Mettre à jour les dépôts et installer le CUDA Toolkit
+RUN apt-get update && \
+    apt-get install -y cuda-toolkit-12-6 &&
 
 RUN wget https://dot.net/v1/dotnet-install.sh -O dotnet-install.sh
 RUN chmod +x ./dotnet-install.sh
 RUN ./dotnet-install.sh  --channel 8.0
+
+RUN apt-get clean && \
+rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
 
 RUN mkdir -p ${BASE_DIR}\temp ${SD_INSTALL_DIR} ${BASE_DIR}/outputs
 
