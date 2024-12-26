@@ -89,16 +89,18 @@ if [ -f ${SD05_DIR}/requirements.txt ]; then
 fi
 
 #install nvdiffrast
-cd /tmp
-git clone https://github.com/NVlabs/nvdiffrast.git
-cd nvdiffrast/
-python setup.py install
+#cd /tmp
+#git clone https://github.com/NVlabs/nvdiffrast.git
+#cd nvdiffrast/
+#python setup.py install
+pip install /opt/modules/nvdiffrast
 
 #install kaolin
-cd /tmp
-git clone https://github.com/NVIDIAGameWorks/kaolin
-cd kaolin/
-python setup.py install
+#cd /tmp
+#git clone https://github.com/NVIDIAGameWorks/kaolin
+#cd kaolin/
+#python setup.py install
+pip install /opt/modules/kaolin
 
 #install diso
 pip install diso
