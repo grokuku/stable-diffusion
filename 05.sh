@@ -6,6 +6,8 @@ source /functions.sh
 
 export PATH="/home/abc/miniconda3/bin:$PATH"
 export SD05_DIR=${BASE_DIR}/05-comfy-ui
+export CC=/usr/bin/gcc-12
+export CXX=/usr/bin/g++-12
 
 echo "Install and run Comfy-UI"
 mkdir -p ${SD05_DIR}
@@ -93,11 +95,13 @@ cd nvdiffrast/
 python setup.py install
 
 #install kaolin
-#cd /tmp
-#git clone https://github.com/NVIDIAGameWorks/kaolin
-#cd kaolin/
-#python setup.py install
+cd /tmp
+git clone https://github.com/NVIDIAGameWorks/kaolin
+cd kaolin/
+python setup.py install
 
+#install diso
+pip install diso
 
 
 
