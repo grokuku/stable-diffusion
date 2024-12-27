@@ -37,10 +37,20 @@ RUN git clone https://github.com/NVIDIAGameWorks/kaolin.git && \
 RUN git clone https://github.com/autonomousvision/mip-splatting --recurse-submodules && \
     cd mip-splatting/submodules/diff-gaussian-rasterization && \
     python3 setup.py bdist_wheel && \
-    cp dist/*.whl /build/ && \
-    cd ../simple-knn && \
+    cp dist/*.whl /build/
+
+RUN git clone https://github.com/microsoft/TRELLIS --recurse-submodules && \
+    cd TRELLIS/extensions/vox2seq && \
     python3 setup.py bdist_wheel && \
     cp dist/*.whl /build/
+
+RUN git clone https://github.com/JeffreyXiang/diffoctreerast --recurse-submodules && \
+    cd diffoctreerast && \
+    python3 setup.py bdist_wheel && \
+    cp dist/*.whl /build/
+
+    
+
     
 FROM ghcr.io/linuxserver/baseimage-kasmvnc:ubuntujammy
 

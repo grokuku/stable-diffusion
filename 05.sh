@@ -113,11 +113,7 @@ fi
 #python setup.py install
 
 pip install /wheels/*.whl
-pip install diso
-pip install flash-attn
-pip install plyfile
-pip install tqdm
-
+pip install diso flash-attn plyfile tqdm spconv-cu124
 
 #run webui
 cd ${SD05_DIR}/ComfyUI
