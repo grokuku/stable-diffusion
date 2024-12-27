@@ -33,15 +33,12 @@ RUN git clone https://github.com/NVIDIAGameWorks/kaolin.git && \
     python3 setup.py bdist_wheel && \
     cp dist/*.whl /build/
 
-# Compiler et installer diff-gaussian-rasterizatio
-RUN git clone https://github.com/graphdeco-inria/diff-gaussian-rasterization --recurse && \
-    cd diff-gaussian-rasterization && \
+# Compiler et installer diff-gaussian-rasterizatio et simple-knn
+RUN git clone https://github.com/autonomousvision/mip-splatting --recurse-submodules && \
+    cd mip-splatting/submodules/diff-gaussian-rasterization && \
     python3 setup.py bdist_wheel && \
-    cp dist/*.whl /build/
-
-# Compiler et installer simple-knn
-RUN git clone https://github.com/camenduru/simple-knn --recurse && \
-    cd simple-knn && \
+    cp dist/*.whl /build/ && \
+    cd ../simple-knn && \
     python3 setup.py bdist_wheel && \
     cp dist/*.whl /build/
     
@@ -56,12 +53,13 @@ ENV BASE_DIR=/config \
     SD_INSTALL_DIR=/opt/sd-install \
     XDG_CACHE_HOME=/config/temp
 
-RUN apt-get update && \
-    apt-get install -y software-properties-common && \
-    add-apt-repository -y ppa:mozillateam/ppa && \
+RUN apt-get update -q && \
+#    apt-get install -y software-properties-common && \
+#    add-apt-repository -y ppa:mozillateam/ppa && \
 #    echo 'Package: firefox* \nPin: release o=LP-PPA-mozillateam \nPin-Priority: 1001' > /etc/apt/preferences.d/mozillateamppa && \
-    apt-get update -y -q=2 && \
+#    apt-get update -y -q=2 && \
     apt-get install -y -q=2 curl \
+    software-properties-common \
     wget \
     gnupg \
     mc \
@@ -80,6 +78,8 @@ RUN apt-get update && \
 #    gcc-12 \
 #    g++-12 \
     git && \
+    apt-get purge python3 -y && \
+    apt autoremove && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 

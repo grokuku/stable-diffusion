@@ -4,7 +4,5 @@
 
 echo -e "\nApp is starting!"
 #apt-get update -y && apt-get install -y firefox
-apt-get purge python3 -y
-apt-get autoremove -y
 exec \
 	  s6-setuidgid abc /entry.sh
