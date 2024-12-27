@@ -4,8 +4,8 @@ source /functions.sh
 
 export PATH="/home/abc/miniconda3/bin:$PATH"
 export SD05_DIR=${BASE_DIR}/05-comfy-ui
-export CC=/usr/bin/gcc-12
-export CXX=/usr/bin/g++-12
+#export CC=/usr/bin/gcc-12
+#export CXX=/usr/bin/g++-12
 
 echo "Install and run Comfy-UI"
 mkdir -p ${SD05_DIR}
@@ -100,10 +100,6 @@ fi
 #python setup.py install
 #pip install /opt/modules/kaolin
 
-#install diso
-pip install diso
-pip install flash-attn
-
 #install diff-gaussian-rasterization
 #cd /tmp
 #git clone https://github.com/graphdeco-inria/diff-gaussian-rasterization --recurse
@@ -116,6 +112,9 @@ pip install flash-attn
 #cd simple-knn
 #python setup.py install
 
+pip install /wheels/*.whl
+pip install diso
+pip install flash-attn
 pip install plyfile
 pip install tqdm
 

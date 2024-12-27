@@ -75,8 +75,8 @@ RUN apt-get update && \
     build-essential \
     ffmpeg \
 #    dotnet-sdk-8.0 \
-    gcc-12 \
-    g++-12 \
+#    gcc-12 \
+#    g++-12 \
     git && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
