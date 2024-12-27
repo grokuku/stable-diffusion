@@ -79,7 +79,7 @@ RUN apt-get update -q && \
 #    g++-12 \
     git && \
     apt-get purge python3 -y && \
-    apt autoremove && \
+    apt autoremove -y && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
