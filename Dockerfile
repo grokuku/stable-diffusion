@@ -7,8 +7,8 @@ RUN apt-get update && apt-get install -y \
     python3-pip \
     python3-venv \
     build-essential \
-    gcc-12 g++-12 \
-    ninja && \
+    ninja-build \
+    gcc-12 g++-12 && \
     rm -rf /var/lib/apt/lists/*
 
 RUN pip install torch torchvision
