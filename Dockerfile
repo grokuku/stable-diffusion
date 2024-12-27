@@ -1,47 +1,47 @@
-#FROM nvidia/cuda:12.6.3-cudnn-devel-ubuntu22.04 AS builder
+FROM nvidia/cuda:12.6.3-cudnn-devel-ubuntu22.04 AS builder
 
 # Installer les dépendances nécessaires pour la compilation
-#RUN apt-get update && apt-get install -y \
-#    git \
-#    python3 \
-#    python3-pip \
-#    python3-venv \
-#    build-essential \
-#    gcc-12 g++-12 && \
-#    rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y \
+    git \
+    python3 \
+    python3-pip \
+    python3-venv \
+    build-essential \
+    gcc-12 g++-12 && \
+    rm -rf /var/lib/apt/lists/*
 
-#RUN pip install torch torchvision
+RUN pip install torch torchvision
 
 # Configurer gcc et g++
-#ENV CC=/usr/bin/gcc-12
-#ENV CXX=/usr/bin/g++-12
+ENV CC=/usr/bin/gcc-12
+ENV CXX=/usr/bin/g++-12
 
 # Créer un dossier pour les artefacts
-#WORKDIR /build
+WORKDIR /build
 
 # Compiler et installer nvdiffrast
-#RUN git clone https://github.com/NVlabs/nvdiffrast.git && \
-#    cd nvdiffrast && \
-#    python3 setup.py bdist_wheel && \
-#    cp dist/*.whl /build/
+RUN git clone https://github.com/NVlabs/nvdiffrast.git && \
+    cd nvdiffrast && \
+    python3 setup.py bdist_wheel && \
+    cp dist/*.whl /build/
 
 # Compiler et installer kaolin
-#RUN git clone https://github.com/NVIDIAGameWorks/kaolin.git && \
-#    cd kaolin && \
-#    python3 setup.py bdist_wheel && \
-#    cp dist/*.whl /build/
+RUN git clone https://github.com/NVIDIAGameWorks/kaolin.git && \
+    cd kaolin && \
+    python3 setup.py bdist_wheel && \
+    cp dist/*.whl /build/
 
 # Compiler et installer diff-gaussian-rasterizatio
-#RUN git clone https://github.com/graphdeco-inria/diff-gaussian-rasterization --recurse && \
-#    cd diff-gaussian-rasterization && \
-#    python3 setup.py bdist_wheel && \
-#    cp dist/*.whl /build/
+RUN git clone https://github.com/graphdeco-inria/diff-gaussian-rasterization --recurse && \
+    cd diff-gaussian-rasterization && \
+    python3 setup.py bdist_wheel && \
+    cp dist/*.whl /build/
 
 # Compiler et installer simple-knn
-#RUN git clone https://github.com/camenduru/simple-knn --recurse && \
-#    cd simple-knn && \
-#    python3 setup.py bdist_wheel && \
-#    cp dist/*.whl /build/
+RUN git clone https://github.com/camenduru/simple-knn --recurse && \
+    cd simple-knn && \
+    python3 setup.py bdist_wheel && \
+    cp dist/*.whl /build/
     
 FROM ghcr.io/linuxserver/baseimage-kasmvnc:ubuntujammy
 
@@ -103,8 +103,8 @@ ADD parameters/* ${SD_INSTALL_DIR}/parameters/
 RUN mkdir -p /root/defaults
 #RUN echo "firefox" > root/defaults/autostart
 
-#COPY --from=builder /build/*.whl /wheels/
-COPY /wheels/*.whl /wheels/
+COPY --from=builder /build/*.whl /wheels/
+#COPY /wheels/*.whl /wheels/
 
 COPY --chown=abc:abc *.sh ./
 RUN chmod +x /entry.sh
