@@ -1,4 +1,4 @@
-FROM nvidia/cuda:12.6.3-cudnn-devel-ubuntu22.04 AS builder
+FROM nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04 AS builder
 
 # Installer les dépendances nécessaires pour la compilation
 RUN apt-get update && apt-get install -y \
@@ -7,7 +7,8 @@ RUN apt-get update && apt-get install -y \
     python3-pip \
     python3-venv \
     build-essential \
-    gcc-12 g++-12 && \
+    gcc-12 g++-12 \
+    ninja && \
     rm -rf /var/lib/apt/lists/*
 
 RUN pip install torch torchvision
@@ -15,6 +16,7 @@ RUN pip install torch torchvision
 # Configurer gcc et g++
 ENV CC=/usr/bin/gcc-12
 ENV CXX=/usr/bin/g++-12
+ENV TORCH_CUDA_ARCH_LIST="8.0 8.6 8.7 8.9 9.0 9.0a"
 
 # Créer un dossier pour les artefacts
 WORKDIR /build
