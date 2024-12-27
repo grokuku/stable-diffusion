@@ -87,34 +87,34 @@ if [ -f ${SD05_DIR}/requirements.txt ]; then
 fi
 
 #install nvdiffrast
-cd /tmp
-git clone https://github.com/NVlabs/nvdiffrast.git
-cd nvdiffrast/
-python setup.py install
-pip install /opt/modules/nvdiffrast
+#cd /tmp
+#git clone https://github.com/NVlabs/nvdiffrast.git
+#cd nvdiffrast/
+#python setup.py install
+#pip install /opt/modules/nvdiffrast
 
 #install kaolin
-cd /tmp
-git clone https://github.com/NVIDIAGameWorks/kaolin
-cd kaolin/
-python setup.py install
-pip install /opt/modules/kaolin
+#cd /tmp
+#git clone https://github.com/NVIDIAGameWorks/kaolin
+#cd kaolin/
+#python setup.py install
+#pip install /opt/modules/kaolin
 
 #install diso
 pip install diso
 pip install flash-attn
 
 #install diff-gaussian-rasterization
-cd /tmp
-git clone https://github.com/graphdeco-inria/diff-gaussian-rasterization --recurse
-cd diff-gaussian-rasterization
-python setup.py install
+#cd /tmp
+#git clone https://github.com/graphdeco-inria/diff-gaussian-rasterization --recurse
+#cd diff-gaussian-rasterization
+#python setup.py install
 
 #install simple-knn
-cd /tmp
-git clone https://github.com/camenduru/simple-knn --recurse
-cd simple-knn
-python setup.py install
+#cd /tmp
+#git clone https://github.com/camenduru/simple-knn --recurse
+#cd simple-knn
+#python setup.py install
 
 pip install plyfile
 pip install tqdm
