@@ -17,6 +17,8 @@ RUN pip install torch torchvision
 ENV CC=/usr/bin/gcc-12
 ENV CXX=/usr/bin/g++-12
 ENV TORCH_CUDA_ARCH_LIST="8.0 8.6 8.7 8.9 9.0 9.0a"
+ENV PATH="/usr/local/cuda/bin:${PATH}"
+ENV LD_LIBRARY_PATH="/usr/local/cuda/lib64:${LD_LIBRARY_PATH}"
 
 # Créer un dossier pour les artefacts
 WORKDIR /build
@@ -34,6 +36,16 @@ RUN git clone https://github.com/NVlabs/nvdiffrast.git && \
 #    cp dist/*.whl /build/
 
 # Compiler et installer diff-gaussian-rasterizatio et simple-knn
+RUN git clone https://github.com/Dao-AILab/flash-attention --recurse-submodules && \
+    cd flash-attention && \
+    python3 setup.py bdist_wheel && \
+    cp dist/*.whl /build/
+
+RUN git clone https://github.com/SarahWeiii/diso --recurse-submodules && \
+    cd diso && \
+    python3 setup.py bdist_wheel && \
+    cp dist/*.whl /build/
+
 RUN git clone https://github.com/autonomousvision/mip-splatting --recurse-submodules && \
     cd mip-splatting/submodules/diff-gaussian-rasterization && \
     python3 setup.py bdist_wheel && \
@@ -48,17 +60,6 @@ RUN git clone https://github.com/JeffreyXiang/diffoctreerast --recurse-submodule
     cd diffoctreerast && \
     python3 setup.py bdist_wheel && \
     cp dist/*.whl /build/
-
-RUN git clone https://github.com/SarahWeiii/diso --recurse-submodules && \
-    cd diso && \
-    python3 setup.py bdist_wheel && \
-    cp dist/*.whl /build/
-
-RUN git clone https://github.com/Dao-AILab/flash-attention --recurse-submodules && \
-    cd flash-attention && \
-    python3 setup.py bdist_wheel && \
-    cp dist/*.whl /build/
-
     
 FROM ghcr.io/linuxserver/baseimage-kasmvnc:ubuntujammy
 
