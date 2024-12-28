@@ -9,6 +9,7 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     ninja-build \
     gcc-12 g++-12 && \
+    apt-get install -y cuda-toolkit-12-4 && \
     rm -rf /var/lib/apt/lists/*
 
 RUN pip install torch torchvision
@@ -17,8 +18,8 @@ RUN pip install torch torchvision
 ENV CC=/usr/bin/gcc-12
 ENV CXX=/usr/bin/g++-12
 ENV TORCH_CUDA_ARCH_LIST="8.0 8.6 8.7 8.9 9.0 9.0a"
-ENV PATH="/usr/local/cuda/bin:${PATH}"
-ENV LD_LIBRARY_PATH="/usr/local/cuda/lib64:${LD_LIBRARY_PATH}"
+#ENV PATH="/usr/local/cuda/bin:${PATH}"
+#ENV LD_LIBRARY_PATH="/usr/local/cuda/lib64:${LD_LIBRARY_PATH}"
 
 # Créer un dossier pour les artefacts
 WORKDIR /build
