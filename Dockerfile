@@ -1,5 +1,5 @@
-#FROM nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04 AS builder
-FROM ubuntu:22.04 AS builder
+FROM nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04 AS builder
+#FROM ubuntu:22.04 AS builder
 
 # Installer les dépendances nécessaires pour la compilation
 RUN apt-get update && \
@@ -25,15 +25,15 @@ RUN apt-get update && \
     ninja-build \
     git \
     gcc-12 g++-12
-RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb && \
-    dpkg -i cuda-keyring_1.1-1_all.deb && \
-    rm cuda-keyring_1.1-1_all.deb  # Supprimer le fichier .deb après installation
-RUN apt-get update && \
-    apt-get install -y cuda-toolkit-12-4 && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+#RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb && \
+#    dpkg -i cuda-keyring_1.1-1_all.deb && \
+#    rm cuda-keyring_1.1-1_all.deb  # Supprimer le fichier .deb après installation
+#RUN apt-get update && \
+#    apt-get install -y cuda-toolkit-12-4 && \
+#    apt-get clean && \
+#    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-    RUN pip install torch torchvision packaging
+RUN pip install torch torchvision packaging
 
 # Configurer gcc et g++
 ENV CC=/usr/bin/gcc-12
@@ -41,6 +41,10 @@ ENV CXX=/usr/bin/g++-12
 ENV TORCH_CUDA_ARCH_LIST="8.0 8.6 8.7 8.9 9.0 9.0a"
 #ENV PATH="/usr/local/cuda/bin:${PATH}"
 #ENV LD_LIBRARY_PATH="/usr/local/cuda/lib64:${LD_LIBRARY_PATH}"
+ENV CPLUS_INCLUDE_PATH=/usr/local/cuda/include:$CPLUS_INCLUDE_PATH
+ENV LIBRARY_PATH=/usr/local/cuda/lib64:$LIBRARY_PATH
+ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
+
 
 # Créer un dossier pour les artefacts
 WORKDIR /build
@@ -48,40 +52,37 @@ WORKDIR /build
 # Compiler et installer diff-gaussian-rasterizatio et simple-knn
 RUN git clone https://github.com/Dao-AILab/flash-attention --recurse-submodules
 RUN cd flash-attention && \
-    python setup.py bdist_wheel && \
+    python3 setup.py bdist_wheel && \
     cp dist/*.whl /build/
 
 RUN git clone https://github.com/SarahWeiii/diso --recurse-submodules && \
     cd diso && \
-    python setup.py bdist_wheel && \
+    python3 setup.py bdist_wheel && \
     cp dist/*.whl /build/
 
     # Compiler et installer nvdiffrast
 RUN git clone https://github.com/NVlabs/nvdiffrast.git && \
     cd nvdiffrast && \
-    python setup.py bdist_wheel && \
+    python3 setup.py bdist_wheel && \
     cp dist/*.whl /build/
 
 # Compiler et installer kaolin
 RUN git clone https://github.com/NVIDIAGameWorks/kaolin.git && \
     cd kaolin && \
-    python setup.py bdist_wheel && \
+    python3 setup.py bdist_wheel && \
     cp dist/*.whl /build/
 
     RUN git clone https://github.com/autonomousvision/mip-splatting --recurse-submodules && \
     cd mip-splatting/submodules/diff-gaussian-rasterization && \
-    python setup.py bdist_wheel && \
+    python3 setup.py bdist_wheel && \
     cp dist/*.whl /build/
 
 RUN git clone https://github.com/microsoft/TRELLIS --recurse-submodules && \
     cd TRELLIS/extensions/vox2seq && \
-    python setup.py bdist_wheel && \
+    python3 setup.py bdist_wheel && \
     cp dist/*.whl /build/
 
-RUN git clone https://github.com/JeffreyXiang/diffoctreerast --recurse-submodules && \
-    cd diffoctreerast && \
-    python setup.py bdist_wheel && \
-    cp dist/*.whl /build/
+RUN cd 
     
 FROM ghcr.io/linuxserver/baseimage-kasmvnc:ubuntujammy
 
