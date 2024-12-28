@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y \
     python3-venv \
     build-essential \
     ninja-build \
+    packaging \
     gcc-12 g++-12 && \
     apt-get install -y cuda-toolkit-12-4 && \
     rm -rf /var/lib/apt/lists/*
@@ -24,18 +25,6 @@ ENV TORCH_CUDA_ARCH_LIST="8.0 8.6 8.7 8.9 9.0 9.0a"
 # Créer un dossier pour les artefacts
 WORKDIR /build
 
-# Compiler et installer nvdiffrast
-RUN git clone https://github.com/NVlabs/nvdiffrast.git && \
-    cd nvdiffrast && \
-    python3 setup.py bdist_wheel && \
-    cp dist/*.whl /build/
-
-# Compiler et installer kaolin
-#RUN git clone https://github.com/NVIDIAGameWorks/kaolin.git && \
-#    cd kaolin && \
-#    python3 setup.py bdist_wheel && \
-#    cp dist/*.whl /build/
-
 # Compiler et installer diff-gaussian-rasterizatio et simple-knn
 RUN git clone https://github.com/Dao-AILab/flash-attention --recurse-submodules && \
     cd flash-attention && \
@@ -47,7 +36,19 @@ RUN git clone https://github.com/SarahWeiii/diso --recurse-submodules && \
     python3 setup.py bdist_wheel && \
     cp dist/*.whl /build/
 
-RUN git clone https://github.com/autonomousvision/mip-splatting --recurse-submodules && \
+    # Compiler et installer nvdiffrast
+RUN git clone https://github.com/NVlabs/nvdiffrast.git && \
+    cd nvdiffrast && \
+    python3 setup.py bdist_wheel && \
+    cp dist/*.whl /build/
+
+# Compiler et installer kaolin
+RUN git clone https://github.com/NVIDIAGameWorks/kaolin.git && \
+    cd kaolin && \
+    python3 setup.py bdist_wheel && \
+    cp dist/*.whl /build/
+
+    RUN git clone https://github.com/autonomousvision/mip-splatting --recurse-submodules && \
     cd mip-splatting/submodules/diff-gaussian-rasterization && \
     python3 setup.py bdist_wheel && \
     cp dist/*.whl /build/
