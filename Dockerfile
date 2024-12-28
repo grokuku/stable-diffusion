@@ -1,5 +1,4 @@
 FROM nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04 AS builder
-#FROM ubuntu:22.04 AS builder
 
 # Installer les dépendances nécessaires pour la compilation
 RUN apt-get update && \
@@ -25,31 +24,20 @@ RUN apt-get update && \
     ninja-build \
     git \
     gcc-12 g++-12
-#RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb && \
-#    dpkg -i cuda-keyring_1.1-1_all.deb && \
-#    rm cuda-keyring_1.1-1_all.deb  # Supprimer le fichier .deb après installation
-#RUN apt-get update && \
-#    apt-get install -y cuda-toolkit-12-4 && \
-#    apt-get clean && \
-#    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-RUN pip install torch torchvision packaging
+    RUN pip install torch torchvision packaging
 
 # Configurer gcc et g++
 ENV CC=/usr/bin/gcc-12
 ENV CXX=/usr/bin/g++-12
 ENV TORCH_CUDA_ARCH_LIST="8.0 8.6 8.7 8.9 9.0 9.0a"
-#ENV PATH="/usr/local/cuda/bin:${PATH}"
-#ENV LD_LIBRARY_PATH="/usr/local/cuda/lib64:${LD_LIBRARY_PATH}"
 ENV CPLUS_INCLUDE_PATH=/usr/local/cuda/include:$CPLUS_INCLUDE_PATH
 ENV LIBRARY_PATH=/usr/local/cuda/lib64:$LIBRARY_PATH
 ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
 
-
 # Créer un dossier pour les artefacts
 WORKDIR /build
 
-# Compiler et installer diff-gaussian-rasterizatio et simple-knn
 RUN git clone https://github.com/Dao-AILab/flash-attention --recurse-submodules
 RUN cd flash-attention && \
     python3 setup.py bdist_wheel && \
@@ -60,19 +48,17 @@ RUN git clone https://github.com/SarahWeiii/diso --recurse-submodules && \
     python3 setup.py bdist_wheel && \
     cp dist/*.whl /build/
 
-    # Compiler et installer nvdiffrast
 RUN git clone https://github.com/NVlabs/nvdiffrast.git && \
     cd nvdiffrast && \
     python3 setup.py bdist_wheel && \
     cp dist/*.whl /build/
 
-# Compiler et installer kaolin
 RUN git clone https://github.com/NVIDIAGameWorks/kaolin.git && \
     cd kaolin && \
     python3 setup.py bdist_wheel && \
     cp dist/*.whl /build/
 
-    RUN git clone https://github.com/autonomousvision/mip-splatting --recurse-submodules && \
+RUN git clone https://github.com/autonomousvision/mip-splatting --recurse-submodules && \
     cd mip-splatting/submodules/diff-gaussian-rasterization && \
     python3 setup.py bdist_wheel && \
     cp dist/*.whl /build/
@@ -94,16 +80,11 @@ ENV CUSTOM_PORT=3000
 ENV BASE_DIR=/config \
     SD_INSTALL_DIR=/opt/sd-install \
     XDG_CACHE_HOME=/config/temp
-# Configurer gcc et g++
 ENV CC=/usr/bin/gcc-12
 ENV CXX=/usr/bin/g++-12
 ENV TORCH_CUDA_ARCH_LIST="8.0 8.6 8.7 8.9 9.0 9.0a"
 
 RUN apt-get update -q && \
-#    apt-get install -y software-properties-common && \
-#    add-apt-repository -y ppa:mozillateam/ppa && \
-#    echo 'Package: firefox* \nPin: release o=LP-PPA-mozillateam \nPin-Priority: 1001' > /etc/apt/preferences.d/mozillateamppa && \
-#    apt-get update -y -q=2 && \
     apt-get install -y -q=2 curl \
     software-properties-common \
     wget \
@@ -120,7 +101,6 @@ RUN apt-get update -q && \
     cmake \
     build-essential \
     ffmpeg \
-#    dotnet-sdk-8.0 \
     gcc-12 \
     g++-12 \
     git && \
@@ -129,17 +109,6 @@ RUN apt-get update -q && \
     apt autoremove -y && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
-# Télécharger et installer le package cuda-keyring
-#RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb && \
-#    dpkg -i cuda-keyring_1.1-1_all.deb && \
-#    rm cuda-keyring_1.1-1_all.deb  # Supprimer le fichier .deb après installation
-
-# Mettre à jour les dépôts et installer le CUDA Toolkit
-#RUN apt-get update && \
-#    apt-get install -y cuda-toolkit-12-6 && \
-#    apt-get clean && \
-#    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 RUN wget https://dot.net/v1/dotnet-install.sh -O dotnet-install.sh
 RUN chmod +x ./dotnet-install.sh
@@ -150,10 +119,8 @@ RUN mkdir -p ${BASE_DIR}\temp ${SD_INSTALL_DIR} ${BASE_DIR}/outputs
 ADD parameters/* ${SD_INSTALL_DIR}/parameters/
 
 RUN mkdir -p /root/defaults
-#RUN echo "firefox" > root/defaults/autostart
 
 COPY --from=builder /build/*.whl /wheels/
-#COPY /wheels/*.whl /wheels/
 
 COPY --chown=abc:abc *.sh ./
 RUN chmod +x /entry.sh

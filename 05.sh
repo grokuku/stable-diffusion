@@ -4,8 +4,6 @@ source /functions.sh
 
 export PATH="/home/abc/miniconda3/bin:$PATH"
 export SD05_DIR=${BASE_DIR}/05-comfy-ui
-#export CC=/usr/bin/gcc-12
-#export CXX=/usr/bin/g++-12
 
 echo "Install and run Comfy-UI"
 mkdir -p ${SD05_DIR}
@@ -26,7 +24,6 @@ if [ ! -d ${SD05_DIR}/ComfyUI/custom_nodes/ComfyUI-Manager ]; then
 fi
 
 cd ${SD05_DIR}/ComfyUI/custom_nodes/ComfyUI-Manager
-#git reset --hard HEAD
 git pull -X ours
 
 # check if remote is ahead of local
@@ -86,35 +83,8 @@ if [ -f ${SD05_DIR}/requirements.txt ]; then
     pip install -r ${SD05_DIR}/requirements.txt
 fi
 
-#install nvdiffrast
-#cd /tmp
-#git clone https://github.com/NVlabs/nvdiffrast.git
-#cd nvdiffrast/
-#python setup.py install
-#pip install /opt/modules/nvdiffrast
-
-#install kaolin
-#cd /tmp
-#git clone https://github.com/NVIDIAGameWorks/kaolin
-#cd kaolin/
-#python setup.py install
-#pip install /opt/modules/kaolin
-
-#install diff-gaussian-rasterization
-#cd /tmp
-#git clone https://github.com/graphdeco-inria/diff-gaussian-rasterization --recurse
-#cd diff-gaussian-rasterization
-#python setup.py install
-
-#install simple-knn
-#cd /tmp
-#git clone https://github.com/camenduru/simple-knn --recurse
-#cd simple-knn
-#python setup.py install
-
 pip install /wheels/*.whl
-pip install diso flash-attn plyfile tqdm spconv-cu124
-pip install kaolin==0.17.0 -f https://nvidia-kaolin.s3.us-east-2.amazonaws.com/torch-2.5.1_cu124.html
+pip install plyfile tqdm spconv-cu124
 
 #run webui
 cd ${SD05_DIR}/ComfyUI
