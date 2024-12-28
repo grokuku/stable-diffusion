@@ -114,6 +114,7 @@ fi
 
 pip install /wheels/*.whl
 pip install diso flash-attn plyfile tqdm spconv-cu124
+pip install kaolin==0.17.0 -f https://nvidia-kaolin.s3.us-east-2.amazonaws.com/torch-2.5.1_cu124.html
 
 #run webui
 cd ${SD05_DIR}/ComfyUI

@@ -28,10 +28,10 @@ RUN git clone https://github.com/NVlabs/nvdiffrast.git && \
     cp dist/*.whl /build/
 
 # Compiler et installer kaolin
-RUN git clone https://github.com/NVIDIAGameWorks/kaolin.git && \
-    cd kaolin && \
-    python3 setup.py bdist_wheel && \
-    cp dist/*.whl /build/
+#RUN git clone https://github.com/NVIDIAGameWorks/kaolin.git && \
+#    cd kaolin && \
+#    python3 setup.py bdist_wheel && \
+#    cp dist/*.whl /build/
 
 # Compiler et installer diff-gaussian-rasterizatio et simple-knn
 RUN git clone https://github.com/autonomousvision/mip-splatting --recurse-submodules && \
