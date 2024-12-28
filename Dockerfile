@@ -46,41 +46,41 @@ ENV TORCH_CUDA_ARCH_LIST="8.0 8.6 8.7 8.9 9.0 9.0a"
 WORKDIR /build
 
 # Compiler et installer diff-gaussian-rasterizatio et simple-knn
-RUN git clone https://github.com/Dao-AILab/flash-attention --recurse-submodules && \
-    cd flash-attention && \
-    python3 setup.py bdist_wheel && \
+RUN git clone https://github.com/Dao-AILab/flash-attention --recurse-submodules
+RUN cd flash-attention && \
+    python setup.py bdist_wheel && \
     cp dist/*.whl /build/
 
 RUN git clone https://github.com/SarahWeiii/diso --recurse-submodules && \
     cd diso && \
-    python3 setup.py bdist_wheel && \
+    python setup.py bdist_wheel && \
     cp dist/*.whl /build/
 
     # Compiler et installer nvdiffrast
 RUN git clone https://github.com/NVlabs/nvdiffrast.git && \
     cd nvdiffrast && \
-    python3 setup.py bdist_wheel && \
+    python setup.py bdist_wheel && \
     cp dist/*.whl /build/
 
 # Compiler et installer kaolin
 RUN git clone https://github.com/NVIDIAGameWorks/kaolin.git && \
     cd kaolin && \
-    python3 setup.py bdist_wheel && \
+    python setup.py bdist_wheel && \
     cp dist/*.whl /build/
 
     RUN git clone https://github.com/autonomousvision/mip-splatting --recurse-submodules && \
     cd mip-splatting/submodules/diff-gaussian-rasterization && \
-    python3 setup.py bdist_wheel && \
+    python setup.py bdist_wheel && \
     cp dist/*.whl /build/
 
 RUN git clone https://github.com/microsoft/TRELLIS --recurse-submodules && \
     cd TRELLIS/extensions/vox2seq && \
-    python3 setup.py bdist_wheel && \
+    python setup.py bdist_wheel && \
     cp dist/*.whl /build/
 
 RUN git clone https://github.com/JeffreyXiang/diffoctreerast --recurse-submodules && \
     cd diffoctreerast && \
-    python3 setup.py bdist_wheel && \
+    python setup.py bdist_wheel && \
     cp dist/*.whl /build/
     
 FROM ghcr.io/linuxserver/baseimage-kasmvnc:ubuntujammy
