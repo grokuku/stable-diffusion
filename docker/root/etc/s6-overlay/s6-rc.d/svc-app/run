@@ -4,5 +4,6 @@
 
 echo -e "\nApp is starting!"
 #apt-get update -y && apt-get install -y firefox
+echo "sleep infinity" >> /defaults/startwm.sh
 exec \
 	  s6-setuidgid abc /entry.sh
