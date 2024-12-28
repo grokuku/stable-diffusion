@@ -1,18 +1,38 @@
-FROM nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04 AS builder
+#FROM nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04 AS builder
+FROM ubuntu:22.04 AS builder
 
 # Installer les dépendances nécessaires pour la compilation
 RUN apt-get update && apt-get install -y \
-    git \
+        apt-get install -y -q=2 curl \
+    software-properties-common \
+    wget \
+    gnupg \
+    bc \
+    rsync \
+    libgl1-mesa-glx \
+    libtcmalloc-minimal4 \
+    libcufft10 \
+    libxft2 \
+    xvfb \
+    cmake \
+    build-essential \
+    ffmpeg \
+    gcc-12 \
+    g++-12 \
     python3 \
     python3-pip \
     python3-venv \
-    build-essential \
     ninja-build \
-    gcc-12 g++-12 && \
+    gcc-12 g++-12
+RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb && \
+    dpkg -i cuda-keyring_1.1-1_all.deb && \
+    rm cuda-keyring_1.1-1_all.deb  # Supprimer le fichier .deb après installation
+RUN apt-get update && \
     apt-get install -y cuda-toolkit-12-4 && \
-    rm -rf /var/lib/apt/lists/*
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-RUN pip install torch torchvision packaging
+    RUN pip install torch torchvision packaging
 
 # Configurer gcc et g++
 ENV CC=/usr/bin/gcc-12
