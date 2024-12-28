@@ -2,8 +2,8 @@
 FROM ubuntu:22.04 AS builder
 
 # Installer les dépendances nécessaires pour la compilation
-RUN apt-get update && apt-get install -y \
-        apt-get install -y -q=2 curl \
+RUN apt-get update && \
+    apt-get install -y -q=2 curl \
     software-properties-common \
     wget \
     gnupg \
