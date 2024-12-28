@@ -49,7 +49,15 @@ RUN git clone https://github.com/JeffreyXiang/diffoctreerast --recurse-submodule
     python3 setup.py bdist_wheel && \
     cp dist/*.whl /build/
 
-    
+RUN git clone https://github.com/SarahWeiii/diso --recurse-submodules && \
+    cd diso && \
+    python3 setup.py bdist_wheel && \
+    cp dist/*.whl /build/
+
+RUN git clone https://github.com/Dao-AILab/flash-attention --recurse-submodules && \
+    cd flash-attention && \
+    python3 setup.py bdist_wheel && \
+    cp dist/*.whl /build/
 
     
 FROM ghcr.io/linuxserver/baseimage-kasmvnc:ubuntujammy
