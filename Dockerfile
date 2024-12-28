@@ -8,12 +8,11 @@ RUN apt-get update && apt-get install -y \
     python3-venv \
     build-essential \
     ninja-build \
-    packaging \
     gcc-12 g++-12 && \
     apt-get install -y cuda-toolkit-12-4 && \
     rm -rf /var/lib/apt/lists/*
 
-RUN pip install torch torchvision
+RUN pip install torch torchvision packaging
 
 # Configurer gcc et g++
 ENV CC=/usr/bin/gcc-12
