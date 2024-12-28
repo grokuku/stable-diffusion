@@ -62,6 +62,10 @@ ENV CUSTOM_PORT=3000
 ENV BASE_DIR=/config \
     SD_INSTALL_DIR=/opt/sd-install \
     XDG_CACHE_HOME=/config/temp
+# Configurer gcc et g++
+ENV CC=/usr/bin/gcc-12
+ENV CXX=/usr/bin/g++-12
+ENV TORCH_CUDA_ARCH_LIST="8.0 8.6 8.7 8.9 9.0 9.0a"
 
 RUN apt-get update -q && \
 #    apt-get install -y software-properties-common && \
@@ -85,9 +89,10 @@ RUN apt-get update -q && \
     build-essential \
     ffmpeg \
 #    dotnet-sdk-8.0 \
-#    gcc-12 \
-#    g++-12 \
+    gcc-12 \
+    g++-12 \
     git && \
+    apt purge gcc-11 g++-11 -y && \
     apt-get purge python3 -y && \
     apt autoremove -y && \
     apt-get clean && \
