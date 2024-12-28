@@ -3,9 +3,9 @@ FROM nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04 AS builder
 # Installer les dépendances nécessaires pour la compilation
 RUN apt-get update && apt-get install -y \
     git \
-    python3.11 \
+    python3 \
     python3-pip \
-    python3.11-venv \
+    python3-venv \
     build-essential \
     ninja-build \
     gcc-12 g++-12 && \
