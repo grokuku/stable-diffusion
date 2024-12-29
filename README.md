@@ -21,7 +21,7 @@ Please consult each respective website for a comprehensive description and usage
 | 51    | FaceFusion        | Next generation face swapper and enhancer                                                                                                    | https://github.com/facefusion/facefusion                |
 | 70    | Kohya             | Kohya's GUI provides a Windows-focused Gradio GUI for Kohya's Stable Diffusion trainers                                                      | https://github.com/bmaltais/kohya_ss                    |
 | 71    | Fluxgym             | Dead simple web UI for training FLUX LoRA with LOW VRAM (12GB/16GB/20GB) support                                                      | https://github.com/cocktailpeanut/fluxgym                    |
-| 72    | OneTrainer             | DOneTrainer is a one-stop solution for all your stable diffusion training needs                                                      | https://github.com/Nerogar/OneTrainer                    |
+| 72    | OneTrainer             | OneTrainer is a one-stop solution for all your stable diffusion training needs                                                      | https://github.com/Nerogar/OneTrainer                    |
   
 
 # Usage
