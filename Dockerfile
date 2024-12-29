@@ -103,6 +103,7 @@ RUN apt-get update -q && \
     ffmpeg \
     gcc-12 \
     g++-12 \
+    dotnet-sdk-8.0 \
     git && \
     apt purge gcc-11 g++-11 -y && \
     apt-get purge python3 -y && \
