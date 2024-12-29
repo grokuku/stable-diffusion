@@ -84,7 +84,10 @@ if [ -f ${SD05_DIR}/requirements.txt ]; then
 fi
 
 pip install /wheels/*.whl
-pip install plyfile tqdm spconv-cu124
+pip install plyfile \
+    tqdm \
+    spconv-cu124 \
+    sageattention
 
 #run webui
 cd ${SD05_DIR}/ComfyUI

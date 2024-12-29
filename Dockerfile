@@ -103,16 +103,13 @@ RUN apt-get update -q && \
     ffmpeg \
     gcc-12 \
     g++-12 \
+    dotnet-sdk-8.0 \
     git && \
     apt purge gcc-11 g++-11 -y && \
     apt-get purge python3 -y && \
     apt autoremove -y && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
-RUN wget https://dot.net/v1/dotnet-install.sh -O dotnet-install.sh
-RUN chmod +x ./dotnet-install.sh
-RUN ./dotnet-install.sh  --channel 8.0
 
 RUN mkdir -p ${BASE_DIR}\temp ${SD_INSTALL_DIR} ${BASE_DIR}/outputs
 
