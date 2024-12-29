@@ -20,6 +20,7 @@ Please consult each respective website for a comprehensive description and usage
 | 50    | Lama Cleaner      | A free and open-source inpainting tool powered by SOTA AI model.                                                                             | https://github.com/Sanster/lama-cleaner                 |
 | 51    | FaceFusion        | Next generation face swapper and enhancer                                                                                                    | https://github.com/facefusion/facefusion                |
 | 70    | Kohya             | Kohya's GUI provides a Windows-focused Gradio GUI for Kohya's Stable Diffusion trainers                                                      | https://github.com/bmaltais/kohya_ss                    |
+| 71    | Fluxgym             | Dead simple web UI for training FLUX LoRA with LOW VRAM (12GB/16GB/20GB) support                                                      | https://github.com/cocktailpeanut/fluxgym                    |
   
 
 # Usage
