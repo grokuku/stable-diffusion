@@ -40,8 +40,8 @@ ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
 # Créer un dossier pour les artefacts
 WORKDIR /build
 
-RUN /bin/bash -c conda create -p /buildenv -y && \
-    /bin/bash conda init --all
+RUN /bin/bash -c conda create -p /buildenv -y
+RUN /bin/bash conda init --all
 RUN /bin/bash -c conda activate /buildenv/ && \
     conda install -c conda-forge git python=3.11 packaging -y && \
     pip install torch torchvision && \
