@@ -38,7 +38,7 @@ ENV LIBRARY_PATH=/usr/local/cuda/lib64:$LIBRARY_PATH
 ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
 
 RUN conda create -p /buildenv -y && \
-    source source activate /buildenv/ && \
+    source activate /buildenv/ && \
     conda install -c conda-forge git python=3.11 packaging -y && \
     pip install torch torchvision
 
