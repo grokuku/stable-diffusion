@@ -37,40 +37,40 @@ ENV CPLUS_INCLUDE_PATH=/usr/local/cuda/include:$CPLUS_INCLUDE_PATH
 ENV LIBRARY_PATH=/usr/local/cuda/lib64:$LIBRARY_PATH
 ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
 
-RUN conda create -p /buildenv -y && \
-    conda activate /buildenv/ && \
-    conda install -c conda-forge git python=3.11 packaging -y && \
-    pip install torch torchvision
-
 # Créer un dossier pour les artefacts
 WORKDIR /build
 
-RUN git clone https://github.com/Dao-AILab/flash-attention --recurse-submodules
-RUN cd flash-attention && \
-    python3 setup.py bdist_wheel && \
-    cp dist/*.whl /build/
+RUN /bin/bash -c conda create -p /buildenv -y
+RUN /bin/bash -c source activate /buildenv/ && \
+    conda install -c conda-forge git python=3.11 packaging -y && \
+    pip install torch torchvision && \
 
-RUN git clone https://github.com/SarahWeiii/diso --recurse-submodules && \
+    git clone https://github.com/Dao-AILab/flash-attention --recurse-submodules && \
+    cd flash-attention && \
+    python3 setup.py bdist_wheel && \
+    cp dist/*.whl /build/ && \
+
+    git clone https://github.com/SarahWeiii/diso --recurse-submodules && \
     cd diso && \
     python3 setup.py bdist_wheel && \
-    cp dist/*.whl /build/
+    cp dist/*.whl /build/ && \
 
-RUN git clone https://github.com/NVlabs/nvdiffrast.git && \
+    git clone https://github.com/NVlabs/nvdiffrast.git && \
     cd nvdiffrast && \
     python3 setup.py bdist_wheel && \
-    cp dist/*.whl /build/
+    cp dist/*.whl /build/ && \
 
-RUN git clone https://github.com/NVIDIAGameWorks/kaolin.git && \
+    git clone https://github.com/NVIDIAGameWorks/kaolin.git && \
     cd kaolin && \
     python3 setup.py bdist_wheel && \
-    cp dist/*.whl /build/
+    cp dist/*.whl /build/ && \
 
-RUN git clone https://github.com/autonomousvision/mip-splatting --recurse-submodules && \
+    git clone https://github.com/autonomousvision/mip-splatting --recurse-submodules && \
     cd mip-splatting/submodules/diff-gaussian-rasterization && \
     python3 setup.py bdist_wheel && \
-    cp dist/*.whl /build/
+    cp dist/*.whl /build/ && \
 
-RUN git clone https://github.com/microsoft/TRELLIS --recurse-submodules && \
+    git clone https://github.com/microsoft/TRELLIS --recurse-submodules && \
     cd TRELLIS/extensions/vox2seq && \
     python3 setup.py bdist_wheel && \
     cp dist/*.whl /build/
