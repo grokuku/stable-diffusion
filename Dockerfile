@@ -3,7 +3,7 @@ FROM nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04 AS builder
 # Installer les dépendances nécessaires pour la compilation
 RUN apt-get update
 RUN apt-get install -y -q=2 software-properties-common && \
-    apt-get install -y python3.11 python3.11-distutils python3.11-venv python3-pip && \
+    apt-get install -y python3.11 python3.11-distutils python3.11-venv python3-pip python3.11-dev && \
     update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1 && \
     update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1
 RUN apt-get install -y -q=2 wget \
