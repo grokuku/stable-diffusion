@@ -87,7 +87,9 @@ pip install /wheels/*.whl
 pip install plyfile \
     tqdm \
     spconv-cu124 \
+    llama-cpp-python \
     sageattention
+pip install --upgrade diffusers[torch]
 
 #run webui
 cd ${SD05_DIR}/ComfyUI
