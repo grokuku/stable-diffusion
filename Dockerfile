@@ -1,10 +1,12 @@
 FROM nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04 AS builder
 
 # Installer les dépendances nécessaires pour la compilation
-RUN apt-get update && \
-    apt-get install -y -q=2 curl \
-    software-properties-common \
-    wget \
+RUN apt-get update
+RUN apt-get install -y -q=2 software-properties-common && \
+    apt-get install -y python3.11 python3.11-distutils python3.11-venv python3-pip && \
+    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1 && \
+    update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1
+RUN apt-get install -y -q=2 wget \
     gnupg \
     bc \
     rsync \
@@ -18,18 +20,13 @@ RUN apt-get update && \
     ffmpeg \
     gcc-12 \
     g++-12 \
-    openbox \
     ninja-build \
     git \
     gcc-12 g++-12
 
-RUN cd /tmp && \
-    wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh && \
-    bash Miniconda3-latest-Linux-x86_64.sh -b && \
-    rm Miniconda3-latest-Linux-x86_64.sh
+RUN pip install torch torchvision packaging
 
-# Configurer conda et gcc et g++
-ENV PATH="/root/miniconda3/bin/:$PATH"
+# Configurer gcc et g++
 ENV CC=/usr/bin/gcc-12
 ENV CXX=/usr/bin/g++-12
 ENV TORCH_CUDA_ARCH_LIST="8.0 8.6 8.7 8.9 9.0 9.0a"
@@ -40,41 +37,37 @@ ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
 # Créer un dossier pour les artefacts
 WORKDIR /build
 
-RUN /bin/bash -c conda create -p /buildenv -y
-RUN /bin/bash conda init --all
-RUN /bin/bash -c conda activate /buildenv/ && \
-    conda install -c conda-forge git python=3.11 packaging -y && \
-    pip install torch torchvision && \
-
-    git clone https://github.com/Dao-AILab/flash-attention --recurse-submodules && \
-    cd flash-attention && \
+RUN git clone https://github.com/Dao-AILab/flash-attention --recurse-submodules
+RUN cd flash-attention && \
     python3 setup.py bdist_wheel && \
-    cp dist/*.whl /build/ && \
+    cp dist/*.whl /build/
 
-    git clone https://github.com/SarahWeiii/diso --recurse-submodules && \
+RUN git clone https://github.com/SarahWeiii/diso --recurse-submodules && \
     cd diso && \
     python3 setup.py bdist_wheel && \
-    cp dist/*.whl /build/ && \
+    cp dist/*.whl /build/
 
-    git clone https://github.com/NVlabs/nvdiffrast.git && \
+RUN git clone https://github.com/NVlabs/nvdiffrast.git && \
     cd nvdiffrast && \
     python3 setup.py bdist_wheel && \
-    cp dist/*.whl /build/ && \
+    cp dist/*.whl /build/
 
-    git clone https://github.com/NVIDIAGameWorks/kaolin.git && \
+RUN git clone https://github.com/NVIDIAGameWorks/kaolin.git && \
     cd kaolin && \
     python3 setup.py bdist_wheel && \
-    cp dist/*.whl /build/ && \
+    cp dist/*.whl /build/
 
-    git clone https://github.com/autonomousvision/mip-splatting --recurse-submodules && \
+RUN git clone https://github.com/autonomousvision/mip-splatting --recurse-submodules && \
     cd mip-splatting/submodules/diff-gaussian-rasterization && \
     python3 setup.py bdist_wheel && \
-    cp dist/*.whl /build/ && \
+    cp dist/*.whl /build/
 
-    git clone https://github.com/microsoft/TRELLIS --recurse-submodules && \
+RUN git clone https://github.com/microsoft/TRELLIS --recurse-submodules && \
     cd TRELLIS/extensions/vox2seq && \
     python3 setup.py bdist_wheel && \
     cp dist/*.whl /build/
+
+RUN cd 
 
 FROM ghcr.io/linuxserver/baseimage-kasmvnc:ubuntujammy
 
