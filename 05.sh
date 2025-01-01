@@ -88,6 +88,7 @@ pip install plyfile \
     tqdm \
     spconv-cu124 \
     llama-cpp-python \
+    logger \
     sageattention
 pip install --upgrade diffusers[torch]
 
