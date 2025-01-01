@@ -18,22 +18,31 @@ RUN apt-get update && \
     ffmpeg \
     gcc-12 \
     g++-12 \
-    python3 \
-    python3-pip \
-    python3-venv \
+#    python3.11 \
+#    python3-pip \
+#    python3.11-venv \
     ninja-build \
     git \
     gcc-12 g++-12
 
-    RUN pip install torch torchvision packaging
+RUN cd /tmp && \
+    wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh && \
+    bash Miniconda3-latest-Linux-x86_64.sh -b && \
+    rm Miniconda3-latest-Linux-x86_64.sh
 
-# Configurer gcc et g++
+# Configurer conda et gcc et g++
+ENV PATH="/root/miniconda3/bin/:$PATH"
 ENV CC=/usr/bin/gcc-12
 ENV CXX=/usr/bin/g++-12
 ENV TORCH_CUDA_ARCH_LIST="8.0 8.6 8.7 8.9 9.0 9.0a"
 ENV CPLUS_INCLUDE_PATH=/usr/local/cuda/include:$CPLUS_INCLUDE_PATH
 ENV LIBRARY_PATH=/usr/local/cuda/lib64:$LIBRARY_PATH
 ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
+
+RUN conda create -p /tmp/buildenv -y && \
+    source source activate /tmp/buildenv/ && \
+    conda install -c conda-forge git python=3.11 packaging -y && \
+    pip install torch torchvision
 
 # Créer un dossier pour les artefacts
 WORKDIR /build
@@ -68,8 +77,6 @@ RUN git clone https://github.com/microsoft/TRELLIS --recurse-submodules && \
     python3 setup.py bdist_wheel && \
     cp dist/*.whl /build/
 
-RUN cd 
-    
 FROM ghcr.io/linuxserver/baseimage-kasmvnc:ubuntujammy
 
 COPY docker/root/ /
