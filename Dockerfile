@@ -18,9 +18,7 @@ RUN apt-get update && \
     ffmpeg \
     gcc-12 \
     g++-12 \
-#    python3.11 \
-#    python3-pip \
-#    python3.11-venv \
+    openbox \
     ninja-build \
     git \
     gcc-12 g++-12
@@ -39,8 +37,8 @@ ENV CPLUS_INCLUDE_PATH=/usr/local/cuda/include:$CPLUS_INCLUDE_PATH
 ENV LIBRARY_PATH=/usr/local/cuda/lib64:$LIBRARY_PATH
 ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
 
-RUN conda create -p /tmp/buildenv -y && \
-    source source activate /tmp/buildenv/ && \
+RUN conda create -p /buildenv -y && \
+    source source activate /buildenv/ && \
     conda install -c conda-forge git python=3.11 packaging -y && \
     pip install torch torchvision
 
