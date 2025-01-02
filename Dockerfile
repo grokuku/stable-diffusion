@@ -67,6 +67,11 @@ RUN git clone https://github.com/microsoft/TRELLIS --recurse-submodules && \
     python3 setup.py bdist_wheel && \
     cp dist/*.whl /build/
 
+RUN git clone https://github.com/thu-ml/SageAttention --recurse-submodules && \
+    cd SageAttention && \
+    python3 setup.py bdist_wheel && \
+    cp dist/*.whl /build/
+
 RUN cd 
 
 FROM ghcr.io/linuxserver/baseimage-kasmvnc:ubuntujammy
