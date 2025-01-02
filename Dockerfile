@@ -69,12 +69,12 @@ RUN git clone https://github.com/microsoft/TRELLIS --recurse-submodules && \
     python3 setup.py bdist_wheel && \
     cp dist/*.whl /build/
 
-ENV MAX_JOBS=1
+#ENV MAX_JOBS=1
 
-RUN git clone https://github.com/thu-ml/SageAttention --recurse-submodules && \
-    cd SageAttention && \
-    python3 setup.py bdist_wheel && \
-    cp dist/*.whl /build/
+#RUN git clone https://github.com/thu-ml/SageAttention --recurse-submodules && \
+#    cd SageAttention && \
+#    python3 setup.py bdist_wheel && \
+#    cp dist/*.whl /build/
 
 RUN cd 
 
@@ -115,6 +115,16 @@ RUN apt-get update -q && \
     git && \
     apt purge gcc-11 g++-11 -y && \
     apt-get purge python3 -y && \
+# CUDA toolkit installation
+    cd /tmp/
+    wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-ubuntu2204.pin && \
+    mv cuda-ubuntu2204.pin /etc/apt/preferences.d/cuda-repository-pin-600 && \
+    wget https://developer.download.nvidia.com/compute/cuda/12.4.0/local_installers/cuda-repo-ubuntu2204-12-4-local_12.4.0-550.54.14-1_amd64.deb && \
+    dpkg -i cuda-repo-ubuntu2204-12-4-local_12.4.0-550.54.14-1_amd64.deb && \
+    cp /var/cuda-repo-ubuntu2204-12-4-local/cuda-*-keyring.gpg /usr/share/keyrings/ && \
+    apt-get update && \
+    apt-get -y install cuda-toolkit-12-4 && \
+# CLEAN
     apt autoremove -y && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
