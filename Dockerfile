@@ -2,11 +2,13 @@ FROM nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04 AS builder
 
 # Installer les dépendances nécessaires pour la compilation
 RUN apt-get update
+
 RUN apt-get install -y -q=2 software-properties-common && \
     apt-get install -y python3.11 python3.11-distutils python3.11-venv python3-pip python3.11-dev && \
     update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1 && \
     update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1
-RUN apt-get install -y -q=2 wget \
+
+    RUN apt-get install -y -q=2 wget \
     gnupg \
     bc \
     rsync \
@@ -66,6 +68,8 @@ RUN git clone https://github.com/microsoft/TRELLIS --recurse-submodules && \
     cd TRELLIS/extensions/vox2seq && \
     python3 setup.py bdist_wheel && \
     cp dist/*.whl /build/
+
+ENV MAX_JOBS=1
 
 RUN git clone https://github.com/thu-ml/SageAttention --recurse-submodules && \
     cd SageAttention && \
