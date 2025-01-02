@@ -1,10 +1,14 @@
 FROM nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04 AS builder
 
 # Installer les dépendances nécessaires pour la compilation
-RUN apt-get update && \
-    apt-get install -y -q=2 curl \
-    software-properties-common \
-    wget \
+RUN apt-get update
+
+RUN apt-get install -y -q=2 software-properties-common && \
+    apt-get install -y python3.11 python3.11-distutils python3.11-venv python3-pip python3.11-dev && \
+    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1 && \
+    update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1
+
+    RUN apt-get install -y -q=2 wget \
     gnupg \
     bc \
     rsync \
@@ -18,14 +22,11 @@ RUN apt-get update && \
     ffmpeg \
     gcc-12 \
     g++-12 \
-    python3 \
-    python3-pip \
-    python3-venv \
     ninja-build \
     git \
     gcc-12 g++-12
 
-    RUN pip install torch torchvision packaging
+RUN pip install torch torchvision packaging
 
 # Configurer gcc et g++
 ENV CC=/usr/bin/gcc-12
@@ -68,8 +69,15 @@ RUN git clone https://github.com/microsoft/TRELLIS --recurse-submodules && \
     python3 setup.py bdist_wheel && \
     cp dist/*.whl /build/
 
+#ENV MAX_JOBS=1
+
+#RUN git clone https://github.com/thu-ml/SageAttention --recurse-submodules && \
+#    cd SageAttention && \
+#    python3 setup.py bdist_wheel && \
+#    cp dist/*.whl /build/
+
 RUN cd 
-    
+
 FROM ghcr.io/linuxserver/baseimage-kasmvnc:ubuntujammy
 
 COPY docker/root/ /
@@ -107,6 +115,13 @@ RUN apt-get update -q && \
     git && \
     apt purge gcc-11 g++-11 -y && \
     apt-get purge python3 -y && \
+# CUDA toolkit installation
+    cd /tmp/ && \
+    wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb && \
+    dpkg -i cuda-keyring_1.1-1_all.deb && \
+    apt-get update && \
+    apt-get -y install cuda-toolkit-12-4 && \
+# CLEAN
     apt autoremove -y && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
