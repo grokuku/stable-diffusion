@@ -120,3 +120,23 @@ services:
       WEBUI_VERSION: '70'
     ports:
       - ${KOHYA_PORT:-9070}:9000/tcp
+
+  stable-flyxgym:
+    <<: *default-service
+    profiles: [fluxgym] 
+    container_name: stable-diffusion-onetrainer
+    environment:
+      <<: *default-environment
+      WEBUI_VERSION: '71'
+    ports:
+      - ${FLUXGYM_PORT:-9071}:9000/tcp
+      
+  stable-onetrainer:
+    <<: *default-service
+    profiles: [onetrainer] 
+    container_name: stable-diffusion-onetrainer
+    environment:
+      <<: *default-environment
+      WEBUI_VERSION: '72'
+    ports:
+      - ${ONETRAINER_PORT:-9072}:9000/tcp

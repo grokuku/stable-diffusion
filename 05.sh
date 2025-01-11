@@ -1,4 +1,5 @@
 #!/bin/bash
+
 source /functions.sh
 
 export PATH="/home/abc/miniconda3/bin:$PATH"
@@ -23,7 +24,6 @@ if [ ! -d ${SD05_DIR}/ComfyUI/custom_nodes/ComfyUI-Manager ]; then
 fi
 
 cd ${SD05_DIR}/ComfyUI/custom_nodes/ComfyUI-Manager
-#git reset --hard HEAD
 git pull -X ours
 
 # check if remote is ahead of local
@@ -43,8 +43,6 @@ source activate ${SD05_DIR}/env
 conda install -n base conda-libmamba-solver -y
 conda install -c conda-forge git python=3.11 pip gxx libcurand --solver=libmamba -y
 conda install -c nvidia cuda-cudart --solver=libmamba -y
-#pip install onnxruntime-gpu
-#pip install insightface torch>=2.2.2 torchvision opencv-python-headless>=4.9.0.80 huggingface-hub>=0.20.2 numpy>=1.24.4
 
 #Install custom nodes dependencies if a clean Venv has been done
 if [ "$active_clean" = "1" ]; then
@@ -85,8 +83,17 @@ if [ -f ${SD05_DIR}/requirements.txt ]; then
     pip install -r ${SD05_DIR}/requirements.txt
 fi
 
+pip install /wheels/*.whl
+pip install plyfile \
+    tqdm \
+    spconv-cu124 \
+    llama-cpp-python \
+    logger \
+    sageattention
+pip install --upgrade diffusers[torch]
 
 #run webui
+cd ${SD05_DIR}/ComfyUI
 CMD="python3 main.py"
 while IFS= read -r param; do
     if [[ $param != \#* ]]; then
@@ -94,4 +101,4 @@ while IFS= read -r param; do
     fi
 done < "${SD05_DIR}/parameters.txt"
 eval $CMD
-wait 99999
+sleep infinity

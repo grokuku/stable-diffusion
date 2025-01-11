@@ -59,6 +59,9 @@ sl_folder ${SD02_DIR}/forge/models ControlNet ${BASE_DIR}/models controlnet
 
 sl_folder ${SD02_DIR}/forge outputs ${BASE_DIR}/outputs 02-sd-webui
 
+#Force using correct version of Python
+export python_cmd="$(which python)"
+
 # Run webUI
 echo "Run Stable-Diffusion-WebUI-forge"
 cd ${SD02_DIR}/forge
@@ -69,4 +72,4 @@ while IFS= read -r param; do
     fi
 done < "${SD02_DIR}/parameters.forge.txt"
 eval $CMD
-wait 99999
+sleep infinity
