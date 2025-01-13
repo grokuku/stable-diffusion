@@ -71,6 +71,7 @@ sl_folder ${SD05_DIR}/ComfyUI/models clip ${BASE_DIR}/models clip
 sl_folder ${SD05_DIR}/ComfyUI/models controlnet ${BASE_DIR}/models controlnet
 sl_folder ${SD05_DIR}/ComfyUI/models t5 ${BASE_DIR}/models t5
 sl_folder ${SD05_DIR}/ComfyUI/models unet ${BASE_DIR}/models unet
+sl_folder ${SD05_DIR}/ComfyUI/models LLM ${BASE_DIR}/models llm
 
 
 
