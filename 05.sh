@@ -15,15 +15,25 @@ if [ ! -f "$SD05_DIR/parameters.txt" ]; then
     cp -v "${SD_INSTALL_DIR}/parameters/05.txt" "$SD05_DIR/parameters.txt"
 fi
 
+# Install and update ComfyUI
 if [ ! -d ${SD05_DIR}/ComfyUI ]; then
-    git clone https://github.com/comfyanonymous/ComfyUI.git ${SD05_DIR}/ComfyUI
+    if ! git_clone_with_check "https://github.com/comfyanonymous/ComfyUI" "${SD05_DIR}/ComfyUI"; then
+        echo "CRITICAL ERROR: Unable to install ComfyUI. Stopping script."
+        exit 1
+    fi
+fi
+
+if ! git_pull_with_check "${SD05_DIR}/ComfyUI"; then
+    echo "WARNING: ComfyUI update failed. Continuing with existing version."
 fi
 
 if [ ! -d ${SD05_DIR}/ComfyUI/custom_nodes/ComfyUI-Manager ]; then
     git clone https://github.com/ltdrdata/ComfyUI-Manager.git ${SD05_DIR}/ComfyUI/custom_nodes/ComfyUI-Manager
 fi
 
-cd ${SD05_DIR}/ComfyUI/custom_nodes/ComfyUI-Manager
+cd ${SD05_DIR}/ComfyUI
+git config --global --add safe.directory ${SD05_DIR}/ComfyUI
+git checkout ${UI_BRANCH:-master}
 git pull -X ours
 
 # check if remote is ahead of local

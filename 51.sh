@@ -9,6 +9,7 @@ export SD51_DIR=${BASE_DIR}/51-facefusion
 mkdir -p ${SD51_DIR}
 mkdir -p /config/outputs/51-facefusion
 
+show_system_info
 
 if [ ! -d ${SD51_DIR}/env ]; then
     conda create -p ${SD51_DIR}/env -y
@@ -24,11 +25,12 @@ conda install -c conda-forge git python=3.11 pip gxx ffmpeg --solver=libmamba -y
     fi
 
     if [ ! -d ${SD51_DIR}/facefusion ]; then
-      cd "${SD51_DIR}" && git clone https://github.com/facefusion/facefusion
+      cd "${SD51_DIR}" && git clone -b ${UI_BRANCH:-master} https://github.com/facefusion/facefusion
     fi
 
     cd ${SD51_DIR}/facefusion
     git config --global --add safe.directory ${SD51_DIR}/facefusion
+    git checkout ${UI_BRANCH:-master}
     git pull -X ours
 
  

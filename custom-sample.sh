@@ -21,6 +21,8 @@ export CustomPARAMETERS="--listen 0.0.0.0 --port 9000"
 mkdir -p ${CustomPATH}
 mkdir -p $BASE_DIR/outputs/$CustomBASE/$CustomNAME
 
+show_system_info
+
 # Creation and Activation on the Conda Virtual Env
 if [ ! -d ${CustomPATH}/env ]; then
     conda create -p ${CustomPATH}/env -y

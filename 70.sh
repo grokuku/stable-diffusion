@@ -4,46 +4,65 @@ source /functions.sh
 export PATH="/home/abc/miniconda3/bin:$PATH"
 export SD70_DIR=${BASE_DIR}/70-kohya
 
+log_message "INFO" "Starting Kohya installation and setup"
+
 mkdir -p ${SD70_DIR}
-mkdir -p /config/outputs/70-kohya
+show_system_info
+
+# Install and update Kohya
+if ! manage_git_repo "Kohya" \
+    "https://github.com/bmaltais/kohya_ss" \
+    "${SD70_DIR}/kohya_ss"; then
+    log_message "CRITICAL" "Failed to manage Kohya repository. Exiting."
+    exit 1
+fi
+
+# Clean conda env
+log_message "INFO" "Cleaning conda environment"
+clean_env ${SD70_DIR}/conda-env
+
+# Create Conda virtual env
+if [ ! -d ${SD70_DIR}/conda-env ]; then
+    log_message "INFO" "Creating new conda environment"
+    conda create -p ${SD70_DIR}/conda-env -y
+fi
+
+# Activate conda env + install base tools
+log_message "INFO" "Installing conda packages"
+source activate ${SD70_DIR}/conda-env
+conda install -n base conda-libmamba-solver -y
+conda install -c conda-forge python=3.10 pip git --solver=libmamba -y
 
 if [ ! -f "$SD70_DIR/parameters.txt" ]; then
-  cp -v "${SD_INSTALL_DIR}/parameters/70.txt" "$SD70_DIR/parameters.txt"
+    log_message "INFO" "Copying default parameters"
+    cp -v "/opt/sd-install/parameters/70.txt" "$SD70_DIR/parameters.txt"
 fi
 
-if [ ! -d ${SD70_DIR}/kohya_ss ]; then
-  cd "${SD70_DIR}" && git clone https://github.com/bmaltais/kohya_ss
-fi
+# Create symbolic links
+log_message "INFO" "Setting up model symbolic links"
+sl_folder ${SD70_DIR}/kohya_ss/models models ${BASE_DIR}/models kohya
 
-# check if remote is ahead of local
+sl_folder ${SD70_DIR}/kohya_ss outputs ${BASE_DIR}/outputs 70-kohya
+
+# Install requirements
+log_message "INFO" "Installing Python requirements"
 cd ${SD70_DIR}/kohya_ss
-check_remote
-
-#clean conda env if needed
-clean_env ${SD70_DIR}/env
-
-#create conda env
-if [ ! -d ${SD70_DIR}/env ]; then
-    conda create -p ${SD70_DIR}/env -y
-fi
-
-source activate ${SD70_DIR}/env
-conda install -n base conda-libmamba-solver -y
-conda install -c conda-forge python=3.10 pip --solver=libmamba -y
-
-#install dependencies
-pip install --upgrade pip
-cd ${SD70_DIR}/kohya_ss
-python ./setup/setup_linux.py
-cd ${SD70_DIR}/kohya_ss
-
-# install custom requirements
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+pip install -r requirements.txt
 if [ -f ${SD70_DIR}/requirements.txt ]; then
+    log_message "INFO" "Installing additional requirements"
     pip install -r ${SD70_DIR}/requirements.txt
 fi
 
-#launch Kohya
-echo LAUNCHING KOHYA_SS !
-CMD="python kohya_gui.py"; while IFS= read -r param; do if [[ $param != \#* ]]; then CMD+=" ${param}"; fi; done < "${SD70_DIR}/parameters.txt"; eval $CMD
-
+# Run WebUI
+log_message "INFO" "Launching Kohya WebUI"
+cd ${SD70_DIR}/kohya_ss
+CMD="python kohya_gui.py"
+while IFS= read -r param; do
+    if [[ $param != \#* ]]; then
+        CMD+=" ${param}"
+    fi
+done < "${SD70_DIR}/parameters.txt"
+log_message "DEBUG" "Launch command: $CMD"
+eval $CMD
 sleep infinity

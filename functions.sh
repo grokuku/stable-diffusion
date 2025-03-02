@@ -94,3 +94,21 @@ install_requirements() {
         fi
     done
 }
+
+show_system_info() {
+    log_message "INFO" "System information:"
+    
+    # Disk space
+    local available_space=$(df -h . | awk 'NR==2 {print $4}')
+    log_message "INFO" "Available disk space: ${available_space}"
+    
+    # RAM
+    local available_ram=$(free -h | awk 'NR==2 {print $7}')
+    log_message "INFO" "Available RAM: ${available_ram}"
+    
+    # GPU info if available
+    if command -v nvidia-smi &> /dev/null; then
+        local gpu_info=$(nvidia-smi --query-gpu=gpu_name,memory.free --format=csv,noheader)
+        log_message "INFO" "GPU information: ${gpu_info}"
+    fi
+}

@@ -68,6 +68,7 @@ services:
     environment:
       <<: *default-environment
       WEBUI_VERSION: '05'
+      UI_BRANCH: 'master'
     ports:
       - ${COMFY_UI_PORT:-}9005:9000/tcp
 

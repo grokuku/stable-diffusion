@@ -21,7 +21,7 @@ fi
 
 cd ${SD50_DIR}/IOPaint
 
-pip3 install --upgrade iopaint
+pip3 install --upgrade "iopaint==${UI_BRANCH:-latest}"
 
 # install custom requirements
 pip install --upgrade pip

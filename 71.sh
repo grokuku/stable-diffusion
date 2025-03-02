@@ -4,61 +4,66 @@ source /functions.sh
 export PATH="/home/abc/miniconda3/bin:$PATH"
 export SD71_DIR=${BASE_DIR}/71-fluxgym
 
+log_message "INFO" "Starting Fluxgym installation and setup"
+
 mkdir -p ${SD71_DIR}
-mkdir -p /config/outputs/71-fluxgym
+show_system_info
+
+# Install and update Fluxgym with SD-Scripts dependency
+if ! manage_git_repo "Fluxgym" \
+    "https://github.com/cocktailpeanut/fluxgym" \
+    "${SD71_DIR}/fluxgym" \
+    "${UI_BRANCH:-master}" \
+    "https://github.com/kohya-ss/sd-scripts:sd3"; then
+    log_message "CRITICAL" "Failed to manage Fluxgym repository. Exiting."
+    exit 1
+fi
+
+# Clean conda env
+log_message "INFO" "Cleaning conda environment"
+clean_env ${SD71_DIR}/conda-env
+
+# Create Conda virtual env
+if [ ! -d ${SD71_DIR}/conda-env ]; then
+    log_message "INFO" "Creating new conda environment"
+    conda create -p ${SD71_DIR}/conda-env -y
+fi
+
+# Activate conda env + install base tools
+log_message "INFO" "Installing conda packages"
+source activate ${SD71_DIR}/conda-env
+conda install -n base conda-libmamba-solver -y
+conda install -c conda-forge python=3.10 pip git --solver=libmamba -y
 
 if [ ! -f "$SD71_DIR/parameters.txt" ]; then
-  cp -v "${SD_INSTALL_DIR}/parameters/71.txt" "$SD71_DIR/parameters.txt"
+    log_message "INFO" "Copying default parameters"
+    cp -v "/opt/sd-install/parameters/71.txt" "$SD71_DIR/parameters.txt"
 fi
 
-if [ ! -d ${SD71_DIR}/fluxgym ]; then
-  cd "${SD71_DIR}" && git clone https://github.com/cocktailpeanut/fluxgym
-  cd fluxgym
-  git clone -b sd3 https://github.com/kohya-ss/sd-scripts
-fi
-
-# check if remote is ahead of local
-cd ${SD71_DIR}/fluxgym
-check_remote
-
-#clean conda env if needed
-clean_env ${SD71_DIR}/env
-
-#create conda env
-if [ ! -d ${SD71_DIR}/env ]; then
-    conda create -p ${SD71_DIR}/env -y
-fi
-
-source activate ${SD71_DIR}/env
-conda install -n base conda-libmamba-solver -y
-conda install -c conda-forge python=3.10 pip --solver=libmamba -y
-
-
-#install dependencies
-pip install --upgrade pip
-cd ${SD71_DIR}/fluxgym/sd-scripts
-pip install -r requirements.txt
-cd ${SD71_DIR}/fluxgym/
-pip install -r requirements.txt
-pip install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu121
-
-# install custom requirements
-if [ -f ${SD71_DIR}/requirements.txt ]; then
-    pip install -r ${SD71_DIR}/requirements.txt
-fi
-
-# Merge Models, vae, lora, hypernetworks, and outputs
-sl_folder ${SD71_DIR}/fluxgym/models vae ${BASE_DIR}/models vae
-sl_folder ${SD71_DIR}/fluxgym/models clip ${BASE_DIR}/models clip
-sl_folder ${SD71_DIR}/fluxgym/models unet ${BASE_DIR}/models unet
+# Create symbolic links
+log_message "INFO" "Setting up model symbolic links"
+sl_folder ${SD71_DIR}/fluxgym/models models ${BASE_DIR}/models fluxgym
 
 sl_folder ${SD71_DIR}/fluxgym outputs ${BASE_DIR}/outputs 71-fluxgym
 
-#launch fluxgym
-export LD_LIBRARY_PATH=${SD71_DIR}/env/lib/python3.10/site-packages/nvidia/cuda_nvrtc/lib:$LD_LIBRARY_PATH
-export GRADIO_SERVER_NAME="0.0.0.0"
-export GRADIO_SERVER_PORT=9000
-cd ${SD71_DIR}/fluxgym/
-echo LAUNCHING fluxgym !
-python app.py
+# Install requirements
+log_message "INFO" "Installing Python requirements"
+cd ${SD71_DIR}/fluxgym
+pip install -r requirements.txt
+if [ -f ${SD71_DIR}/requirements.txt ]; then
+    log_message "INFO" "Installing additional requirements"
+    pip install -r ${SD71_DIR}/requirements.txt
+fi
+
+# Run WebUI
+log_message "INFO" "Launching Fluxgym WebUI"
+cd ${SD71_DIR}/fluxgym
+CMD="python app.py"
+while IFS= read -r param; do
+    if [[ $param != \#* ]]; then
+        CMD+=" ${param}"
+    fi
+done < "${SD71_DIR}/parameters.txt"
+log_message "DEBUG" "Launch command: $CMD"
+eval $CMD
 sleep infinity

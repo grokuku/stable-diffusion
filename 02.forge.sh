@@ -1,25 +1,25 @@
 #!/bin/bash
 source /functions.sh
 
-
 export PATH="/home/abc/miniconda3/bin:$PATH"
 export SD02_DIR=${BASE_DIR}/02-sd-webui
 
-# disable the use of a python venv
+# Disable the use of a python venv
 export venv_dir="-"
 
-# Install or update Stable-Diffusion-WebUI
+# Create necessary directories
 mkdir -p ${SD02_DIR}
 
-if [ ! -d ${SD02_DIR}/forge ]; then
-    git clone https://github.com/lllyasviel/stable-diffusion-webui-forge.git ${SD02_DIR}/forge
+show_system_info
+
+# Install and update Forge WebUI
+if ! manage_git_repo "Forge" \
+    "https://github.com/lllyasviel/stable-diffusion-webui-forge" \
+    "${SD02_DIR}/forge"; then    # Changed from stable-diffusion-webui to forge to match later references
+    exit 1
 fi
 
-# check if remote is ahead of local
-cd ${SD02_DIR}/forge
-check_remote
-
-#clean conda env
+# Clean conda env
 clean_env ${SD02_DIR}/conda-env
 
 # Create Conda virtual env
@@ -27,24 +27,24 @@ if [ ! -d ${SD02_DIR}/conda-env ]; then
     conda create -p ${SD02_DIR}/conda-env -y
 fi
 
-#activate conda env + install base tools
+# Activate conda env + install base tools
 source activate ${SD02_DIR}/conda-env
 conda install -n base conda-libmamba-solver -y
 conda install -c conda-forge python=3.11 pip gcc gxx libcurand --solver=libmamba -y
 
+# Copy default parameters if they don't exist
 if [ ! -f "$SD02_DIR/parameters.forge.txt" ]; then
     cp -v "/opt/sd-install/parameters/02.forge.txt" "$SD02_DIR/parameters.forge.txt"
 fi
 
-#install custom requirements 
+# Install custom requirements 
 pip install --upgrade pip
 
 if [ -f ${SD02_DIR}/requirements.txt ]; then
     pip install -r ${SD02_DIR}/requirements.txt
 fi
 
-# Merge Models, vae, lora, and hypernetworks, and outputs
-# Ignore move errors if they occur
+# Create symbolic links for models and outputs
 sl_folder ${SD02_DIR}/forge/models Stable-diffusion ${BASE_DIR}/models stable-diffusion
 sl_folder ${SD02_DIR}/forge/models hypernetworks ${BASE_DIR}/models hypernetwork
 sl_folder ${SD02_DIR}/forge/models Lora ${BASE_DIR}/models lora
@@ -59,11 +59,11 @@ sl_folder ${SD02_DIR}/forge/models ControlNet ${BASE_DIR}/models controlnet
 
 sl_folder ${SD02_DIR}/forge outputs ${BASE_DIR}/outputs 02-sd-webui
 
-#Force using correct version of Python
+# Force using correct version of Python
 export python_cmd="$(which python)"
 
-# Run webUI
-echo "Run Stable-Diffusion-WebUI-forge"
+# Run WebUI
+echo "Running Stable-Diffusion-WebUI-Forge"
 cd ${SD02_DIR}/forge
 CMD="bash webui.sh"
 while IFS= read -r param; do

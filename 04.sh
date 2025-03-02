@@ -2,87 +2,76 @@
 source /functions.sh
 
 export PATH="/home/abc/miniconda3/bin:$PATH"
-export SD04_DIR=${BASE_DIR}/04-SD-Next
-export use_venv=1
+export SD04_DIR=${BASE_DIR}/04-sd-next
 
-echo "Install and run SD-Next"
+log_message "INFO" "Starting SD.Next installation and setup"
 
 mkdir -p ${SD04_DIR}
+show_system_info
 
-#clone main repository
-if [ ! -d ${SD04_DIR}/webui ]; then
-    git clone https://github.com/vladmandic/automatic ${SD04_DIR}/webui
+# Install and update SD.Next
+if ! manage_git_repo "SD.Next" \
+    "https://github.com/vladmandic/automatic" \
+    "${SD04_DIR}/stable-diffusion-webui"; then
+    log_message "CRITICAL" "Failed to manage SD.Next repository. Exiting."
+    exit 1
 fi
 
+# Clean conda env
+log_message "INFO" "Cleaning conda environment"
+clean_env ${SD04_DIR}/conda-env
 
-# check if remote is ahead of local
-cd ${SD04_DIR}/webui
-check_remote
-
-#clean virtual env
-clean_env ${SD04_DIR}/env
-clean_env ${SD04_DIR}/webui/venv
-
-#create conda env if needed
-if [ ! -d ${SD04_DIR}/env ]; then
-    conda create -p ${SD04_DIR}/env -y
+# Create Conda virtual env
+if [ ! -d ${SD04_DIR}/conda-env ]; then
+    log_message "INFO" "Creating new conda environment"
+    conda create -p ${SD04_DIR}/conda-env -y
 fi
 
-#activate and install basic tools
-source activate ${SD04_DIR}/env
+# Activate conda env + install base tools
+log_message "INFO" "Installing conda packages"
+source activate ${SD04_DIR}/conda-env
 conda install -n base conda-libmamba-solver -y
 conda install -c conda-forge python=3.11 pip gcc gxx --solver=libmamba -y
 
-# Create venv
-if [ ! -d ${SD04_DIR}/webui/venv ]; then
-    echo "create venv"
-    cd ${SD04_DIR}/webui
-    python -m venv venv
-fi
-
-# install custom requirements
-    cd ${SD04_DIR}/webui
-    source venv/bin/activate
-    pip install --upgrade pip
-
-    if [ -f ${SD04_DIR}/requirements.txt ]; then
-        pip install -r ${SD04_DIR}/requirements.txt
-    fi
-
-#    pip install coloredlogs flatbuffers numpy packaging protobuf==3.20.3 sympy
-#    pip install onnxruntime-gpu --extra-index-url https://aiinfra.pkgs.visualstudio.com/PublicPackages/_packaging/onnxruntime-cuda-12/pypi/simple/
-#    pip install insightface
-#    pip install basicsr
-#    pip install sqlalchemy
-    deactivate
-
-#copy default parameters if absent
 if [ ! -f "$SD04_DIR/parameters.txt" ]; then
-    cp -v "${SD_INSTALL_DIR}/parameters/04.txt" "$SD04_DIR/parameters.txt"
+    log_message "INFO" "Copying default parameters"
+    cp -v "/opt/sd-install/parameters/04.txt" "$SD04_DIR/parameters.txt"
 fi
 
-# Merge Models, vae, lora, hypernetworks, and outputs
-sl_folder ${SD04_DIR}/webui/models Stable-diffusion ${BASE_DIR}/models stable-diffusion
-sl_folder ${SD04_DIR}/webui/models hypernetworks ${BASE_DIR}/models hypernetwork
-sl_folder ${SD04_DIR}/webui/models Lora ${BASE_DIR}/models lora
-sl_folder ${SD04_DIR}/webui/models VAE ${BASE_DIR}/models vae
-sl_folder ${SD04_DIR}/webui/models embeddings ${BASE_DIR}/models embeddings
-sl_folder ${SD04_DIR}/webui/models ESRGAN ${BASE_DIR}/models upscale
-sl_folder ${SD04_DIR}/webui/models Codeformer ${BASE_DIR}/models codeformer
-sl_folder ${SD04_DIR}/webui/models GFPGAN ${BASE_DIR}/models gfpgan
-sl_folder ${SD04_DIR}/webui/models LDSR ${BASE_DIR}/models ldsr
-sl_folder ${SD04_DIR}/webui/models ControlNet ${BASE_DIR}/models controlnet
+# Install custom requirements
+log_message "INFO" "Installing Python requirements"
+pip install --upgrade pip
 
-sl_folder ${SD04_DIR}/webui outputs ${BASE_DIR}/outputs 04-SD-Next
+if [ -f ${SD04_DIR}/requirements.txt ]; then
+    log_message "INFO" "Installing additional requirements"
+    pip install -r ${SD04_DIR}/requirements.txt
+fi
 
-cd ${SD04_DIR}/webui/
+# Create symbolic links
+log_message "INFO" "Setting up model symbolic links"
+sl_folder ${SD04_DIR}/stable-diffusion-webui/models Stable-diffusion ${BASE_DIR}/models stable-diffusion
+sl_folder ${SD04_DIR}/stable-diffusion-webui/models hypernetworks ${BASE_DIR}/models hypernetwork
+sl_folder ${SD04_DIR}/stable-diffusion-webui/models Lora ${BASE_DIR}/models lora
+sl_folder ${SD04_DIR}/stable-diffusion-webui/models VAE ${BASE_DIR}/models vae
+sl_folder ${SD04_DIR}/stable-diffusion-webui embeddings ${BASE_DIR}/models embeddings
+sl_folder ${SD04_DIR}/stable-diffusion-webui/models ESRGAN ${BASE_DIR}/models upscale
+sl_folder ${SD04_DIR}/stable-diffusion-webui/models BLIP ${BASE_DIR}/models blip
+sl_folder ${SD04_DIR}/stable-diffusion-webui/models Codeformer ${BASE_DIR}/models codeformer
+sl_folder ${SD04_DIR}/stable-diffusion-webui/models GFPGAN ${BASE_DIR}/models gfpgan
+sl_folder ${SD04_DIR}/stable-diffusion-webui/models LDSR ${BASE_DIR}/models ldsr
+sl_folder ${SD04_DIR}/stable-diffusion-webui/models ControlNet ${BASE_DIR}/models controlnet
 
-#Launch WebUI
-CMD="bash webui.sh"
+sl_folder ${SD04_DIR}/stable-diffusion-webui outputs ${BASE_DIR}/outputs 04-sd-next
+
+# Run WebUI
+log_message "INFO" "Launching SD.Next WebUI"
+cd ${SD04_DIR}/stable-diffusion-webui
+CMD="python launch.py"
 while IFS= read -r param; do
     if [[ $param != \#* ]]; then
         CMD+=" ${param}"
     fi
 done < "${SD04_DIR}/parameters.txt"
+log_message "DEBUG" "Launch command: $CMD"
 eval $CMD
 sleep infinity

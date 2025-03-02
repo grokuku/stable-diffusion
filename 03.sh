@@ -38,7 +38,7 @@ cd ${SD03_DIR}
 # Install if the folder is not present
 if [ ! -d "${SD03_DIR}/invokeai" ]; then
     mkdir -p ${SD03_DIR}/invokeai
-    pip install "InvokeAI" --use-pep517 --extra-index-url https://download.pytorch.org/whl/cu121
+    pip install "InvokeAI[xformers]==${UI_BRANCH:-latest}" --use-pep517 --extra-index-url https://download.pytorch.org/whl/cu121
 #    invokeai-configure --yes --root ${SD03_DIR}/invokeai
 fi
 

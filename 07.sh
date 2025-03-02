@@ -2,69 +2,72 @@
 source /functions.sh
 
 export PATH="/home/abc/miniconda3/bin:$PATH"
-export SD07_DIR=${BASE_DIR}/07-SwarmUI
+export SD07_DIR=${BASE_DIR}/07-swarm-ui
+
+log_message "INFO" "Starting SwarmUI installation and setup"
 
 mkdir -p ${SD07_DIR}
-mkdir -p /config/outputs/07-SwarmUI
+show_system_info
 
-#remove old venv if still exists
-if [ -d ${SD07_DIR}/venv ]; then
-    rm -rf ${SD07_DIR}/venv
+# Install and update SwarmUI
+if ! manage_git_repo "SwarmUI" \
+    "https://github.com/mcmonkeyprojects/SwarmUI.git" \
+    "${SD07_DIR}/SwarmUI"; then
+    log_message "CRITICAL" "Failed to manage SwarmUI repository. Exiting."
+    exit 1
 fi
 
-#copy default parameters if missing
-if [ ! -f "$SD07_DIR/parameters.txt" ]; then
-    cp -v "${SD_INSTALL_DIR}/parameters/07.txt" "$SD07_DIR/parameters.txt"
+# Clean conda env
+log_message "INFO" "Cleaning conda environment"
+clean_env ${SD07_DIR}/conda-env
+
+# Create Conda virtual env
+if [ ! -d ${SD07_DIR}/conda-env ]; then
+    log_message "INFO" "Creating new conda environment"
+    conda create -p ${SD07_DIR}/conda-env -y
 fi
 
-#clone repository if new install
-if [ ! -d ${SD07_DIR}/SwarmUI ]; then
-    cd "${SD07_DIR}" && git clone https://github.com/mcmonkeyprojects/SwarmUI.git
-fi
-
-# check if remote is ahead of local
-cd ${SD07_DIR}/SwarmUI
-check_remote
-
-#clean conda env if needed
-clean_env ${SD07_DIR}/env
-
-#create env if missing
-if [ ! -d ${SD07_DIR}/env ]; then
-    conda create -p ${SD07_DIR}/env -y
-fi
-
-#activate env and install packages
-source activate ${SD07_DIR}/env
+# Activate conda env + install base tools
+log_message "INFO" "Installing conda packages"
+source activate ${SD07_DIR}/conda-env
 conda install -n base conda-libmamba-solver -y
-conda install -c conda-forge git python=3.11 pip --solver=libmamba -y
+conda install -c conda-forge python=3.10 pip git --solver=libmamba -y
 
-#move models to common folder and create symlinks
-mkdir -p ${SD07_DIR}/SwarmUI/Models
+if [ ! -f "$SD07_DIR/parameters.txt" ]; then
+    log_message "INFO" "Copying default parameters"
+    cp -v "/opt/sd-install/parameters/07.txt" "$SD07_DIR/parameters.txt"
+fi
 
-sl_folder ${SD07_DIR}/SwarmUI/Models Stable-Diffusion ${BASE_DIR}/models stable-diffusion
-sl_folder ${SD07_DIR}/SwarmUI/Models Lora ${BASE_DIR}/models lora
-sl_folder ${SD07_DIR}/SwarmUI/Models VAE ${BASE_DIR}/models vae
-sl_folder ${SD07_DIR}/SwarmUI/Models Embeddings ${BASE_DIR}/models embeddings
-sl_folder ${SD07_DIR}/SwarmUI/Models clip_vision ${BASE_DIR}/models clip_vision
-sl_folder ${SD07_DIR}/SwarmUI/Models controlnet ${BASE_DIR}/models controlnet
+# Create symbolic links
+log_message "INFO" "Setting up model symbolic links"
+sl_folder ${SD07_DIR}/SwarmUI/models checkpoints ${BASE_DIR}/models stable-diffusion
+sl_folder ${SD07_DIR}/SwarmUI/models loras ${BASE_DIR}/models lora
+sl_folder ${SD07_DIR}/SwarmUI/models vae ${BASE_DIR}/models vae
+sl_folder ${SD07_DIR}/SwarmUI/models embeddings ${BASE_DIR}/models embeddings
+sl_folder ${SD07_DIR}/SwarmUI/models hypernetworks ${BASE_DIR}/models hypernetwork
+sl_folder ${SD07_DIR}/SwarmUI/models upscale_models ${BASE_DIR}/models upscale
+sl_folder ${SD07_DIR}/SwarmUI/models controlnet ${BASE_DIR}/models controlnet
 
-sl_folder ${SD07_DIR}/SwarmUI Output ${BASE_DIR}/outputs 07-SwarmUI
+sl_folder ${SD07_DIR}/SwarmUI outputs ${BASE_DIR}/outputs 07-swarm-ui
 
-# install dependencies
-pip install --upgrade pip
-
+# Install requirements
+log_message "INFO" "Installing Python requirements"
+cd ${SD07_DIR}/SwarmUI
+pip install -r requirements.txt
 if [ -f ${SD07_DIR}/requirements.txt ]; then
+    log_message "INFO" "Installing additional requirements"
     pip install -r ${SD07_DIR}/requirements.txt
 fi
 
-#launch SwarmUI
+# Run WebUI
+log_message "INFO" "Launching SwarmUI WebUI"
 cd ${SD07_DIR}/SwarmUI
-CMD="./launch-linux.sh"
+CMD="python launch.py"
 while IFS= read -r param; do
     if [[ $param != \#* ]]; then
         CMD+=" ${param}"
     fi
 done < "${SD07_DIR}/parameters.txt"
+log_message "DEBUG" "Launch command: $CMD"
 eval $CMD
 sleep infinity
