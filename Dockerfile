@@ -54,7 +54,8 @@ RUN git clone https://github.com/NVlabs/nvdiffrast.git && \
     python3 setup.py bdist_wheel && \
     cp dist/*.whl /build/
 
-RUN git clone https://github.com/NVIDIAGameWorks/kaolin.git && \
+RUN pip3 install torch==2.5.1 torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124 && \
+    git clone https://github.com/NVIDIAGameWorks/kaolin.git && \
     cd kaolin && \
     python3 setup.py bdist_wheel && \
     cp dist/*.whl /build/
