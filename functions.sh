@@ -112,3 +112,42 @@ show_system_info() {
         log_message "INFO" "GPU information: ${gpu_info}"
     fi
 }
+
+git_pull_with_check() {
+    local repo_dir="$1"
+    local branch="${2:-master}"
+    
+    log_message "INFO" "Checking repository status in $repo_dir"
+    
+    cd "$repo_dir" || {
+        log_message "ERROR" "Cannot access directory $repo_dir"
+        return 1
+    }
+    
+    # Configure git to allow safe directory
+    git config --global --add safe.directory "$repo_dir"
+    
+    # Fetch remote changes
+    if ! git fetch origin "$branch"; then
+        log_message "ERROR" "Failed to fetch from remote"
+        return 1
+    }
+    
+    # Get current and remote HEADs
+    local_head=$(git rev-parse HEAD)
+    remote_head=$(git rev-parse "origin/$branch")
+    
+    # Compare HEADs
+    if [ "$local_head" != "$remote_head" ]; then
+        log_message "INFO" "Updates available, pulling changes"
+        if ! git pull -X ours; then
+            log_message "ERROR" "Failed to pull updates"
+            return 1
+        fi
+        log_message "INFO" "Successfully updated repository"
+    else
+        log_message "INFO" "Repository is up to date"
+    fi
+    
+    return 0
+}
