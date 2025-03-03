@@ -1,5 +1,27 @@
 #!/bin/bash
 
+# Log levels: DEBUG, INFO, WARNING, ERROR, CRITICAL
+LOG_FILE="/config/sd-webui.log"
+
+log_message() {
+    local level="$1"
+    local message="$2"
+    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    local log_line="[$timestamp] [$level] $message"
+    
+    # Always log to file
+    echo "$log_line" >> "$LOG_FILE"
+    
+    # Display colored output to console based on level
+    case "$level" in
+        "DEBUG")   echo -e "\e[34m$log_line\e[0m" ;;  # Blue
+        "INFO")    echo -e "\e[32m$log_line\e[0m" ;;  # Green
+        "WARNING") echo -e "\e[33m$log_line\e[0m" ;;  # Yellow
+        "ERROR")   echo -e "\e[31m$log_line\e[0m" ;;  # Red
+        "CRITICAL") echo -e "\e[1;31m$log_line\e[0m" ;;  # Bold Red
+    esac
+}
+
 #Function to move folder and replace with symlink
 sl_folder()     {
   echo "moving folder ${1}/${2} to ${3}/${4}"
@@ -149,5 +171,60 @@ git_pull_with_check() {
         log_message "INFO" "Repository is up to date"
     fi
     
+    return 0
+}
+
+manage_git_repo() {
+    local name="$1"
+    local repo_url="$2"
+    local target_dir="$3"
+    local branch="${4:-${UI_BRANCH:-master}}"
+    local submodules="$5"
+
+    log_message "INFO" "Starting repository management for $name"
+
+    if [ ! -d "$target_dir" ]; then
+        log_message "INFO" "Cloning $name from $repo_url (branch: $branch)"
+        if ! git clone -b "$branch" "$repo_url" "$target_dir"; then
+            log_message "CRITICAL" "Failed to clone $name repository"
+            return 1
+        fi
+        log_message "INFO" "Successfully cloned $name"
+    else
+        if ! git_pull_with_check "$target_dir" "$branch"; then
+            log_message "ERROR" "Failed to update $name repository"
+            return 1
+        fi
+    fi
+
+    # Handle submodules if specified
+    if [ -n "$submodules" ]; then
+        log_message "INFO" "Processing submodules for $name"
+        while IFS=: read -r sub_url sub_branch; do
+            local sub_name=$(basename "$sub_url" .git)
+            local sub_dir="$target_dir/$sub_name"
+            
+            if [ ! -d "$sub_dir" ]; then
+                if ! git clone -b "${sub_branch:-master}" "$sub_url" "$sub_dir"; then
+                    log_message "ERROR" "Failed to clone submodule $sub_name"
+                    continue
+                fi
+            else
+                cd "$sub_dir" || {
+                    log_message "WARNING" "Cannot access submodule directory $sub_dir"
+                    continue
+                }
+                git config --global --add safe.directory "$sub_dir"
+                if ! git checkout "${sub_branch:-master}"; then
+                    log_message "WARNING" "Cannot switch to branch ${sub_branch:-master} for submodule $sub_name"
+                    continue
+                fi
+                if ! git pull -X ours; then
+                    log_message "WARNING" "Failed to update submodule $sub_name"
+                fi
+            fi
+        done <<< "$submodules"
+    fi
+
     return 0
 }

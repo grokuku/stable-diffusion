@@ -3,28 +3,25 @@
 source /functions.sh
 
 export PATH="/home/abc/miniconda3/bin:$PATH"
-export SD05_DIR=${BASE_DIR}/05-comfy-ui
+export SD05_DIR=${BASE_DIR}/05-ComfyUI
 
-echo "Install and run Comfy-UI"
+log_message "INFO" "Starting ComfyUI installation and setup"
+
 mkdir -p ${SD05_DIR}
-mkdir -p /config/outputs/05-comfy-ui
+mkdir -p $BASE_DIR/outputs/05-ComfyUI
 
-
+show_system_info
 
 if [ ! -f "$SD05_DIR/parameters.txt" ]; then
     cp -v "${SD_INSTALL_DIR}/parameters/05.txt" "$SD05_DIR/parameters.txt"
 fi
 
 # Install and update ComfyUI
-if [ ! -d ${SD05_DIR}/ComfyUI ]; then
-    if ! git_clone_with_check "https://github.com/comfyanonymous/ComfyUI" "${SD05_DIR}/ComfyUI"; then
-        echo "CRITICAL ERROR: Unable to install ComfyUI. Stopping script."
-        exit 1
-    fi
-fi
-
-if ! git_pull_with_check "${SD05_DIR}/ComfyUI"; then
-    echo "WARNING: ComfyUI update failed. Continuing with existing version."
+if ! manage_git_repo "ComfyUI" \
+    "https://github.com/comfyanonymous/ComfyUI.git" \
+    "${SD05_DIR}/ComfyUI"; then
+    log_message "CRITICAL" "Failed to manage ComfyUI repository. Exiting."
+    exit 1
 fi
 
 if [ ! -d ${SD05_DIR}/ComfyUI/custom_nodes/ComfyUI-Manager ]; then
@@ -40,21 +37,23 @@ git pull -X ours
 cd ${SD05_DIR}/ComfyUI
 check_remote
 
-#clean conda env
+# Clean conda env
+log_message "INFO" "Cleaning conda environment"
 clean_env ${SD05_DIR}/env
 
-#create conda env if needed
+# Create env if missing
 if [ ! -d ${SD05_DIR}/env ]; then
+    log_message "INFO" "Creating new conda environment"
     conda create -p ${SD05_DIR}/env -y
 fi
 
-#activate env and install basic dependencies
+# Activate env and install packages
+log_message "INFO" "Installing conda packages"
 source activate ${SD05_DIR}/env
 conda install -n base conda-libmamba-solver -y
-conda install -c conda-forge git python=3.11 pip gxx libcurand --solver=libmamba -y
-conda install -c nvidia cuda-cudart --solver=libmamba -y
+conda install -c conda-forge git python=3.10 pip --solver=libmamba -y
 
-#Install custom nodes dependencies if a clean Venv has been done
+# Install custom nodes dependencies if a clean Venv has been done
 if [ "$active_clean" = "1" ]; then
     echo "-------------------------------------"
     echo "Install Custom Nodes Dependencies"
@@ -68,29 +67,26 @@ if [ -d ${SD05_DIR}/venv ]; then
     rm -rf ${SD05_DIR}/venv
 fi
 
-# Merge Models, vae, lora, hypernetworks, and outputs
+# Create symbolic links for models
+log_message "INFO" "Setting up model symbolic links"
 sl_folder ${SD05_DIR}/ComfyUI/models checkpoints ${BASE_DIR}/models stable-diffusion
-sl_folder ${SD05_DIR}/ComfyUI/models hypernetworks ${BASE_DIR}/models hypernetwork
 sl_folder ${SD05_DIR}/ComfyUI/models loras ${BASE_DIR}/models lora
 sl_folder ${SD05_DIR}/ComfyUI/models vae ${BASE_DIR}/models vae
-sl_folder ${SD05_DIR}/ComfyUI/models vae_approx ${BASE_DIR}/models vae_approx
 sl_folder ${SD05_DIR}/ComfyUI/models embeddings ${BASE_DIR}/models embeddings
+sl_folder ${SD05_DIR}/ComfyUI/models hypernetworks ${BASE_DIR}/models hypernetwork
 sl_folder ${SD05_DIR}/ComfyUI/models upscale_models ${BASE_DIR}/models upscale
 sl_folder ${SD05_DIR}/ComfyUI/models clip_vision ${BASE_DIR}/models clip_vision
-sl_folder ${SD05_DIR}/ComfyUI/models clip ${BASE_DIR}/models clip
 sl_folder ${SD05_DIR}/ComfyUI/models controlnet ${BASE_DIR}/models controlnet
-sl_folder ${SD05_DIR}/ComfyUI/models t5 ${BASE_DIR}/models t5
-sl_folder ${SD05_DIR}/ComfyUI/models unet ${BASE_DIR}/models unet
-sl_folder ${SD05_DIR}/ComfyUI/models LLM ${BASE_DIR}/models llm
 
+# Create symbolic link for outputs
+sl_folder ${SD05_DIR}/ComfyUI/output ${BASE_DIR}/outputs 05-ComfyUI
 
-
-#install requirements
+# Install requirements
+log_message "INFO" "Installing Python requirements"
 cd ${SD05_DIR}/ComfyUI
-pip install --upgrade pip
 pip install -r requirements.txt
-
 if [ -f ${SD05_DIR}/requirements.txt ]; then
+    log_message "INFO" "Installing additional requirements"
     pip install -r ${SD05_DIR}/requirements.txt
 fi
 
@@ -103,13 +99,14 @@ pip install plyfile \
     sageattention
 pip install --upgrade diffusers[torch]
 
-#run webui
-cd ${SD05_DIR}/ComfyUI
-CMD="python3 main.py"
+# Launch WebUI
+log_message "INFO" "Launching ComfyUI WebUI"
+CMD="python main.py"
 while IFS= read -r param; do
     if [[ $param != \#* ]]; then
         CMD+=" ${param}"
     fi
 done < "${SD05_DIR}/parameters.txt"
+log_message "DEBUG" "Launch command: $CMD"
 eval $CMD
 sleep infinity
