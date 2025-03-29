@@ -1,4 +1,5 @@
 #!/bin/bash
+#test
 
 # Copy sample custom script in user folder if it doesn't exists
 
