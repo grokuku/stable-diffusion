@@ -24,15 +24,14 @@ conda install -c conda-forge git python=3.11 pip gxx ffmpeg --solver=libmamba -y
       cp -v "${SD_INSTALL_DIR}/parameters/51.txt" "$SD51_DIR/parameters.txt"
     fi
 
-    if [ ! -d ${SD51_DIR}/facefusion ]; then
-      cd "${SD51_DIR}" && git clone -b ${UI_BRANCH:-master} https://github.com/facefusion/facefusion
+    # Install and update FaceFusion
+    log_message "INFO" "Managing FaceFusion repository"
+    if ! manage_git_repo "FaceFusion" \
+        "https://github.com/facefusion/facefusion" \
+        "${SD51_DIR}/facefusion"; then
+        log_message "CRITICAL" "Failed to manage FaceFusion repository. Exiting."
+        exit 1
     fi
-
-    cd ${SD51_DIR}/facefusion
-    git config --global --add safe.directory ${SD51_DIR}/facefusion
-    git checkout ${UI_BRANCH:-master}
-    git pull -X ours
-
  
  cd ${SD51_DIR}/facefusion 
  pip install -r requirements.txt
