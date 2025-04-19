@@ -1,26 +1,30 @@
 #!/bin/bash
-# Description: This script installs and runs Easy Diffusion.
+# Description: Installs and runs the Easy Diffusion WebUI (v3.0.2).
 # Functionalities:
-#   - Sets up the environment for Easy Diffusion.
-#   - Creates and activates a conda environment.
-#   - Installs necessary Python packages.
-#   - Downloads and installs the Easy Diffusion UI.
-#   - Merges models, VAEs, LoRAs, and hypernetworks.
-#   - Copies default parameters.
-#   - Runs Easy Diffusion.
+#   - Sources shared utility functions from /functions.sh.
+#   - Sets up necessary environment variables (PATH, SD01_DIR).
+#   - Conditionally cleans the Conda environment and installer files based on the `active_clean` variable (set in entry.sh).
+#   - Creates a dedicated Conda environment (`conda-env`) if it doesn't exist.
+#   - Activates the Conda environment and installs Python 3.11 and pip using libmamba solver.
+#   - Creates necessary subdirectories within SD01_DIR (models, version, plugins/ui, scripts).
+#   - Downloads a specific plugin manager JavaScript file directly from GitHub.
+#   - Uses the `sl_folder` function (from functions.sh) to create symbolic links from the shared model directories (`$BASE_DIR/models`) to the expected locations within `$SD01_DIR/models`. This avoids duplicating model files.
+#   - Creates a symbolic link for the output directory.
+#   - Copies a default configuration file (`parameters/01.txt`) to `$SD01_DIR/config.yaml` if it doesn't exist.
+#   - Downloads and extracts the Easy Diffusion v3.0.2 release zip file if `start.sh` is not present.
+#   - Executes the `start.sh` script provided by Easy Diffusion to launch the UI.
+#   - Uses `sleep infinity` to keep the script (and potentially the container) running after launching the UI.
 # Choices and Reasons:
-#   - Conda is used for environment management to isolate dependencies.
-#   - Specific versions of Python and other packages are installed to ensure compatibility.
-#   - Symbolic links are used to merge models to avoid duplication.
-#   - The Easy Diffusion UI is downloaded from GitHub.
-#
-# Additional Notes:
-#   - This script assumes that the /functions.sh file exists and contains necessary helper functions.
-#   - The script uses environment variables such as BASE_DIR and SD_INSTALL_DIR, which should be defined before running the script.
-#   - The script installs a specific version of Easy Diffusion (v3.0.2). Consider updating the script to use the latest version.
-#   - The script uses symbolic links to merge models, which can save disk space but may cause issues if the source files are modified or deleted.
-#   - The script installs the plugin-manager plugin from a raw GitHub URL. Consider using a more reliable method for installing plugins.
-#   - The script runs Easy Diffusion in an infinite loop using `sleep infinity`. This is likely intended to keep the process running, but it may be better to use a process manager like systemd or supervisord.
+#   - Uses Conda for robust environment isolation, specifying Python 3.11 for compatibility. Libmamba solver is used for potentially faster dependency resolution.
+#   - Downloads a specific version (v3.0.2) of Easy Diffusion for reproducibility. Using a fixed version avoids unexpected changes from upstream updates.
+#   - Employs symbolic links (`sl_folder`) for model directories to efficiently share models across different UIs managed by this project structure, saving disk space.
+#   - Downloads the plugin manager directly via curl; this might be fragile if the URL changes.
+#   - The `sleep infinity` command is a simple way to keep the container alive after starting the main process, but a proper process manager within the container (like supervisord or s6-overlay, which seems partially set up in docker/root) might be more robust for handling the application lifecycle.
+# Usage Notes:
+#   - Requires `functions.sh` to be available.
+#   - Expects `BASE_DIR` and `SD_INSTALL_DIR` environment variables to be set.
+#   - The `active_clean` variable (set by `entry.sh`) controls whether the environment is wiped before setup.
+#   - Installs Easy Diffusion v3.0.2. To update, the download URL and potentially other steps might need changes.
 source /functions.sh
 
 export PATH="/home/abc/miniconda3/bin:$PATH"

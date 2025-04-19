@@ -1,27 +1,35 @@
 #!/bin/bash
-# Description: This script installs and runs Stable Diffusion WebUI Forge.
+# Description: Installs and runs the Stable Diffusion WebUI Forge variant.
 # Functionalities:
-#   - Sets up the environment for Stable Diffusion WebUI Forge.
-#   - Clones the Stable Diffusion WebUI Forge repository.
-#   - Creates and activates a conda environment.
-#   - Installs necessary Python packages.
-#   - Creates symbolic links for models and outputs.
-#   - Runs Stable Diffusion WebUI Forge.
+#   - Sources shared utility functions from /functions.sh.
+#   - Sets up necessary environment variables (PATH, SD02_DIR). Note: SD02_DIR is used, potentially conflicting if 02.sh is also used without cleaning.
+#   - Disables the webui's internal venv creation by setting `venv_dir="-`.
+#   - Creates the main directory for this UI (`$SD02_DIR`).
+#   - Displays system information using `show_system_info`.
+#   - Clones or updates the Forge repository (`lllyasviel/stable-diffusion-webui-forge`) into `$SD02_DIR/forge` using `manage_git_repo`.
+#   - Conditionally cleans the Conda environment (`$SD02_DIR/conda-env`) based on `active_clean`.
+#   - Creates a dedicated Conda environment (`conda-env`) if needed.
+#   - Activates the Conda environment and installs Python 3.11, pip, gcc, gxx, libcurand using libmamba solver.
+#   - Copies default parameters from `/opt/sd-install/parameters/02.forge.txt` to `$SD02_DIR/parameters.forge.txt` if it doesn't exist.
+#   - Installs additional Python requirements from `$SD02_DIR/requirements.txt` if it exists (Note: This might be intended to be `$SD02_DIR/forge/requirements.txt` or a forge-specific file).
+#   - Uses `sl_folder` to create symbolic links for various model types and the main output directory, pointing to shared locations under `$BASE_DIR` but within the `$SD02_DIR/forge` subdirectory.
+#   - Explicitly sets `python_cmd` to the path of the python executable within the activated Conda environment.
+#   - Constructs the launch command (`bash webui.sh`) by appending parameters read from `$SD02_DIR/parameters.forge.txt`.
+#   - Executes the constructed command using `eval`. **Warning: Using eval is a security risk.**
+#   - Uses `sleep infinity` to keep the script running after launching the UI.
 # Choices and Reasons:
-#   - Conda is used for environment management to isolate dependencies.
-#   - Specific versions of Python and other packages are installed to ensure compatibility.
-#   - Symbolic links are used to merge models to avoid duplication.
-#   - The Stable Diffusion WebUI Forge is cloned from GitHub.
-#
-# Additional Notes:
-#   - This script assumes that the /functions.sh file exists and contains necessary helper functions.
-#   - The script uses environment variables such as BASE_DIR, which should be defined before running the script.
-#   - The script clones the Stable Diffusion WebUI Forge from GitHub. Ensure that the repository is accessible and up-to-date.
-#   - The script creates a conda environment with Python 3.11. This version should be compatible with Stable Diffusion WebUI Forge.
-#   - The script installs custom requirements from a requirements.txt file. Ensure that this file exists and contains the necessary dependencies.
-#   - The script creates symbolic links for models and outputs. This can save disk space but may cause issues if the source files are modified or deleted.
-#   - The script reads parameters from a parameters.forge.txt file. Ensure that this file exists and contains the correct parameters.
-#   - The script runs Stable Diffusion WebUI Forge in an infinite loop using `sleep infinity`. This is likely intended to keep the process running, but it may be better to use a process manager like systemd or supervisord.
+#   - Uses Conda (Python 3.11) for environment management. Installs `libcurand` which might be a specific Forge dependency.
+#   - Leverages `manage_git_repo` for handling the Forge source code repository.
+#   - Uses symbolic links (`sl_folder`) extensively to share models and outputs.
+#   - Reads launch parameters from a Forge-specific file (`parameters.forge.txt`).
+#   - Uses `eval` for command execution (unsafe).
+#   - `sleep infinity` keeps the container alive.
+# Usage Notes:
+#   - Requires `functions.sh`.
+#   - Expects `BASE_DIR` and `SD_INSTALL_DIR` environment variables.
+#   - Shares the `SD02_DIR` and `conda-env` with `02.sh`. Running both without cleaning (`active_clean=1`) might lead to conflicts.
+#   - Launch parameters are controlled via `$SD02_DIR/parameters.forge.txt`.
+#   - Check the source of `$SD02_DIR/requirements.txt` if used, as it might conflict with Forge's own dependencies.
 source /functions.sh
 
 export PATH="/home/abc/miniconda3/bin:$PATH"

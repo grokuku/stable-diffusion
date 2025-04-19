@@ -1,29 +1,44 @@
 #!/bin/bash
-# Description: This script installs and runs ComfyUI.
+# Description: Installs and runs the ComfyUI WebUI.
 # Functionalities:
-#   - Sets up the environment for ComfyUI.
-#   - Clones the ComfyUI repository.
-#   - Creates and activates a conda environment.
-#   - Installs necessary Python packages.
-#   - Creates symbolic links for models and outputs.
-#   - Runs ComfyUI.
+#   - Sources shared utility functions from /functions.sh.
+#   - Sets up necessary environment variables (PATH, SD05_DIR).
+#   - Creates the main directory for this UI (`$SD05_DIR`) and its output directory.
+#   - Displays system information using `show_system_info`.
+#   - Copies default parameters from `/opt/sd-install/parameters/05.txt` to `$SD05_DIR/parameters.txt` if it doesn't exist.
+#   - Clones or updates the ComfyUI repository (`comfyanonymous/ComfyUI`) into `$SD05_DIR/ComfyUI` using `manage_git_repo`.
+#   - Clones the ComfyUI-Manager custom node into the `custom_nodes` directory if it doesn't exist.
+#   - Conditionally cleans the Conda environment (`$SD05_DIR/env`) based on `active_clean`.
+#   - Creates a dedicated Conda environment (`env`) if needed.
+#   - Activates the Conda environment and installs Python 3.10, pip, and git using libmamba solver.
+#   - If `active_clean` was true, installs requirements for custom nodes using `install_requirements` on the `custom_nodes` directory.
+#   - Removes an old `venv` directory if it exists (legacy cleanup).
+#   - Uses `sl_folder` to create symbolic links for various model types and the main output directory, pointing to shared locations under `$BASE_DIR`.
+#   - Installs ComfyUI's main requirements from `$SD05_DIR/ComfyUI/requirements.txt`.
+#   - Installs additional Python requirements from `$SD05_DIR/requirements.txt` if it exists.
+#   - Installs Python wheels found in the `/wheels/` directory within the container.
+#   - Installs several specific Python packages via pip (plyfile, tqdm, spconv-cu124, llama-cpp-python, logger, sageattention).
+#   - Upgrades the `diffusers[torch]` package.
+#   - Constructs the launch command (`python main.py`) by appending parameters read from `$SD05_DIR/parameters.txt`.
+#   - Executes the constructed command using `eval`. **Warning: Using eval is a security risk.**
+#   - Uses `sleep infinity` to keep the script running after launching the UI.
 # Choices and Reasons:
-#   - Conda is used for environment management to isolate dependencies.
-#   - Specific versions of Python and other packages are installed to ensure compatibility.
-#   - Symbolic links are used to merge models to avoid duplication.
-#   - The ComfyUI is cloned from GitHub.
-#
-# Additional Notes:
-#   - This script assumes that the /functions.sh file exists and contains necessary helper functions.
-#   - The script uses environment variables such as BASE_DIR and SD_INSTALL_DIR, which should be defined before running the script.
-#   - The script clones the ComfyUI from GitHub. Ensure that the repository is accessible and up-to-date.
-#   - The script creates a conda environment with Python 3.10. This version should be compatible with ComfyUI.
-#   - The script installs custom nodes dependencies using the install_requirements function. Ensure that this function is defined in /functions.sh.
-#   - The script creates symbolic links for models and outputs. This can save disk space but may cause issues if the source files are modified or deleted.
-#   - The script reads parameters from a parameters.txt file. Ensure that this file exists and contains the correct parameters.
-#   - The script installs several Python packages using pip, including plyfile, tqdm, spconv-cu124, llama-cpp-python, logger, and sageattention.
-#   - The script upgrades the diffusers package using pip.
-#   - The script runs ComfyUI in an infinite loop using `sleep infinity`. This is likely intended to keep the process running, but it may be better to use a process manager like systemd or supervisord.
+#   - Uses Conda (Python 3.10 specifically, likely for ComfyUI compatibility) for environment management.
+#   - Leverages `manage_git_repo` for handling the ComfyUI source code repository.
+#   - Includes specific handling for the popular ComfyUI-Manager custom node.
+#   - Conditionally installs custom node requirements only after cleaning the environment to ensure dependencies are met.
+#   - Uses symbolic links (`sl_folder`) extensively to share models and outputs.
+#   - Installs a mix of requirements from files, specific wheels, and direct package names, indicating complex dependency management.
+#   - Reads launch parameters from a separate file (`parameters.txt`).
+#   - Uses `eval` for command execution (unsafe).
+#   - `sleep infinity` keeps the container alive.
+# Usage Notes:
+#   - Requires `functions.sh`.
+#   - Expects `BASE_DIR` and `SD_INSTALL_DIR` environment variables.
+#   - `active_clean` controls environment and custom node requirement installation.
+#   - Launch parameters are controlled via `$SD05_DIR/parameters.txt`.
+#   - Additional Python dependencies can be added to `$SD05_DIR/requirements.txt`.
+#   - Assumes necessary `.whl` files are present in `/wheels/` inside the container image.
 source /functions.sh
 
 export PATH="/home/abc/miniconda3/bin:$PATH"

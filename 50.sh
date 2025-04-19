@@ -1,22 +1,30 @@
 #!/bin/bash
-# Description: This script installs and runs IOPaint.
+# Description: Installs and runs the IOPaint WebUI.
 # Functionalities:
-#   - Sets up the environment for IOPaint.
-#   - Creates and activates a conda environment.
-#   - Installs necessary Python packages, including IOPaint.
-#   - Runs IOPaint.
+#   - Sources shared utility functions from /functions.sh.
+#   - Sets up necessary environment variables (PATH, SD50_DIR).
+#   - Creates the main directory for this UI (`$SD50_DIR/IOPaint`) and its output directory (`/config/outputs/50-IOPaint`).
+#   - Creates a dedicated Conda environment (`$SD50_DIR/env`) if it doesn't exist.
+#   - Activates the Conda environment and installs Python 3.11, pip, and git using libmamba solver.
+#   - Copies default parameters from `/opt/sd-install/parameters/50.txt` to `$SD50_DIR/parameters.txt` if it doesn't exist.
+#   - Installs or upgrades IOPaint using pip. The version is determined by `$UI_BRANCH` (defaulting to 'latest').
+#   - Installs additional Python requirements from `$SD50_DIR/requirements.txt` if it exists.
+#   - Constructs the launch command (`iopaint start`) by appending parameters read from `$SD50_DIR/parameters.txt`.
+#   - Executes the constructed command using `eval`. **Warning: Using eval is a security risk.**
+#   - Uses `sleep infinity` to keep the script running after launching the UI.
 # Choices and Reasons:
-#   - Conda is used for environment management to isolate dependencies.
-#   - Specific versions of Python and other packages are installed to ensure compatibility.
-#   - Pip is used to install IOPaint and its dependencies.
-#
-# Additional Notes:
-#   - This script assumes that the /functions.sh file exists and contains necessary helper functions.
-#   - The script uses environment variables such as BASE_DIR and SD_INSTALL_DIR, which should be defined before running the script.
-#   - The script creates a conda environment with Python 3.11. This version should be compatible with IOPaint.
-#   - The script installs IOPaint from pip, using the --upgrade flag. This ensures that the latest version of IOPaint is installed.
-#   - The script reads parameters from a parameters.txt file. Ensure that this file exists and contains the correct parameters.
-#   - The script runs IOPaint in an infinite loop using `sleep infinity`. This is likely intended to keep the process running, but it may be better to use a process manager like systemd or supervisord.
+#   - Uses Conda (Python 3.11) for environment management.
+#   - Installs IOPaint directly via pip. Unlike other scripts, it doesn't use `manage_git_repo`, suggesting IOPaint is primarily distributed as a package.
+#   - Model management/symlinking (`sl_folder`) is not performed, likely because IOPaint handles models differently or doesn't require the same shared structure.
+#   - Reads launch parameters from a separate file (`parameters.txt`).
+#   - Uses `eval` for command execution (unsafe).
+#   - `sleep infinity` keeps the container alive.
+# Usage Notes:
+#   - Requires `functions.sh`.
+#   - Expects `BASE_DIR`, `SD_INSTALL_DIR`, and optionally `UI_BRANCH` environment variables.
+#   - `active_clean` (from entry.sh) would affect the Conda environment if implemented in `clean_env` for this path, but `clean_env` is not explicitly called here.
+#   - Launch parameters are controlled via `$SD50_DIR/parameters.txt`.
+#   - Additional Python dependencies can be added to `$SD50_DIR/requirements.txt`.
 source /functions.sh
 
 export PATH="/home/abc/miniconda3/bin:$PATH"

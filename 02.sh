@@ -1,28 +1,36 @@
 #!/bin/bash
-# Description: This script installs and runs Automatic1111 Stable Diffusion WebUI.
+# Description: Installs and runs the AUTOMATIC1111 Stable Diffusion WebUI.
 # Functionalities:
-#   - Sets up the environment for Automatic1111 Stable Diffusion WebUI.
-#   - Clones the Automatic1111 Stable Diffusion WebUI repository.
-#   - Creates and activates a conda environment.
-#   - Installs necessary Python packages.
-#   - Creates symbolic links for models and outputs.
-#   - Runs Automatic1111 Stable Diffusion WebUI.
+#   - Sources shared utility functions from /functions.sh.
+#   - Sets up necessary environment variables (PATH, SD02_DIR).
+#   - Disables the webui's internal venv creation by setting `venv_dir="-`.
+#   - Creates the main directory for this UI (`$SD02_DIR`).
+#   - Displays system information using `show_system_info`.
+#   - Clones or updates the AUTOMATIC1111 repository using `manage_git_repo`.
+#   - Conditionally cleans the Conda environment based on `active_clean`.
+#   - Creates a dedicated Conda environment (`conda-env`) if needed.
+#   - Activates the Conda environment and installs Python 3.11, pip, gcc, gxx using libmamba solver.
+#   - Copies default parameters from `/opt/sd-install/parameters/02.txt` to `$SD02_DIR/parameters.txt` if it doesn't exist.
+#   - Installs additional Python requirements from `$SD02_DIR/requirements.txt` if it exists.
+#   - Uses `sl_folder` to create symbolic links for various model types (Stable Diffusion, Lora, VAE, etc.) and the main output directory, pointing to shared locations under `$BASE_DIR`.
+#   - Explicitly sets `python_cmd` to the path of the python executable within the activated Conda environment.
+#   - Constructs the launch command (`bash webui.sh`) by appending parameters read from `$SD02_DIR/parameters.txt` (ignoring lines starting with #).
+#   - Executes the constructed command using `eval`. **Warning: Using eval is a security risk if the parameters file can be manipulated.**
+#   - Uses `sleep infinity` to keep the script running after launching the UI.
 # Choices and Reasons:
-#   - Conda is used for environment management to isolate dependencies.
-#   - Specific versions of Python and other packages are installed to ensure compatibility.
-#   - Symbolic links are used to merge models to avoid duplication.
-#   - The Automatic1111 Stable Diffusion WebUI is cloned from GitHub.
-#
-# Additional Notes:
-#   - This script assumes that the /functions.sh file exists and contains necessary helper functions.
-#   - The script uses environment variables such as BASE_DIR, which should be defined before running the script.
-#   - The script clones the Automatic1111 Stable Diffusion WebUI from GitHub. Ensure that the repository is accessible and up-to-date.
-#   - The script creates a conda environment with Python 3.11. This version should be compatible with Automatic1111 Stable Diffusion WebUI.
-#   - The script installs custom requirements from a requirements.txt file. Ensure that this file exists and contains the necessary dependencies.
-#   - The script creates symbolic links for models and outputs. This can save disk space but may cause issues if the source files are modified or deleted.
-#   - The script reads parameters from a parameters.txt file. Ensure that this file exists and contains the correct parameters.
-#   - The script uses log_message function for logging. Ensure that this function is defined in /functions.sh.
-#   - The script runs Automatic1111 Stable Diffusion WebUI in an infinite loop using `sleep infinity`. This is likely intended to keep the process running, but it may be better to use a process manager like systemd or supervisord.
+#   - Uses Conda (Python 3.11) for environment management, chosen over the webui's built-in venv likely for consistency or specific package needs. Libmamba solver is used.
+#   - Installs gcc/gxx, suggesting some dependencies might require compilation.
+#   - Leverages `manage_git_repo` for handling the webui's source code repository.
+#   - Uses symbolic links (`sl_folder`) extensively to share models and outputs, saving disk space.
+#   - Reads launch parameters from a separate file (`parameters.txt`) for configuration flexibility.
+#   - Uses `eval` to execute the final command string. This is convenient but potentially unsafe. A safer approach would be to build a command array.
+#   - `sleep infinity` keeps the container alive, but a proper process manager is generally preferred.
+# Usage Notes:
+#   - Requires `functions.sh`.
+#   - Expects `BASE_DIR` and `SD_INSTALL_DIR` environment variables.
+#   - `active_clean` controls environment cleaning.
+#   - Launch parameters are controlled via `$SD02_DIR/parameters.txt`.
+#   - Additional Python dependencies can be added to `$SD02_DIR/requirements.txt`.
 source /functions.sh
 
 export PATH="/home/abc/miniconda3/bin:$PATH"

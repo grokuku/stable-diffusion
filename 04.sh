@@ -1,28 +1,34 @@
 #!/bin/bash
-# Description: This script installs and runs SD.Next (Stable Diffusion WebUI).
+# Description: Installs and runs the SD.Next (Vladmandic Automatic) WebUI.
 # Functionalities:
-#   - Sets up the environment for SD.Next.
-#   - Clones the SD.Next repository.
-#   - Creates and activates a conda environment.
-#   - Installs necessary Python packages.
-#   - Creates symbolic links for models and outputs.
-#   - Runs SD.Next.
+#   - Sources shared utility functions from /functions.sh.
+#   - Sets up necessary environment variables (PATH, SD04_DIR).
+#   - Creates the main directory for this UI (`$SD04_DIR`).
+#   - Displays system information using `show_system_info`.
+#   - Clones or updates the SD.Next repository (`vladmandic/automatic`) into `$SD04_DIR/stable-diffusion-webui` using `manage_git_repo`.
+#   - Conditionally cleans the Conda environment (`$SD04_DIR/conda-env`) based on `active_clean`.
+#   - Creates a dedicated Conda environment (`conda-env`) if needed.
+#   - Activates the Conda environment and installs Python 3.11, pip, gcc, gxx using libmamba solver.
+#   - Copies default parameters from `/opt/sd-install/parameters/04.txt` to `$SD04_DIR/parameters.txt` if it doesn't exist.
+#   - Installs additional Python requirements from `$SD04_DIR/requirements.txt` if it exists.
+#   - Uses `sl_folder` to create symbolic links for various model types and the main output directory, pointing to shared locations under `$BASE_DIR`.
+#   - Constructs the launch command (`python launch.py`) by appending parameters read from `$SD04_DIR/parameters.txt`.
+#   - Executes the constructed command using `eval`. **Warning: Using eval is a security risk.**
+#   - Uses `sleep infinity` to keep the script running after launching the UI.
 # Choices and Reasons:
-#   - Conda is used for environment management to isolate dependencies.
-#   - Specific versions of Python and other packages are installed to ensure compatibility.
-#   - Symbolic links are used to merge models to avoid duplication.
-#   - The SD.Next is cloned from GitHub.
-#
-# Additional Notes:
-#   - This script assumes that the /functions.sh file exists and contains necessary helper functions.
-#   - The script uses environment variables such as BASE_DIR, which should be defined before running the script.
-#   - The script clones the SD.Next from GitHub. Ensure that the repository is accessible and up-to-date.
-#   - The script creates a conda environment with Python 3.11. This version should be compatible with SD.Next.
-#   - The script installs custom requirements from a requirements.txt file. Ensure that this file exists and contains the necessary dependencies.
-#   - The script creates symbolic links for models and outputs. This can save disk space but may cause issues if the source files are modified or deleted.
-#   - The script reads parameters from a parameters.txt file. Ensure that this file exists and contains the correct parameters.
-#   - The script uses log_message function for logging. Ensure that this function is defined in /functions.sh.
-#   - The script runs SD.Next in an infinite loop using `sleep infinity`. This is likely intended to keep the process running, but it may be better to use a process manager like systemd or supervisord.
+#   - Uses Conda (Python 3.11) for environment management. Installs gcc/gxx for potential compilation needs.
+#   - Leverages `manage_git_repo` for handling the SD.Next source code repository.
+#   - Uses symbolic links (`sl_folder`) extensively to share models and outputs.
+#   - Reads launch parameters from a separate file (`parameters.txt`) for configuration.
+#   - Uses `eval` for command execution (unsafe).
+#   - `sleep infinity` keeps the container alive.
+# Usage Notes:
+#   - Requires `functions.sh`.
+#   - Expects `BASE_DIR` and `SD_INSTALL_DIR` environment variables.
+#   - `active_clean` controls environment cleaning.
+#   - Launch parameters are controlled via `$SD04_DIR/parameters.txt`.
+#   - Additional Python dependencies can be added to `$SD04_DIR/requirements.txt`.
+#   - This script structure is very similar to 02.sh (Automatic1111) and 02.forge.sh (Forge).
 source /functions.sh
 
 export PATH="/home/abc/miniconda3/bin:$PATH"

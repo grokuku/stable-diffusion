@@ -1,25 +1,31 @@
 #!/bin/bash
-# Description: This script installs and runs InvokeAI.
+# Description: Installs and runs the InvokeAI WebUI.
 # Functionalities:
-#   - Sets up the environment for InvokeAI.
-#   - Creates and activates a conda environment.
-#   - Installs necessary Python packages, including InvokeAI.
-#   - Configures InvokeAI.
-#   - Launches the InvokeAI web interface.
+#   - Sources shared utility functions from /functions.sh.
+#   - Sets up necessary environment variables (PATH, SD03_DIR, INVOKEAI_ROOT). Sets `use_venv=0`.
+#   - Creates the main directory for this UI (`$SD03_DIR`) and a specific output directory (`/config/outputs/03-InvokeAI/tensors`).
+#   - Renames an old `parameters.txt` file if it exists, favoring `config.yaml`.
+#   - Copies a default configuration from `/opt/sd-install/parameters/03.txt` to `$SD03_DIR/config.yaml` if it doesn't exist.
+#   - Conditionally cleans the Conda environment (`$SD03_DIR/env`) based on `active_clean`.
+#   - Creates a dedicated Conda environment (`$SD03_DIR/env`) if needed.
+#   - Activates the Conda environment, installs Python 3.11, and upgrades pip.
+#   - Installs InvokeAI using pip (`InvokeAI[xformers]`) if the `$SD03_DIR/invokeai` directory doesn't exist. The version is determined by `$UI_BRANCH` (defaulting to 'latest'). Includes PyTorch index URL.
+#   - Upgrades InvokeAI using pip if the directory already exists.
+#   - Installs additional Python requirements from `$SD03_DIR/requirements.txt` if it exists.
+#   - Launches the InvokeAI web UI using the `invokeai-web` command, pointing it to the configuration file.
+#   - Uses `sleep infinity` to keep the script running after launching the UI.
 # Choices and Reasons:
-#   - Conda is used for environment management to isolate dependencies.
-#   - Specific versions of Python and other packages are installed to ensure compatibility.
-#   - Pip is used to install InvokeAI and its dependencies.
-#
-# Additional Notes:
-#   - This script assumes that the /functions.sh file exists and contains necessary helper functions.
-#   - The script uses environment variables such as BASE_DIR, SD_INSTALL_DIR, and UI_BRANCH, which should be defined before running the script.
-#   - The script creates a conda environment with Python 3.11. This version should be compatible with InvokeAI.
-#   - The script installs InvokeAI from pip, using the --use-pep517 flag. This flag is recommended for installing packages that use the modern build system.
-#   - The script installs InvokeAI with the xformers extra. This extra provides optimized implementations of certain operations, which can improve performance.
-#   - The script installs custom requirements from a requirements.txt file. Ensure that this file exists and contains the necessary dependencies.
-#   - The script launches the InvokeAI web interface using the invokeai-web command.
-#   - The script runs InvokeAI in an infinite loop using `sleep infinity`. This is likely intended to keep the process running, but it may be better to use a process manager like systemd or supervisord.
+#   - Uses Conda (Python 3.11) for environment management.
+#   - Installs/upgrades InvokeAI directly via pip, including the performance-enhancing `xformers` extra. Uses `--use-pep517` for modern build systems.
+#   - Manages configuration via `$SD03_DIR/config.yaml`, migrating away from an older `parameters.txt`.
+#   - Sets `INVOKEAI_ROOT` which InvokeAI uses to find its models, outputs, and configuration internally. Model symlinking (`sl_folder`) is not used here, assuming InvokeAI handles model locations based on its config.
+#   - `sleep infinity` keeps the container alive.
+# Usage Notes:
+#   - Requires `functions.sh`.
+#   - Expects `BASE_DIR`, `SD_INSTALL_DIR`, and optionally `UI_BRANCH` environment variables.
+#   - `active_clean` controls environment cleaning.
+#   - Configuration is primarily managed through `$SD03_DIR/config.yaml`.
+#   - Additional Python dependencies can be added to `$SD03_DIR/requirements.txt`.
 source /functions.sh
 
 export PATH="/home/abc/miniconda3/bin:$PATH"

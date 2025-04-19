@@ -1,26 +1,35 @@
 #!/bin/bash
-# Description: This script installs and runs Fluxgym.
+# Description: Installs and runs the Fluxgym WebUI.
 # Functionalities:
-#   - Sets up the environment for Fluxgym.
-#   - Clones the Fluxgym repository.
-#   - Creates and activates a conda environment.
-#   - Installs necessary Python packages.
-#   - Creates symbolic links for models and outputs.
-#   - Runs Fluxgym.
+#   - Sources shared utility functions from /functions.sh.
+#   - Sets up necessary environment variables (PATH, SD71_DIR).
+#   - Creates the main directory for this UI (`$SD71_DIR`).
+#   - Displays system information using `show_system_info`.
+#   - Clones or updates the Fluxgym repository (`cocktailpeanut/fluxgym`) into `$SD71_DIR/fluxgym` using `manage_git_repo`.
+#     - Also manages a submodule (`kohya-ss/sd-scripts` on branch `sd3`) specified in the `manage_git_repo` call.
+#   - Conditionally cleans the Conda environment (`$SD71_DIR/conda-env`) based on `active_clean`.
+#   - Creates a dedicated Conda environment (`conda-env`) if needed.
+#   - Activates the Conda environment and installs Python 3.10, pip, and git using libmamba solver.
+#   - Copies default parameters from `/opt/sd-install/parameters/71.txt` to `$SD71_DIR/parameters.txt` if it doesn't exist.
+#   - Uses `sl_folder` to create symbolic links for the `models` directory and the main output directory, pointing to shared locations under `$BASE_DIR`.
+#   - Installs Fluxgym's main requirements from `$SD71_DIR/fluxgym/requirements.txt`.
+#   - Installs additional Python requirements from `$SD71_DIR/requirements.txt` if it exists.
+#   - Constructs the launch command (`python app.py`) by appending parameters read from `$SD71_DIR/parameters.txt`.
+#   - Executes the constructed command using `eval`. **Warning: Using eval is a security risk.**
+#   - Uses `sleep infinity` to keep the script running after launching the UI.
 # Choices and Reasons:
-#   - Conda is used for environment management to isolate dependencies.
-#   - Specific versions of Python and other packages are installed to ensure compatibility.
-#   - Symbolic links are used to merge models to avoid duplication.
-#   - The Fluxgym is cloned from GitHub.
-#
-# Additional Notes:
-#   - This script assumes that the /functions.sh file exists and contains necessary helper functions.
-#   - The script uses environment variables such as BASE_DIR, SD_INSTALL_DIR, and UI_BRANCH, which should be defined before running the script.
-#   - The script clones the Fluxgym from GitHub. Ensure that the repository is accessible and up-to-date.
-#   - The script creates a conda environment with Python 3.10. This version should be compatible with Fluxgym.
-#   - The script creates symbolic links for models and outputs. This can save disk space but may cause issues if the source files are modified or deleted.
-#   - The script reads parameters from a parameters.txt file. Ensure that this file exists and contains the correct parameters.
-#   - The script runs Fluxgym in an infinite loop using `sleep infinity`. This is likely intended to keep the process running, but it may be better to use a process manager like systemd or supervisord.
+#   - Uses Conda (Python 3.10) for environment management.
+#   - Leverages `manage_git_repo` for handling the Fluxgym source code repository and its specified submodule dependency (sd-scripts).
+#   - Uses symbolic links (`sl_folder`) for models and outputs.
+#   - Reads launch parameters from a separate file (`parameters.txt`).
+#   - Uses `eval` for command execution (unsafe).
+#   - `sleep infinity` keeps the container alive.
+# Usage Notes:
+#   - Requires `functions.sh`.
+#   - Expects `BASE_DIR`, `SD_INSTALL_DIR`, and optionally `UI_BRANCH` environment variables.
+#   - `active_clean` controls environment cleaning.
+#   - Launch parameters are controlled via `$SD71_DIR/parameters.txt`.
+#   - Additional Python dependencies can be added to `$SD71_DIR/requirements.txt`.
 source /functions.sh
 
 export PATH="/home/abc/miniconda3/bin:$PATH"

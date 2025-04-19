@@ -1,26 +1,34 @@
 #!/bin/bash
-# Description: This script installs and runs OneTrainer.
+# Description: Installs and runs the OneTrainer training UI.
 # Functionalities:
-#   - Sets up the environment for OneTrainer.
-#   - Clones the OneTrainer repository.
-#   - Creates and activates a conda environment.
-#   - Installs necessary Python packages.
-#   - Creates symbolic links for models and outputs.
-#   - Runs OneTrainer.
+#   - Sources shared utility functions from /functions.sh.
+#   - Sets up necessary environment variables (PATH, SD72_DIR).
+#   - Creates the main directory for this UI (`$SD72_DIR`).
+#   - Displays system information using `show_system_info`.
+#   - Clones or updates the OneTrainer repository (`Nerogar/OneTrainer`) into `$SD72_DIR/OneTrainer` using `manage_git_repo`.
+#   - Conditionally cleans the Conda environment (`$SD72_DIR/conda-env`) based on `active_clean`.
+#   - Creates a dedicated Conda environment (`conda-env`) if needed.
+#   - Activates the Conda environment and installs Python 3.10, pip, and git using libmamba solver.
+#   - Copies default parameters from `/opt/sd-install/parameters/72.txt` to `$SD72_DIR/parameters.txt` if it doesn't exist.
+#   - Uses `sl_folder` to create symbolic links for the `models` directory and the main output directory, pointing to shared locations under `$BASE_DIR`.
+#   - Installs OneTrainer's main requirements from `$SD72_DIR/OneTrainer/requirements.txt`.
+#   - Installs additional Python requirements from `$SD72_DIR/requirements.txt` if it exists.
+#   - Constructs the launch command (`python main.py`) by appending parameters read from `$SD72_DIR/parameters.txt`.
+#   - Executes the constructed command using `eval`. **Warning: Using eval is a security risk.**
+#   - Uses `sleep infinity` to keep the script running after launching the UI.
 # Choices and Reasons:
-#   - Conda is used for environment management to isolate dependencies.
-#   - Specific versions of Python and other packages are installed to ensure compatibility.
-#   - Symbolic links are used to merge models to avoid duplication.
-#   - The OneTrainer is cloned from GitHub.
-#
-# Additional Notes:
-#   - This script assumes that the /functions.sh file exists and contains necessary helper functions.
-#   - The script uses environment variables such as BASE_DIR and SD_INSTALL_DIR, which should be defined before running the script.
-#   - The script clones the OneTrainer from GitHub. Ensure that the repository is accessible and up-to-date.
-#   - The script creates a conda environment with Python 3.10. This version should be compatible with OneTrainer.
-#   - The script creates symbolic links for models and outputs. This can save disk space but may cause issues if the source files are modified or deleted.
-#   - The script reads parameters from a parameters.txt file. Ensure that this file exists and contains the correct parameters.
-#   - The script runs OneTrainer in an infinite loop using `sleep infinity`. This is likely intended to keep the process running, but it may be better to use a process manager like systemd or supervisord.
+#   - Uses Conda (Python 3.10) for environment management.
+#   - Leverages `manage_git_repo` for handling the OneTrainer source code repository.
+#   - Uses symbolic links (`sl_folder`) for models and outputs.
+#   - Reads launch parameters from a separate file (`parameters.txt`).
+#   - Uses `eval` for command execution (unsafe).
+#   - `sleep infinity` keeps the container alive.
+# Usage Notes:
+#   - Requires `functions.sh`.
+#   - Expects `BASE_DIR` and `SD_INSTALL_DIR` environment variables.
+#   - `active_clean` controls environment cleaning.
+#   - Launch parameters are controlled via `$SD72_DIR/parameters.txt`.
+#   - Additional Python dependencies can be added to `$SD72_DIR/requirements.txt`.
 source /functions.sh
 
 export PATH="/home/abc/miniconda3/bin:$PATH"
