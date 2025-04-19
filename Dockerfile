@@ -73,6 +73,7 @@ RUN git clone https://github.com/NVlabs/nvdiffrast.git && \
     cp dist/*.whl /build/
 
 RUN pip3 install torch==2.5.1 torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124 && \
+    pip3 install Cython>=0.29.37 && \
     git clone https://github.com/NVIDIAGameWorks/kaolin.git && \
     cd kaolin && \
     python3 setup.py bdist_wheel && \
