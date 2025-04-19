@@ -122,7 +122,7 @@ services:
     ports:
       - ${KOHYA_PORT:-9070}:9000/tcp
 
-  stable-fluxgym:
+  stable-diffusion-fluxgym:
     <<: *default-service
     profiles: [fluxgym] 
     container_name: stable-diffusion-fluxgym
@@ -132,7 +132,7 @@ services:
     ports:
       - ${FLUXGYM_PORT:-9071}:9000/tcp
       
-  stable-onetrainer:
+  stable-diffusion-onetrainer:
     <<: *default-service
     profiles: [onetrainer] 
     container_name: stable-diffusion-onetrainer

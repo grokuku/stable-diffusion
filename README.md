@@ -84,6 +84,36 @@ make start fluxgym           # http://<server_ip>:9071
 make start onetrainer        # http://<server_ip>:9072
 ```
 
+### Basic Docker Compose Example
+
+If you prefer not to use profiles, you can define a single service in your `docker-compose.yml`. Here's a generic example – remember to replace `<UI_NUMBER>` and `<HOST_PORT>` with the appropriate values from the table above.
+
+```yaml
+services:
+  stable-diffusion-ui: # Choose a descriptive name
+    container_name: stable-diffusion-ui # Match the service name or choose another
+    image: holaflenain/stable-diffusion:latest
+    runtime: nvidia
+    restart: unless-stopped
+    environment:
+      # --- Required ---
+      - WEBUI_VERSION=<UI_NUMBER> # e.g., 01, 02, 05, etc. (See table above)
+      # --- Optional ---
+      - NVIDIA_VISIBLE_DEVICES=${NVIDIA_VISIBLE_DEVICES:-all}
+      # - UI_BRANCH=dev # Uncomment to use a specific branch for the UI repository (default: master)
+      # - CLEAN_ENV=true # Uncomment to force cleaning the Python environment on startup
+    ports:
+      # Map a host port to the container's internal port 9000
+      # Replace <HOST_PORT> with the desired port on your machine (e.g., 9001, 9002)
+      - ${PORT:-<HOST_PORT>}:9000/tcp
+    volumes:
+      # Map a single host directory to /config inside the container.
+      # This directory will store UI configurations, models (in /config/models),
+      # outputs (in /config/outputs), logs, etc.
+      # Adjust the host path (left side) as needed.
+      - ${STABLE_DIFFUSION_DATA_DIRECTORY:-./data/stable-diffusion}:/config:rw
+```
+
 
 ## Directory Structure
 
@@ -142,4 +172,4 @@ Support for the WebUIs available on their respective pages.
 
 ## Troubleshooting
 
-First thing to try when a UI refuse to launch, remove the cache and the numbered folder (ex :02-sd-webui ) then relaunch the container  
+First thing to try when a UI refuse to launch, remove the cache and the numbered folder (ex :02-sd-webui ) then relaunch the container

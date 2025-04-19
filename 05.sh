@@ -28,15 +28,6 @@ if [ ! -d ${SD05_DIR}/ComfyUI/custom_nodes/ComfyUI-Manager ]; then
     git clone https://github.com/ltdrdata/ComfyUI-Manager.git ${SD05_DIR}/ComfyUI/custom_nodes/ComfyUI-Manager
 fi
 
-cd ${SD05_DIR}/ComfyUI
-git config --global --add safe.directory ${SD05_DIR}/ComfyUI
-git checkout ${UI_BRANCH:-master}
-git pull -X ours
-
-# check if remote is ahead of local
-cd ${SD05_DIR}/ComfyUI
-check_remote
-
 # Clean conda env
 log_message "INFO" "Cleaning conda environment"
 clean_env ${SD05_DIR}/env

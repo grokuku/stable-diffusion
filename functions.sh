@@ -161,9 +161,9 @@ git_pull_with_check() {
     
     # Compare HEADs
     if [ "$local_head" != "$remote_head" ]; then
-        log_message "INFO" "Updates available, pulling changes"
-        if ! git pull -X ours; then
-            log_message "ERROR" "Failed to pull updates"
+        log_message "INFO" "Updates available, resetting to remote state (discarding local changes)"
+        if ! git reset --hard "origin/$branch"; then
+            log_message "ERROR" "Failed to reset to remote state"
             return 1
         fi
         log_message "INFO" "Successfully updated repository"
