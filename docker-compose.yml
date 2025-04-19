@@ -70,7 +70,7 @@ services:
       WEBUI_VERSION: '05'
       UI_BRANCH: 'master'
     ports:
-      - ${COMFY_UI_PORT:-}9005:9000/tcp
+      - ${COMFY_UI_PORT:-9005}:9000/tcp
 
   stable-diffusion-fooocus:
     <<: *default-service
@@ -122,10 +122,10 @@ services:
     ports:
       - ${KOHYA_PORT:-9070}:9000/tcp
 
-  stable-flyxgym:
+  stable-fluxgym:
     <<: *default-service
     profiles: [fluxgym] 
-    container_name: stable-diffusion-onetrainer
+    container_name: stable-diffusion-fluxgym
     environment:
       <<: *default-environment
       WEBUI_VERSION: '71'
