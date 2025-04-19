@@ -1,4 +1,17 @@
 #!/bin/bash
+# Description: This script installs and runs OneTrainer.
+# Functionalities:
+#   - Sets up the environment for OneTrainer.
+#   - Clones the OneTrainer repository.
+#   - Creates and activates a conda environment.
+#   - Installs necessary Python packages.
+#   - Creates symbolic links for models and outputs.
+#   - Runs OneTrainer.
+# Choices and Reasons:
+#   - Conda is used for environment management to isolate dependencies.
+#   - Specific versions of Python and other packages are installed to ensure compatibility.
+#   - Symbolic links are used to merge models to avoid duplication.
+#   - The OneTrainer is cloned from GitHub.
 source /functions.sh
 
 export PATH="/home/abc/miniconda3/bin:$PATH"

@@ -1,4 +1,17 @@
 #!/bin/bash
+# Description: This script installs and runs ComfyUI.
+# Functionalities:
+#   - Sets up the environment for ComfyUI.
+#   - Clones the ComfyUI repository.
+#   - Creates and activates a conda environment.
+#   - Installs necessary Python packages.
+#   - Creates symbolic links for models and outputs.
+#   - Runs ComfyUI.
+# Choices and Reasons:
+#   - Conda is used for environment management to isolate dependencies.
+#   - Specific versions of Python and other packages are installed to ensure compatibility.
+#   - Symbolic links are used to merge models to avoid duplication.
+#   - The ComfyUI is cloned from GitHub.
 
 source /functions.sh
 

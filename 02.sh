@@ -1,4 +1,17 @@
 #!/bin/bash
+# Description: This script installs and runs Automatic1111 Stable Diffusion WebUI.
+# Functionalities:
+#   - Sets up the environment for Automatic1111 Stable Diffusion WebUI.
+#   - Clones the Automatic1111 Stable Diffusion WebUI repository.
+#   - Creates and activates a conda environment.
+#   - Installs necessary Python packages.
+#   - Creates symbolic links for models and outputs.
+#   - Runs Automatic1111 Stable Diffusion WebUI.
+# Choices and Reasons:
+#   - Conda is used for environment management to isolate dependencies.
+#   - Specific versions of Python and other packages are installed to ensure compatibility.
+#   - Symbolic links are used to merge models to avoid duplication.
+#   - The Automatic1111 Stable Diffusion WebUI is cloned from GitHub.
 source /functions.sh
 
 export PATH="/home/abc/miniconda3/bin:$PATH"

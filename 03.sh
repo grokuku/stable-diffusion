@@ -1,4 +1,15 @@
 #!/bin/bash
+# Description: This script installs and runs InvokeAI.
+# Functionalities:
+#   - Sets up the environment for InvokeAI.
+#   - Creates and activates a conda environment.
+#   - Installs necessary Python packages, including InvokeAI.
+#   - Configures InvokeAI.
+#   - Launches the InvokeAI web interface.
+# Choices and Reasons:
+#   - Conda is used for environment management to isolate dependencies.
+#   - Specific versions of Python and other packages are installed to ensure compatibility.
+#   - Pip is used to install InvokeAI and its dependencies.
 source /functions.sh
 
 export PATH="/home/abc/miniconda3/bin:$PATH"

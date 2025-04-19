@@ -1,4 +1,14 @@
 #!/bin/bash
+# Description: This script installs and runs IOPaint.
+# Functionalities:
+#   - Sets up the environment for IOPaint.
+#   - Creates and activates a conda environment.
+#   - Installs necessary Python packages, including IOPaint.
+#   - Runs IOPaint.
+# Choices and Reasons:
+#   - Conda is used for environment management to isolate dependencies.
+#   - Specific versions of Python and other packages are installed to ensure compatibility.
+#   - Pip is used to install IOPaint and its dependencies.
 source /functions.sh
 
 export PATH="/home/abc/miniconda3/bin:$PATH"

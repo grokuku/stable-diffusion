@@ -1,4 +1,17 @@
 #!/bin/bash
+# Description: This script installs and runs Fooocus.
+# Functionalities:
+#   - Sets up the environment for Fooocus.
+#   - Clones the Fooocus repository.
+#   - Creates and activates a conda environment.
+#   - Installs necessary Python packages.
+#   - Creates symbolic links for models and outputs.
+#   - Runs Fooocus.
+# Choices and Reasons:
+#   - Conda is used for environment management to isolate dependencies.
+#   - Specific versions of Python and other packages are installed to ensure compatibility.
+#   - Symbolic links are used to merge models to avoid duplication.
+#   - The Fooocus is cloned from GitHub.
 source /functions.sh
 
 export PATH="/home/abc/miniconda3/bin:$PATH"
