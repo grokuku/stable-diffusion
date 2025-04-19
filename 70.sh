@@ -12,6 +12,16 @@
 #   - Specific versions of Python and other packages are installed to ensure compatibility.
 #   - Symbolic links are used to merge models to avoid duplication.
 #   - The Kohya is cloned from GitHub.
+#
+# Additional Notes:
+#   - This script assumes that the /functions.sh file exists and contains necessary helper functions.
+#   - The script uses environment variables such as BASE_DIR and SD_INSTALL_DIR, which should be defined before running the script.
+#   - The script clones the Kohya from GitHub. Ensure that the repository is accessible and up-to-date.
+#   - The script creates a conda environment with Python 3.10. This version should be compatible with Kohya.
+#   - The script creates symbolic links for models and outputs. This can save disk space but may cause issues if the source files are modified or deleted.
+#   - The script reads parameters from a parameters.txt file. Ensure that this file exists and contains the correct parameters.
+#   - The script installs torch, torchvision, and torchaudio from pytorch.org. This is necessary for running Kohya with GPU support.
+#   - The script runs Kohya in an infinite loop using `sleep infinity`. This is likely intended to keep the process running, but it may be better to use a process manager like systemd or supervisord.
 source /functions.sh
 
 export PATH="/home/abc/miniconda3/bin:$PATH"

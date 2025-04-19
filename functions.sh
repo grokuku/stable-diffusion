@@ -180,7 +180,17 @@ manage_git_repo() {
     local target_dir="$3"
     local branch="${4:-${UI_BRANCH:-master}}"
     local submodules="$5"
-
+# Description: Manages a Git repository, cloning if it doesn't exist, otherwise pulling updates.
+# Functionalities:
+#   - Clones a Git repository from a given URL to a specified target directory.
+#   - Updates an existing Git repository by fetching changes from the remote and resetting the local branch to match the remote.
+#   - Handles submodules by cloning or updating them recursively.
+# Choices and Reasons:
+#   - Uses git clone to create a local copy of the repository if it doesn't exist.
+#   - Uses git fetch and git reset --hard to update the local repository to match the remote, discarding any local changes.
+#   - Recursively handles submodules to ensure that all dependencies are up-to-date.
+#   - The function prioritizes keeping the local repository in sync with the remote, discarding local changes to avoid conflicts.
+#   - The function uses git config --global --add safe.directory to configure git to allow safe directory
     log_message "INFO" "Starting repository management for $name"
 
     if [ ! -d "$target_dir" ]; then

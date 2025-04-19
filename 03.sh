@@ -10,6 +10,16 @@
 #   - Conda is used for environment management to isolate dependencies.
 #   - Specific versions of Python and other packages are installed to ensure compatibility.
 #   - Pip is used to install InvokeAI and its dependencies.
+#
+# Additional Notes:
+#   - This script assumes that the /functions.sh file exists and contains necessary helper functions.
+#   - The script uses environment variables such as BASE_DIR, SD_INSTALL_DIR, and UI_BRANCH, which should be defined before running the script.
+#   - The script creates a conda environment with Python 3.11. This version should be compatible with InvokeAI.
+#   - The script installs InvokeAI from pip, using the --use-pep517 flag. This flag is recommended for installing packages that use the modern build system.
+#   - The script installs InvokeAI with the xformers extra. This extra provides optimized implementations of certain operations, which can improve performance.
+#   - The script installs custom requirements from a requirements.txt file. Ensure that this file exists and contains the necessary dependencies.
+#   - The script launches the InvokeAI web interface using the invokeai-web command.
+#   - The script runs InvokeAI in an infinite loop using `sleep infinity`. This is likely intended to keep the process running, but it may be better to use a process manager like systemd or supervisord.
 source /functions.sh
 
 export PATH="/home/abc/miniconda3/bin:$PATH"

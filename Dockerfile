@@ -1,4 +1,22 @@
 FROM nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04 AS builder
+# Description: This Dockerfile defines the steps to build a Docker image for running Stable Diffusion WebUIs.
+# Functionalities:
+#   - Installs necessary dependencies for compiling Python packages, including Python 3.11, wget, gnupg, bc, rsync, libgl1-mesa-glx, libtcmalloc-minimal4, libcufft10, libxft2, xvfb, cmake, build-essential, ffmpeg, gcc-12, g++-12, ninja-build, and git.
+#   - Configures gcc and g++ to use version 12.
+#   - Clones and builds several Python packages from GitHub, including flash-attention, diso, nvdiffrast, kaolin, mip-splatting, and TRELLIS.
+#   - Copies the built Python packages to a /build directory.
+# Choices and Reasons:
+#   - Uses a multi-stage build to reduce the size of the final image.
+#   - Installs specific versions of Python and other packages to ensure compatibility.
+#   - Clones and builds Python packages from GitHub to ensure that the latest versions are used.
+#   - Configures gcc and g++ to use version 12 to ensure compatibility with the CUDA toolkit.
+#
+# Additional Notes:
+#   - This Dockerfile requires Docker to be installed.
+#   - The resulting image can be used to run Stable Diffusion WebUIs.
+#   - The Dockerfile uses a base image from nvidia/cuda, which includes the CUDA toolkit.
+#   - The Dockerfile installs several Python packages that are required for Stable Diffusion WebUIs.
+#   - The Dockerfile configures gcc and g++ to use version 12, which is required for compiling some of the Python packages.
 
 # Installer les dépendances nécessaires pour la compilation
 RUN apt-get update
@@ -80,6 +98,39 @@ RUN git clone https://github.com/microsoft/TRELLIS --recurse-submodules && \
 RUN cd 
 
 FROM ghcr.io/linuxserver/baseimage-kasmvnc:ubuntujammy
+# Description: This Dockerfile defines the steps to create the final Docker image for running Stable Diffusion WebUIs.
+# Functionalities:
+#   - Uses a base image from ghcr.io/linuxserver/baseimage-kasmvnc:ubuntujammy, which provides a VNC server and other utilities.
+#   - Copies the /docker/root directory to the root directory of the image.
+#   - Sets several environment variables, including DEBIAN_FRONTEND, WEBUI_VERSION, CUSTOM_PORT, BASE_DIR, SD_INSTALL_DIR, XDG_CACHE_HOME, CC, CXX, TORCH_CUDA_ARCH_LIST, and UI_BRANCH.
+#   - Installs several dependencies, including curl, software-properties-common, wget, gnupg, mc, bc, nano, rsync, libgl1-mesa-glx, libtcmalloc-minimal4, libcufft10, libxft2, xvfb, cmake, build-essential, ffmpeg, gcc-12, g++-12, dotnet-sdk-8.0, and git.
+#   - Purges gcc-11, g++-11, and python3.
+#   - Installs the CUDA toolkit.
+#   - Copies the built Python packages from the builder image to the /wheels directory.
+#   - Copies the .sh files to the root directory of the image and makes them executable.
+#   - Sets the XDG_CONFIG_HOME and HOME environment variables.
+#   - Installs miniconda.
+#   - Exposes ports 9000 and 3000.
+# Choices and Reasons:
+#   - Uses a base image from ghcr.io/linuxserver/baseimage-kasmvnc:ubuntujammy to provide a VNC server and other utilities.
+#   - Copies the /docker/root directory to the root directory of the image to provide custom configurations and scripts.
+#   - Sets several environment variables to configure the application.
+#   - Installs several dependencies that are required for running Stable Diffusion WebUIs.
+#   - Purges gcc-11, g++-11, and python3 to ensure that the correct versions are used.
+#   - Installs the CUDA toolkit to enable GPU support.
+#   - Copies the built Python packages from the builder image to the /wheels directory to avoid having to rebuild them.
+#   - Copies the .sh files to the root directory of the image and makes them executable so that they can be run.
+#   - Sets the XDG_CONFIG_HOME and HOME environment variables to ensure that the application can find its configuration files.
+#   - Installs miniconda to provide a Python environment.
+#   - Exposes ports 9000 and 3000 so that the WebUIs can be accessed from outside the container.
+#
+# Additional Notes:
+#   - This Dockerfile requires Docker to be installed.
+#   - The resulting image can be used to run Stable Diffusion WebUIs.
+#   - The Dockerfile uses a base image from ghcr.io/linuxserver/baseimage-kasmvnc:ubuntujammy, which provides a VNC server and other utilities.
+#   - The Dockerfile installs several dependencies that are required for Stable Diffusion WebUIs.
+#   - The Dockerfile configures gcc and g++ to use version 12, which is required for compiling some of the Python packages.
+#   - The Dockerfile installs miniconda to provide a Python environment.
 
 COPY docker/root/ /
 

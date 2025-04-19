@@ -13,6 +13,14 @@
 #   - Specific versions of Python and other packages are installed to ensure compatibility.
 #   - Symbolic links are used to merge models to avoid duplication.
 #   - The Easy Diffusion UI is downloaded from GitHub.
+#
+# Additional Notes:
+#   - This script assumes that the /functions.sh file exists and contains necessary helper functions.
+#   - The script uses environment variables such as BASE_DIR and SD_INSTALL_DIR, which should be defined before running the script.
+#   - The script installs a specific version of Easy Diffusion (v3.0.2). Consider updating the script to use the latest version.
+#   - The script uses symbolic links to merge models, which can save disk space but may cause issues if the source files are modified or deleted.
+#   - The script installs the plugin-manager plugin from a raw GitHub URL. Consider using a more reliable method for installing plugins.
+#   - The script runs Easy Diffusion in an infinite loop using `sleep infinity`. This is likely intended to keep the process running, but it may be better to use a process manager like systemd or supervisord.
 source /functions.sh
 
 export PATH="/home/abc/miniconda3/bin:$PATH"

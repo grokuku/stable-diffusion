@@ -10,6 +10,15 @@
 #   - Conda is used for environment management to isolate dependencies.
 #   - Specific versions of Python and other packages are installed to ensure compatibility.
 #   - Pip is used to install FaceFusion and its dependencies.
+#
+# Additional Notes:
+#   - This script assumes that the /functions.sh file exists and contains necessary helper functions.
+#   - The script uses environment variables such as BASE_DIR and SD_INSTALL_DIR, which should be defined before running the script.
+#   - The script creates a conda environment with Python 3.11. This version should be compatible with FaceFusion.
+#   - The script installs FaceFusion from GitHub. Ensure that the repository is accessible and up-to-date.
+#   - The script installs FaceFusion with onnxruntime cuda.
+#   - The script sets GRADIO_SERVER_NAME and GRADIO_SERVER_PORT environment variables.
+#   - The script runs FaceFusion in an infinite loop using `sleep infinity`. This is likely intended to keep the process running, but it may be better to use a process manager like systemd or supervisord.
 cp /dummy.sh /usr/bin/openbox-session
 chmod +x /usr/bin/openbox-session
 source /functions.sh

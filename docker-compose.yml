@@ -1,3 +1,24 @@
+# Description: This file defines the services, networks, and volumes for a Docker Compose application that runs multiple Stable Diffusion WebUIs.
+# Functionalities:
+#   - Defines a base service configuration with common settings for all WebUIs.
+#   - Defines a base environment configuration with common environment variables.
+#   - Defines individual service configurations for each WebUI, including Easy Diffusion, Automatic1111, Forge, InvokeAI, SD.Next, ComfyUI, Fooocus, SwarmUI, Lama Cleaner, FaceFusion, Kohya, Fluxgym, and OneTrainer.
+#   - Specifies the Docker image, runtime, volumes, container name, environment variables, and ports for each service.
+#   - Uses profiles to enable or disable services based on the selected profile.
+# Choices and Reasons:
+#   - Uses a base service configuration to avoid repeating common settings for each service.
+#   - Uses a base environment configuration to define common environment variables for all services.
+#   - Defines individual service configurations for each WebUI to allow for customization and flexibility.
+#   - Uses profiles to allow users to select which WebUIs to run.
+#   - Uses environment variables to allow users to configure the application.
+#
+# Additional Notes:
+#   - This file requires Docker Compose to be installed.
+#   - The STABLE_DIFFUSION_DATA_DIRECTORY environment variable can be used to specify the location of the data directory.
+#   - The NVIDIA_VISIBLE_DEVICES environment variable can be used to specify which GPUs to use.
+#   - The TZ environment variable can be used to specify the timezone.
+#   - The PUID and PGID environment variables can be used to specify the user and group IDs.
+#   - Each service has a corresponding port environment variable that can be used to specify the port to use for the WebUI.
 x-service: &default-service
   image: holaflenain/stable-diffusion:latest
   runtime: nvidia
