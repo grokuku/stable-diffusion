@@ -31,7 +31,7 @@ RUN pip install torch torchvision packaging
 # Configurer gcc et g++
 ENV CC=/usr/bin/gcc-12
 ENV CXX=/usr/bin/g++-12
-ENV TORCH_CUDA_ARCH_LIST="8.0 8.6 8.7 8.9 9.0 9.0a"
+ENV TORCH_CUDA_ARCH_LIST="8.0 8.6 8.7 8.9 9.0 9.0a 10.0 10.0f 10.0a 10.1 10.1f 10.1a 10.3 10.3f 10.3a 12.0 12.0f 12.0a 12.1 12.1f 12.1a"
 ENV CPLUS_INCLUDE_PATH=/usr/local/cuda/include:$CPLUS_INCLUDE_PATH
 ENV LIBRARY_PATH=/usr/local/cuda/lib64:$LIBRARY_PATH
 ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
