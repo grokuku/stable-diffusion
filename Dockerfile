@@ -90,7 +90,7 @@ ENV BASE_DIR=/config \
     XDG_CACHE_HOME=/config/temp
 ENV CC=/usr/bin/gcc-12
 ENV CXX=/usr/bin/g++-12
-ENV TORCH_CUDA_ARCH_LIST="8.0 8.6 8.7 8.9 9.0 9.0a"
+ENV TORCH_CUDA_ARCH_LIST="8.0 8.6 8.7 8.9 9.0 9.0a 10.0 10.0f 10.0a 10.1 10.1f 10.1a 10.3 10.3f 10.3a 12.0 12.0f 12.0a 12.1 12.1f 12.1a"
 
 RUN apt-get update -q && \
     apt-get install -y -q=2 curl \
