@@ -8,105 +8,133 @@ on:
       - main 
       - Holaf_tests 
     paths:
-      - 'Dockerfile' 
+      - 'Dockerfile' # Ou un Dockerfile spécifique si tu en crées un pour le build des wheels
       - '.github/workflows/build-wheels.yml'
 
 jobs:
   compile_wheels:
-    runs-on: ubuntu-latest 
+    runs-on: ubuntu-latest # L'exécuteur hôte
+    container: # Utiliser le conteneur NVIDIA pour l'environnement de build
+      image: nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04
+      # Les options du conteneur peuvent être utiles si des GPU sont activement utilisés pour la compilation,
+      # mais pour l'instant, on a surtout besoin du toolkit pour les headers/libs.
+      # options: --gpus all 
 
     steps:
-      # Pas d'installation de libncurses5 ici
-      
-      - name: Install CUDA Toolkit Components
+      - name: Install essential tools (if missing from base container, though unlikely for git)
         run: |
-          wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
-          sudo dpkg -i cuda-keyring_1.1-1_all.deb
-          # S'assurer que les sources NVIDIA sont bien prises en compte avant l'install
-          sudo apt-get update 
-          
-          echo "Attempting to install targeted CUDA packages..."
-          # Essayer d'installer les composants ciblés.
-          # cuda-tools-12-4 peut être un bon méta-paquet pour les outils de base sans tout le SDK.
-          # Ou alors des paquets encore plus spécifiques.
-          # Essayons: cuda-compiler, cuda-libraries-devel, cuda-nvtx
-          # Si cuda-libraries-devel-12-4 n'est pas trouvé, cela indique un problème avec la liste des paquets du repo nvidia.
-          sudo apt-get install -y --no-install-recommends \
-            cuda-compiler-12-4 \
-            cuda-libraries-devel-12-4 \
-            cuda-nvcc-12-4 \
-            cuda-cudart-devel-12-4 \
-            cuda-nvtx-12-4
-            # Ajout de cuda-nvcc-12-4 et cuda-cudart-devel-12-4 pour être plus sûr d'avoir nvcc et les headers de base.
-            # --no-install-recommends pour éviter de tirer trop de dépendances optionnelles.
-
-          # Déterminer le chemin d'installation de CUDA (logique inchangée)
-          CUDA_VERSION_DIR="/usr/local/cuda-12.4" 
-          if [ ! -d "$CUDA_VERSION_DIR/bin" ] || [ ! -f "$CUDA_VERSION_DIR/bin/nvcc" ]; then
-             if [ -d "/usr/local/cuda/bin" ] && [ -f "/usr/local/cuda/bin/nvcc" ]; then
-                CUDA_VERSION_DIR="/usr/local/cuda"
-                echo "CUDA found at /usr/local/cuda"
-             else
-                echo "ERROR: CUDA installation path not found after installing packages. Could not find nvcc."
-                echo "Listing /usr/local/ :" && ls -l /usr/local/
-                echo "Listing /usr/local/cuda* :" && ls -ld /usr/local/cuda* || echo "No /usr/local/cuda* found"
-                # Lister les paquets CUDA installés pour débogage
-                echo "Installed CUDA packages (dpkg -l | grep cuda):"
-                dpkg -l | grep cuda || echo "No cuda packages found by dpkg."
-                exit 1
-             fi
-          else
-            echo "CUDA found at $CUDA_VERSION_DIR"
-          fi
-
-          echo "$CUDA_VERSION_DIR/bin" >> $GITHUB_PATH
-          echo "LD_LIBRARY_PATH=$CUDA_VERSION_DIR/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" >> $GITHUB_ENV
-          echo "CUDA_HOME=$CUDA_VERSION_DIR" >> $GITHUB_ENV
-          export PATH="$CUDA_VERSION_DIR/bin${PATH:+:${PATH}}"
-          export LD_LIBRARY_PATH="$CUDA_VERSION_DIR/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"
-          nvcc --version 
-
-      - name: Install Build Dependencies (Python, Git, Compilers)
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y git build-essential gcc-12 g++-12 ninja-build wget cmake \
-                                python3.11 python3.11-distutils python3.11-venv python3-pip python3.11-dev
-          sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
-          sudo update-alternatives --set python3 /usr/bin/python3.11
-          sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1
-          sudo update-alternatives --set python /usr/bin/python3.11
+          # L'image nvidia/cuda devrait déjà avoir apt, git, etc.
+          # Mais au cas où, et pour s'assurer des versions ou d'autres outils.
+          apt-get update -y
+          apt-get install -y -q=2 --no-install-recommends \
+            git \
+            wget \
+            cmake \
+            build-essential \
+            gcc-12 \
+            g++-12 \
+            ninja-build \
+            python3.11 python3.11-distutils python3.11-venv python3-pip python3.11-dev
+          update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
+          update-alternatives --set python3 /usr/bin/python3.11
+          update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1
+          update-alternatives --set python /usr/bin/python3.11
           python3 -m pip install --upgrade pip
           pip3 install torch==2.6.0 torchvision packaging cython==0.29.37
+          git --version # Vérifier la version de git dans le conteneur
 
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 
+          # fetch-depth: 0 # Par défaut, pour push/workflow_dispatch, c'est un clone complet.
+          # persist-credentials: false # N'a pas d'impact sur la méthode de checkout (archive vs git)
+          token: ${{ secrets.GITHUB_TOKEN }} # Fournir un token peut parfois encourager l'utilisation de git
 
-      - name: Verify .git folder after checkout
+      - name: Ensure .git folder by manual clone if necessary
+        shell: bash
         run: |
-          echo "PWD after checkout: $(pwd)"
+          echo "Current PWD after checkout: $(pwd)"
           ls -la
-          if [ -d ".git" ]; then
-            echo ".git folder found!"
+          if [ ! -d ".git" ]; then
+            echo "WARNING: .git folder not found after initial checkout by actions/checkout@v4. Workspace content was likely downloaded as an archive."
+            echo "Attempting manual git clone to ensure .git folder presence..."
+            
+            # Créer un répertoire temporaire pour cloner, puis déplacer le contenu
+            # Cela évite les problèmes si le dossier courant n'est pas vide ou a des permissions étranges.
+            TEMP_CLONE_DIR=$(mktemp -d)
+            echo "Cloning repository manually into $TEMP_CLONE_DIR..."
+            
+            # Cloner la branche/commit spécifique de l'événement
+            # GITHUB_REF_NAME contient le nom de la branche ou du tag
+            # GITHUB_SHA contient le SHA du commit
+            git clone --branch ${{ github.ref_name }} --single-branch https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git "$TEMP_CLONE_DIR"
+            
+            # Vérifier si le clone a réussi et contient .git
+            if [ ! -d "$TEMP_CLONE_DIR/.git" ]; then
+              echo "ERROR: Manual git clone failed or .git folder still missing in $TEMP_CLONE_DIR."
+              exit 1
+            fi
+            
+            echo "Manual clone successful. Moving contents to current workspace $(pwd)..."
+            # Supprimer le contenu actuel (qui vient de l'archive) AVANT de copier le nouveau
+            # Attention: être sûr du répertoire courant !
+            # On liste les fichiers avant pour être sûr de ne pas faire de bêtise.
+            echo "Files in $(pwd) before cleaning for manual clone:"
+            ls -A
+            find . -mindepth 1 -maxdepth 1 -not -path "./${TEMP_CLONE_DIR##*/}" -exec rm -rf {} \; # Supprime tout sauf le dossier temp_clone_dir s'il est dedans
+            
+            # Déplacer le contenu du clone (y compris .git) vers le répertoire de travail courant
+            # L'option -T de rsync est utile ici, ou shopt -s dotglob avec mv
+            echo "Moving from $TEMP_CLONE_DIR to $(pwd)"
+            if command -v rsync &> /dev/null; then
+              rsync -av --remove-source-files "$TEMP_CLONE_DIR/." "." # Copie tout, y compris les fichiers cachés, puis supprime la source
+            else
+              shopt -s dotglob # Permet à * de matcher les fichiers cachés
+              mv "$TEMP_CLONE_DIR"/* "."
+              mv "$TEMP_CLONE_DIR"/.git* "." # S'assurer que .git et .gitignore etc. sont déplacés
+              shopt -u dotglob
+              rm -rf "$TEMP_CLONE_DIR"
+            fi
+
+            # Vérifier que le commit est bien celui attendu par le workflow
+            # Cela est important si on clone juste la branche et pas le SHA exact.
+            echo "Checking out specific commit SHA: ${{ github.sha }}"
+            git reset --hard ${{ github.sha }} # Assure qu'on est sur le bon commit
+            
+            if [ -d ".git" ]; then
+              echo ".git folder is now present in $(pwd)."
+              ls -la
+            else
+              echo "ERROR: .git folder still missing after attempting to move from manual clone."
+              exit 1
+            fi
           else
-            echo "ERROR: .git folder NOT found after checkout!"
-            exit 1
+            echo ".git folder was present after initial checkout by actions/checkout@v4."
+            ls -la # Montrer le contenu si .git était là
           fi
-          git --version
+        env:
+          # GITHUB_TOKEN est nécessaire pour le clone manuel si le dépôt est privé
+          # Pour les dépôts publics, il n'est pas strictement nécessaire mais ne fait pas de mal
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 
       - name: Set Build Environment Variables for Compilers
         run: |
           echo "CC=/usr/bin/gcc-12" >> $GITHUB_ENV
           echo "CXX=/usr/bin/g++-12" >> $GITHUB_ENV
           echo "TORCH_CUDA_ARCH_LIST=8.6 8.9 9.0" >> $GITHUB_ENV 
+          # CUDA_HOME est défini par l'image nvidia/cuda (généralement /usr/local/cuda)
+          echo "CUDA_HOME=${CUDA_HOME:-/usr/local/cuda}" >> $GITHUB_ENV # Utilise la var d'env si elle existe, sinon default
           echo "CPLUS_INCLUDE_PATH=${CUDA_HOME}/include${CPLUS_INCLUDE_PATH:+:${CPLUS_INCLUDE_PATH}}" >> $GITHUB_ENV
           echo "LIBRARY_PATH=${CUDA_HOME}/lib64${LIBRARY_PATH:+:${LIBRARY_PATH}}" >> $GITHUB_ENV
+          # LD_LIBRARY_PATH est généralement déjà bien configuré dans l'image nvidia/cuda
+          # echo "LD_LIBRARY_PATH=${CUDA_HOME}/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" >> $GITHUB_ENV
 
       - name: Create temporary wheels directory
         run: mkdir -p wheels_output
 
-      # ... (les steps de build des wheels restent les mêmes) ...
+      # ... (les steps de build des wheels restent les mêmes que dans la version précédente) ...
+      # Exemple pour flash-attention:
       - name: Build flash-attention wheel
         shell: bash 
         run: |
@@ -193,11 +221,16 @@ jobs:
       - name: Commit wheels to repository
         shell: bash
         run: |
+          # Le répertoire de travail courant $(pwd) est /github/workspace dans le conteneur
           echo "Current directory before git commands: $(pwd)"
           ls -la 
           
+          # Configurer safe.directory pour le répertoire courant DANS LE CONTENEUR
+          # Le chemin /github/workspace est généralement celui utilisé par les actions dans un conteneur
+          git config --global --add safe.directory "$(pwd)" # ou /github/workspace si c'est le chemin fixe
+          
           if ! git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
-            echo "ERROR: Not a git repository in $(pwd)."
+            echo "ERROR: Not a git repository in $(pwd) even after setting safe.directory and attempting manual clone."
             exit 1
           fi
           echo ".git directory confirmed by 'git rev-parse'."
@@ -207,7 +240,6 @@ jobs:
           
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git config --global --add safe.directory "$(pwd)" 
           
           git add precompiled_wheels/*.whl
           
