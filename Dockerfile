@@ -166,6 +166,7 @@ RUN apt-get update -q && \
     build-essential \
     ffmpeg \
     gcc-12 \
+    portaudio19-dev \
     g++-12 \
     dotnet-sdk-8.0 \
     git && \
