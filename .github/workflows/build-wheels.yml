@@ -2,13 +2,13 @@
 name: Build Python Wheels
 
 on:
-  workflow_dispatch:
+  workflow_dispatch: # Permet un déclenchement manuel
   push:
     branches:
       - main 
       - Holaf_tests 
     paths:
-      - 'Dockerfile' # Ou un Dockerfile spécifique pour le build des wheels si tu en crées un
+      - 'Dockerfile' # Ou un Dockerfile spécifique si tu en crées un pour le build des wheels
       - '.github/workflows/build-wheels.yml'
 
 jobs:
@@ -16,28 +16,37 @@ jobs:
     runs-on: ubuntu-latest # Exécuteur standard
 
     steps:
-      # 1. Installer CUDA sur l'exécuteur (plus long, mais donne le contrôle)
-      #    Ou trouver une action qui le fait, ex: https://github.com/marketplace/actions/setup-cuda
-      #    Pour l'instant, on va supposer que les étapes de build peuvent se faire sans GPU actif,
-      #    juste avec le toolkit CUDA installé pour les headers et libs.
-      #    Si nvcc est nécessaire pour la compilation (pas juste les headers), CUDA doit être pleinement fonctionnel.
+      - name: Free Disk Space (Optional)
+        uses: jlumbroso/free-disk-space@main # Peut aider si l'installation de CUDA prend beaucoup de place
+        with:
+          tool-cache: true
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true # Important pour CUDA
+          swap-storage: true
 
-      - name: Install CUDA Toolkit (Exemple, peut nécessiter ajustement)
+      - name: Install CUDA Toolkit
         run: |
-          # Ceci est un exemple, la méthode d'installation peut varier
-          # et être longue. Idéalement, l'image de base nvidia/cuda est mieux si elle fonctionne.
+          # Méthode recommandée par NVIDIA pour installer le toolkit sur Ubuntu
+          # Voir: https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=22.04&target_type=deb_network
+          # Cela peut prendre du temps
           wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
           sudo dpkg -i cuda-keyring_1.1-1_all.deb
           sudo apt-get update
-          sudo apt-get -y install cuda-toolkit-12-4 # Ajuster la version si besoin
-          echo "/usr/local/cuda/bin" >> $GITHUB_PATH
-          echo "LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" >> $GITHUB_ENV
-          echo "CUDA_HOME=/usr/local/cuda" >> $GITHUB_ENV
+          sudo apt-get -y install cuda-toolkit-12-4 # Vérifie que c'est la version que tu veux
+          # Ajout des chemins CUDA à l'environnement du workflow
+          echo "/usr/local/cuda-12.4/bin" >> $GITHUB_PATH
+          echo "LD_LIBRARY_PATH=/usr/local/cuda-12.4/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" >> $GITHUB_ENV
+          echo "CUDA_HOME=/usr/local/cuda-12.4" >> $GITHUB_ENV
+          export PATH="/usr/local/cuda-12.4/bin${PATH:+:${PATH}}"
+          export LD_LIBRARY_PATH="/usr/local/cuda-12.4/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"
+          nvcc --version # Vérifier l'installation
 
-      # 2. Installer Git explicitement (l'exécuteur ubuntu-latest l'a déjà, mais pour être sûr)
-      - name: Install Git and build tools
+      - name: Install Build Dependencies (Python, Git, Compilers)
         run: |
           sudo apt-get update
+          # Git est généralement déjà sur les runners ubuntu-latest, mais on s'en assure
           sudo apt-get install -y git build-essential gcc-12 g++-12 ninja-build wget cmake \
                                 python3.11 python3.11-distutils python3.11-venv python3-pip python3.11-dev
           sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
@@ -45,14 +54,13 @@ jobs:
           sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1
           sudo update-alternatives --set python /usr/bin/python3.11
           python3 -m pip install --upgrade pip
+          # Dépendances Python de base pour les builds de wheels
           pip3 install torch==2.6.0 torchvision packaging cython==0.29.37
 
-      # 3. Maintenant, checkout DOIT utiliser Git
       - name: Checkout repository
         uses: actions/checkout@v4
-        # fetch-depth: 0 est le défaut pour les push/workflow_dispatch, mais on peut le forcer.
         with:
-          fetch-depth: 0 
+          fetch-depth: 0 # Assure un clone Git complet, avec l'historique et le .git
 
       - name: Verify .git folder after checkout
         run: |
@@ -64,64 +72,128 @@ jobs:
             echo "ERROR: .git folder NOT found after checkout!"
             exit 1
           fi
-          git --version # Vérifier la version de git utilisée
+          git --version
 
-      - name: Set Build Environment Variables # (Identique à avant, mais sans $GITHUB_ENV pour PATHs car déjà fait)
+      - name: Set Build Environment Variables for Compilers
         run: |
           echo "CC=/usr/bin/gcc-12" >> $GITHUB_ENV
           echo "CXX=/usr/bin/g++-12" >> $GITHUB_ENV
-          echo "TORCH_CUDA_ARCH_LIST=8.6 8.9 9.0" >> $GITHUB_ENV
+          echo "TORCH_CUDA_ARCH_LIST=8.6 8.9 9.0" >> $GITHUB_ENV # Ajuste si besoin
           # CUDA_HOME et LD_LIBRARY_PATH sont déjà dans GITHUB_ENV via le step d'install CUDA
-          # Mais CPLUS_INCLUDE_PATH et LIBRARY_PATH peuvent encore être utiles pour g++
-          echo "CPLUS_INCLUDE_PATH=/usr/local/cuda/include${CPLUS_INCLUDE_PATH:+:${CPLUS_INCLUDE_PATH}}" >> $GITHUB_ENV
-          echo "LIBRARY_PATH=/usr/local/cuda/lib64${LIBRARY_PATH:+:${LIBRARY_PATH}}" >> $GITHUB_ENV
-          # NVIDIA_DRIVER_CAPABILITIES et NVIDIA_VISIBLE_DEVICES ne sont pertinents que si un GPU est utilisé
-          # echo "NVIDIA_DRIVER_CAPABILITIES=compute,utility" >> $GITHUB_ENV
-          # echo "NVIDIA_VISIBLE_DEVICES=all" >> $GITHUB_ENV
+          echo "CPLUS_INCLUDE_PATH=${CUDA_HOME}/include${CPLUS_INCLUDE_PATH:+:${CPLUS_INCLUDE_PATH}}" >> $GITHUB_ENV
+          echo "LIBRARY_PATH=${CUDA_HOME}/lib64${LIBRARY_PATH:+:${LIBRARY_PATH}}" >> $GITHUB_ENV
 
       - name: Create temporary wheels directory
         run: mkdir -p wheels_output
 
-      # Les steps de build des wheels (flash-attention, diso, etc.) restent les mêmes
-      # que dans la version précédente (avec WORK_DIR, REPO_NAME, etc.)
-      # Exemple pour flash-attention:
+      # --- Steps de build des wheels ---
+      # Ils utilisent WORK_DIR pour naviguer et rm -rf pour nettoyer.
+      # Chaque step doit être 'shell: bash' si ce n'est pas le défaut.
+
       - name: Build flash-attention wheel
         shell: bash 
         run: |
           WORK_DIR=$(pwd)
           REPO_NAME="flash-attention"
-          echo "Building $REPO_NAME, WORK_DIR is $WORK_DIR."
+          echo "Building $REPO_NAME in $WORK_DIR"
           git clone https://github.com/Dao-AILab/flash-attention --recurse-submodules "$REPO_NAME"
           cd "$REPO_NAME"
           python3 setup.py bdist_wheel
           cp dist/*.whl "$WORK_DIR/wheels_output/"
           cd "$WORK_DIR" 
           rm -rf "$WORK_DIR/$REPO_NAME"
-      # ... Répéter pour les autres wheels diso, nvdiffrast, kaolin, mip-splatting, TRELLIS ...
-      # Assurer que les `cd` et `rm` sont corrects.
 
-      - name: Commit wheels to repository # (Devrait fonctionner maintenant car .git sera là)
+      - name: Build diso wheel
         shell: bash
         run: |
-          ACTUAL_GIT_DIR_PATH=$(pwd) 
-          echo "Current directory before git commands: $ACTUAL_GIT_DIR_PATH"
-          echo "Content of current directory (ls -la):"
-          ls -la "$ACTUAL_GIT_DIR_PATH"
+          WORK_DIR=$(pwd)
+          REPO_NAME="diso"
+          echo "Building $REPO_NAME in $WORK_DIR"
+          git clone https://github.com/SarahWeiii/diso --recurse-submodules "$REPO_NAME"
+          cd "$REPO_NAME"
+          python3 setup.py bdist_wheel
+          cp dist/*.whl "$WORK_DIR/wheels_output/"
+          cd "$WORK_DIR"
+          rm -rf "$WORK_DIR/$REPO_NAME"
           
-          echo "Adding $ACTUAL_GIT_DIR_PATH to git safe.directory"
-          git config --global --add safe.directory "$ACTUAL_GIT_DIR_PATH"
+      - name: Build nvdiffrast wheel
+        shell: bash
+        run: |
+          WORK_DIR=$(pwd)
+          REPO_NAME="nvdiffrast"
+          echo "Building $REPO_NAME in $WORK_DIR"
+          git clone https://github.com/NVlabs/nvdiffrast.git "$REPO_NAME"
+          cd "$REPO_NAME"
+          python3 setup.py bdist_wheel
+          cp dist/*.whl "$WORK_DIR/wheels_output/"
+          cd "$WORK_DIR"
+          rm -rf "$WORK_DIR/$REPO_NAME"
+
+      - name: Build kaolin wheel
+        shell: bash
+        run: |
+          WORK_DIR=$(pwd)
+          REPO_NAME="kaolin"
+          echo "Building $REPO_NAME in $WORK_DIR"
+          # Kaolin peut nécessiter FORCE_CUDA=1 si les GPU ne sont pas actifs mais que le toolkit est là
+          # export FORCE_CUDA=1 # Décommenter si kaolin se plaint de l'absence de GPU pour la cross-compilation
+          git clone https://github.com/NVIDIAGameWorks/kaolin.git "$REPO_NAME"
+          cd "$REPO_NAME"
+          python3 setup.py bdist_wheel
+          cp dist/*.whl "$WORK_DIR/wheels_output/"
+          cd "$WORK_DIR"
+          rm -rf "$WORK_DIR/$REPO_NAME"
+
+      - name: Build mip-splatting (diff-gaussian-rasterization) wheel
+        shell: bash
+        run: |
+          WORK_DIR=$(pwd) 
+          REPO_NAME="mip-splatting"
+          CLONE_TARGET_PATH="$WORK_DIR/$REPO_NAME" 
+          SUB_DIR_BUILD_PATH="$CLONE_TARGET_PATH/submodules/diff-gaussian-rasterization"
+          echo "Building $REPO_NAME in $WORK_DIR"
+          git clone https://github.com/autonomousvision/mip-splatting --recurse-submodules "$CLONE_TARGET_PATH"
+          cd "$SUB_DIR_BUILD_PATH"
+          python3 setup.py bdist_wheel
+          cp dist/*.whl "$WORK_DIR/wheels_output/" 
+          cd "$WORK_DIR"
+          rm -rf "$CLONE_TARGET_PATH" 
+
+      - name: Build TRELLIS (vox2seq) wheel
+        shell: bash
+        run: |
+          WORK_DIR=$(pwd)
+          REPO_NAME="TRELLIS"
+          CLONE_TARGET_PATH="$WORK_DIR/$REPO_NAME"
+          SUB_DIR_BUILD_PATH="$CLONE_TARGET_PATH/extensions/vox2seq"
+          echo "Building $REPO_NAME in $WORK_DIR"
+          git clone https://github.com/microsoft/TRELLIS --recurse-submodules "$CLONE_TARGET_PATH"
+          cd "$SUB_DIR_BUILD_PATH"
+          python3 setup.py bdist_wheel
+          cp dist/*.whl "$WORK_DIR/wheels_output/"
+          cd "$WORK_DIR"
+          rm -rf "$CLONE_TARGET_PATH"
+      
+      - name: Commit wheels to repository
+        shell: bash
+        run: |
+          # À ce stade, pwd est la racine du dépôt et .git DOIT être présent
+          echo "Current directory before git commands: $(pwd)"
+          ls -la # Vérifier la présence de .git
           
-          if ! git -C "$ACTUAL_GIT_DIR_PATH" rev-parse --is-inside-work-tree > /dev/null 2>&1; then
-            echo "ERROR: Still not a git repository according to 'git rev-parse --is-inside-work-tree' in $ACTUAL_GIT_DIR_PATH even after setting safe.directory."
+          if ! git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
+            echo "ERROR: Not a git repository in $(pwd)."
             exit 1
           fi
-          echo ".git directory confirmed by 'git rev-parse' for $ACTUAL_GIT_DIR_PATH after setting safe.directory."
+          echo ".git directory confirmed by 'git rev-parse'."
 
           mkdir -p precompiled_wheels 
           cp wheels_output/*.whl precompiled_wheels/ 
           
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          # La commande suivante est cruciale si l'utilisateur du runner est différent du propriétaire des fichiers
+          git config --global --add safe.directory "$(pwd)" 
           
           git add precompiled_wheels/*.whl
           
