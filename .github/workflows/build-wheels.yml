@@ -8,16 +8,12 @@ on:
       - main # Ou la branche où vous voulez que la compilation des wheels se fasse
       - Holaf_tests # Si vous testez la compilation des wheels sur cette branche
     paths:
-      # Déclencher si le Dockerfile source pour les wheels (ici, on prend le Dockerfile principal simplifié) change
-      # ou si les sources des bibliothèques que vous clonez manuellement changent (non applicable ici car clonées dans le script)
-      - 'Dockerfile' # Si vous décidez d'avoir une section spécifique dans le Dockerfile principal
+      - 'Dockerfile'
       - '.github/workflows/build-wheels.yml'
 
 jobs:
   compile_wheels:
     runs-on: ubuntu-latest
-    # Utiliser directement l'image CUDA pour l'environnement de build
-    # Ceci simplifie la configuration de l'environnement CUDA dans les steps
     container:
       image: nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04
 
@@ -33,22 +29,17 @@ jobs:
             python3.11 python3.11-distutils python3.11-venv python3-pip python3.11-dev \
             wget git cmake build-essential gcc-12 g++-12 ninja-build
           update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
-          update-alternatives --set python3 /usr/bin/python3.11 # Assurer que python3 est bien 3.11
+          update-alternatives --set python3 /usr/bin/python3.11
           update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1
-          update-alternatives --set python /usr/bin/python3.11   # Assurer que python est bien 3.11
+          update-alternatives --set python /usr/bin/python3.11
           python3 -m pip install --upgrade pip
-          # Installer les dépendances de base nécessaires AVANT de compiler les wheels
-          # (celles qui sont requises par les setup.py des libs que vous compilez)
           pip3 install torch==2.6.0 torchvision packaging cython==0.29.37
 
       - name: Set Build Environment Variables
         run: |
           echo "CC=/usr/bin/gcc-12" >> $GITHUB_ENV
           echo "CXX=/usr/bin/g++-12" >> $GITHUB_ENV
-          # IMPORTANT: Réduisez cette liste aux architectures GPU que vous ciblez réellement !
-          # Exemple pour Ampere (30xx), Ada (40xx), Hopper (H100)
           echo "TORCH_CUDA_ARCH_LIST=8.6 8.9 9.0" >> $GITHUB_ENV
-          # Explicitement définir les chemins CUDA
           echo "CUDA_HOME=/usr/local/cuda" >> $GITHUB_ENV
           echo "CPLUS_INCLUDE_PATH=/usr/local/cuda/include${CPLUS_INCLUDE_PATH:+:${CPLUS_INCLUDE_PATH}}" >> $GITHUB_ENV
           echo "LIBRARY_PATH=/usr/local/cuda/lib64${LIBRARY_PATH:+:${LIBRARY_PATH}}" >> $GITHUB_ENV
@@ -56,12 +47,8 @@ jobs:
           echo "NVIDIA_DRIVER_CAPABILITIES=compute,utility" >> $GITHUB_ENV
           echo "NVIDIA_VISIBLE_DEVICES=all" >> $GITHUB_ENV
 
-
       - name: Create temporary wheels directory
         run: mkdir -p wheels_output
-
-      # --- Compilation de chaque wheel ---
-      # Note: Les commandes `cd ..` et `rm -rf <repo_name>` sont pour nettoyer après chaque build.
 
       - name: Build flash-attention wheel
         run: |
@@ -72,7 +59,6 @@ jobs:
           cd ..
           rm -rf flash-attention
 
-      # Step de débogage avant la compilation de diso
       - name: Check for cuda_runtime.h before diso build
         run: |
           echo "--- Checking CUDA_HOME: $CUDA_HOME"
@@ -85,14 +71,10 @@ jobs:
             echo "cuda_runtime.h NOT found at /usr/local/cuda/include/cuda_runtime.h"
             echo "Contents of /usr/local/cuda/include/:"
             ls -la /usr/local/cuda/include/
-            # Optionnel: explorer d'autres chemins si celui-ci est vide
-            # echo "Contents of /usr/include/:"
-            # ls -la /usr/include | grep cuda
             exit 1 
           fi
           echo "--- Checking nvcc version ---"
           nvcc --version || echo "nvcc not found"
-
 
       - name: Build diso wheel
         run: |
@@ -114,9 +96,6 @@ jobs:
 
       - name: Build kaolin wheel
         run: |
-          # Kaolin peut avoir des dépendances spécifiques à installer avant son propre setup.py
-          # pip3 install torch==2.6.0 torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124 # Déjà fait plus haut
-          # pip3 install Cython==0.29.37 # Déjà fait plus haut
           git clone https://github.com/NVIDIAGameWorks/kaolin.git
           cd kaolin
           python3 setup.py bdist_wheel
@@ -129,8 +108,8 @@ jobs:
           git clone https://github.com/autonomousvision/mip-splatting --recurse-submodules
           cd mip-splatting/submodules/diff-gaussian-rasterization
           python3 setup.py bdist_wheel
-          cp dist/*.whl ../../wheels_output/ # Remonter de deux niveaux pour wheels_output
-          cd ../../
+          cp dist/*.whl ../../../wheels_output/ # CORRIGÉ ICI: ../../ -> ../../../
+          cd ../../../ # Ajusté pour correspondre au retour à la racine avant rm
           rm -rf mip-splatting
 
       - name: Build TRELLIS (vox2seq) wheel
@@ -138,24 +117,19 @@ jobs:
           git clone https://github.com/microsoft/TRELLIS --recurse-submodules
           cd TRELLIS/extensions/vox2seq
           python3 setup.py bdist_wheel
-          cp dist/*.whl ../../../wheels_output/ # Remonter de trois niveaux
+          cp dist/*.whl ../../../wheels_output/ # Ce chemin est correct
           cd ../../../
           rm -rf TRELLIS
 
-      # --- Fin de la compilation des wheels ---
-
       - name: Commit wheels to repository
         run: |
-          # S'assurer que le répertoire existe dans le repo cloné (il devrait après checkout)
-          # Si ce n'est pas le cas, le créer ici avant de copier
           mkdir -p ${{ github.workspace }}/precompiled_wheels
           cp wheels_output/*.whl ${{ github.workspace }}/precompiled_wheels/
           
-          cd ${{ github.workspace }} # Se placer à la racine du repo
+          cd ${{ github.workspace }}
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add precompiled_wheels/*.whl
-          # Vérifier s'il y a des changements à commiter pour éviter un commit vide et une erreur de push
           if ! git diff --staged --quiet; then
             git commit -m "Build: Update precompiled Python wheels"
             git push
@@ -163,6 +137,4 @@ jobs:
             echo "No new wheels to commit."
           fi
         env:
-          # GITHUB_TOKEN est automatiquement disponible et a les permissions pour pousser si le workflow
-          # est déclenché par un événement dans le même repo.
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
