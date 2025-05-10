@@ -8,35 +8,54 @@ on:
       - main 
       - Holaf_tests 
     paths:
-      - 'Dockerfile' # Ou un Dockerfile spécifique si tu en crées un pour le build des wheels
+      - 'Dockerfile' 
       - '.github/workflows/build-wheels.yml'
 
 jobs:
   compile_wheels:
-    runs-on: ubuntu-latest # Exécuteur standard
+    runs-on: ubuntu-latest 
 
     steps:
-      # - name: Free Disk Space (Optional) # Désactivé pour le débogage
+      # - name: Free Disk Space (Optional) # Toujours commenté pour l'instant
       #   uses: jlumbroso/free-disk-space@main 
       #   with:
-      #     tool-cache: true
-      #     android: true
-      #     dotnet: true
-      #     haskell: true
-      #     large-packages: true 
-      #     swap-storage: true
-
+      #     tool-cache: true # ... etc
+      
       - name: Install CUDA Toolkit
         run: |
           wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
           sudo dpkg -i cuda-keyring_1.1-1_all.deb
           sudo apt-get update
-          sudo apt-get -y install cuda-toolkit-12-4 
-          echo "/usr/local/cuda-12.4/bin" >> $GITHUB_PATH
-          echo "LD_LIBRARY_PATH=/usr/local/cuda-12.4/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" >> $GITHUB_ENV
-          echo "CUDA_HOME=/usr/local/cuda-12.4" >> $GITHUB_ENV
-          export PATH="/usr/local/cuda-12.4/bin${PATH:+:${PATH}}"
-          export LD_LIBRARY_PATH="/usr/local/cuda-12.4/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"
+          # Installer des composants CUDA ciblés pour éviter les problèmes de dépendances comme libtinfo5
+          # On a besoin de nvcc (compiler), des headers (libraries-devel) et potentiellement d'autres libs de base.
+          # cuda-nvtx est souvent une dépendance pour PyTorch.
+          sudo apt-get -y install cuda-compiler-12-4 cuda-libraries-devel-12-4 cuda-nvtx-12-4
+          
+          # Déterminer le chemin d'installation de CUDA
+          CUDA_VERSION_DIR="/usr/local/cuda-12.4" 
+          if [ ! -d "$CUDA_VERSION_DIR/bin" ] || [ ! -f "$CUDA_VERSION_DIR/bin/nvcc" ]; then
+             if [ -d "/usr/local/cuda/bin" ] && [ -f "/usr/local/cuda/bin/nvcc" ]; then
+                CUDA_VERSION_DIR="/usr/local/cuda"
+                echo "CUDA found at /usr/local/cuda"
+             else
+                echo "ERROR: CUDA installation path not found after installing packages. Could not find nvcc."
+                echo "Listing /usr/local/ :"
+                ls -l /usr/local/
+                # Vérifier si un autre dossier cuda-X.Y existe
+                echo "Listing /usr/local/cuda* :"
+                ls -ld /usr/local/cuda* || echo "No /usr/local/cuda* found"
+                exit 1
+             fi
+          else
+            echo "CUDA found at $CUDA_VERSION_DIR"
+          fi
+
+          echo "$CUDA_VERSION_DIR/bin" >> $GITHUB_PATH
+          echo "LD_LIBRARY_PATH=$CUDA_VERSION_DIR/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" >> $GITHUB_ENV
+          echo "CUDA_HOME=$CUDA_VERSION_DIR" >> $GITHUB_ENV
+          # Exporter pour le step courant également (important pour nvcc --version)
+          export PATH="$CUDA_VERSION_DIR/bin${PATH:+:${PATH}}"
+          export LD_LIBRARY_PATH="$CUDA_VERSION_DIR/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"
           nvcc --version 
 
       - name: Install Build Dependencies (Python, Git, Compilers)
@@ -124,7 +143,7 @@ jobs:
           WORK_DIR=$(pwd)
           REPO_NAME="kaolin"
           echo "Building $REPO_NAME in $WORK_DIR"
-          export FORCE_CUDA=1 # Tentative pour Kaolin
+          export FORCE_CUDA=1 
           git clone https://github.com/NVIDIAGameWorks/kaolin.git "$REPO_NAME"
           cd "$REPO_NAME"
           python3 setup.py bdist_wheel
