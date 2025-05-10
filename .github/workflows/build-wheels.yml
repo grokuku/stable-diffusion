@@ -5,8 +5,8 @@ on:
   workflow_dispatch: # Permet un déclenchement manuel
   push:
     branches:
-      - main # Ou la branche où vous voulez que la compilation des wheels se fasse
-      - Holaf_tests # Si vous testez la compilation des wheels sur cette branche
+      - main 
+      - Holaf_tests 
     paths:
       - 'Dockerfile'
       - '.github/workflows/build-wheels.yml'
@@ -19,7 +19,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4 # Le checkout se fait dans /github/workspace (par défaut dans le conteneur)
 
       - name: Install build dependencies (Python, pip, compilers)
         run: |
@@ -47,16 +47,17 @@ jobs:
           echo "NVIDIA_DRIVER_CAPABILITIES=compute,utility" >> $GITHUB_ENV
           echo "NVIDIA_VISIBLE_DEVICES=all" >> $GITHUB_ENV
 
+      # Le répertoire de travail courant est /github/workspace (ou équivalent dans le conteneur)
       - name: Create temporary wheels directory
-        run: mkdir -p wheels_output
+        run: mkdir -p wheels_output # Crée /github/workspace/wheels_output
 
       - name: Build flash-attention wheel
         run: |
           git clone https://github.com/Dao-AILab/flash-attention --recurse-submodules
           cd flash-attention
           python3 setup.py bdist_wheel
-          cp dist/*.whl ../wheels_output/
-          cd ..
+          cp dist/*.whl ../wheels_output/ # Copie vers /github/workspace/wheels_output
+          cd .. # Retour à /github/workspace
           rm -rf flash-attention
 
       - name: Check for cuda_runtime.h before diso build
@@ -108,8 +109,8 @@ jobs:
           git clone https://github.com/autonomousvision/mip-splatting --recurse-submodules
           cd mip-splatting/submodules/diff-gaussian-rasterization
           python3 setup.py bdist_wheel
-          cp dist/*.whl ../../../wheels_output/
-          cd ../../../ 
+          cp dist/*.whl ../../../wheels_output/ # Copie vers /github/workspace/wheels_output
+          cd ../../../ # Retour à /github/workspace
           rm -rf mip-splatting
 
       - name: Build TRELLIS (vox2seq) wheel
@@ -117,47 +118,41 @@ jobs:
           git clone https://github.com/microsoft/TRELLIS --recurse-submodules
           cd TRELLIS/extensions/vox2seq
           python3 setup.py bdist_wheel
-          cp dist/*.whl ../../../wheels_output/
-          cd ../../../
+          cp dist/*.whl ../../../wheels_output/ # Copie vers /github/workspace/wheels_output
+          cd ../../../ # Retour à /github/workspace
           rm -rf TRELLIS
-
+      
       - name: Commit wheels to repository
         run: |
-          echo "Current directory before final cd: $(pwd)"
-          echo "Content of current directory:"
-          ls -A
+          echo "Current directory before git commands: $(pwd)"
+          echo "Content of current directory (checking for .git):"
+          ls -A # DEVRAIT être la racine du checkout et contenir .git
           
-          echo "GitHub Workspace is: ${{ github.workspace }}"
-          
-          # Créer le répertoire de destination pour les wheels si ce n'est pas déjà fait par checkout
-          mkdir -p ${{ github.workspace }}/precompiled_wheels
-          
-          # Copier les wheels compilées
-          cp wheels_output/*.whl ${{ github.workspace }}/precompiled_wheels/
-          
-          # Se positionner explicitement dans le workspace où le repo a été cloné
-          cd ${{ github.workspace }}
-          
-          echo "Current directory after cd to workspace: $(pwd)"
-          echo "Content of workspace (checking for .git):"
-          ls -A
           if [ ! -d ".git" ]; then
-            echo "ERROR: .git directory not found in ${{ github.workspace }}. This is not a git repository."
-            # Optionnel: Lister le contenu du parent pour investigation si .git n'est pas trouvé
-            # echo "Content of parent directory ($(cd .. && pwd)):"
-            # ls -A ..
+            echo "ERROR: .git directory not found in $(pwd). This is not a git repository."
+            # Pour déboguer davantage si cela échoue encore :
+            echo "GITHUB_WORKSPACE is: ${{ github.workspace }}"
+            echo "Listing GITHUB_WORKSPACE content:"
+            ls -A ${{ github.workspace }} # Devrait être identique à `ls -A` si pwd est correct
             exit 1
           fi
+          
+          # Le répertoire de destination des wheels dans le dépôt
+          # Ce chemin est relatif au CWD, qui doit être la racine du dépôt.
+          mkdir -p precompiled_wheels 
+          
+          # Copier les wheels compilées de ./wheels_output/ vers ./precompiled_wheels/
+          cp wheels_output/*.whl precompiled_wheels/
           
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           
-          # Ajouter les wheels au staging
           git add precompiled_wheels/*.whl
           
-          # Vérifier s'il y a des changements à commiter
           if ! git diff --staged --quiet; then
             git commit -m "Build: Update precompiled Python wheels"
+            # S'assurer que la branche sur laquelle on push est correcte si besoin
+            # git push origin HEAD:${{ github.ref_name }} # Par exemple, pour pusher sur la branche actuelle
             git push
           else
             echo "No new wheels to commit."
