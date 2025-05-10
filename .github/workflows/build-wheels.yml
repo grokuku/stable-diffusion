@@ -39,7 +39,7 @@ jobs:
         run: |
           echo "CC=/usr/bin/gcc-12" >> $GITHUB_ENV
           echo "CXX=/usr/bin/g++-12" >> $GITHUB_ENV
-          echo "TORCH_CUDA_ARCH_LIST=8.6 8.9 9.0" >> $GITHUB_ENV
+          echo "TORCH_CUDA_ARCH_LIST=8.6 8.9 9.0" >> $GITHUB_ENV # Ajuste si besoin
           echo "CUDA_HOME=/usr/local/cuda" >> $GITHUB_ENV
           echo "CPLUS_INCLUDE_PATH=/usr/local/cuda/include${CPLUS_INCLUDE_PATH:+:${CPLUS_INCLUDE_PATH}}" >> $GITHUB_ENV
           echo "LIBRARY_PATH=/usr/local/cuda/lib64${LIBRARY_PATH:+:${LIBRARY_PATH}}" >> $GITHUB_ENV
@@ -108,8 +108,8 @@ jobs:
           git clone https://github.com/autonomousvision/mip-splatting --recurse-submodules
           cd mip-splatting/submodules/diff-gaussian-rasterization
           python3 setup.py bdist_wheel
-          cp dist/*.whl ../../../wheels_output/ # CORRIGÉ ICI: ../../ -> ../../../
-          cd ../../../ # Ajusté pour correspondre au retour à la racine avant rm
+          cp dist/*.whl ../../../wheels_output/
+          cd ../../../ 
           rm -rf mip-splatting
 
       - name: Build TRELLIS (vox2seq) wheel
@@ -117,19 +117,45 @@ jobs:
           git clone https://github.com/microsoft/TRELLIS --recurse-submodules
           cd TRELLIS/extensions/vox2seq
           python3 setup.py bdist_wheel
-          cp dist/*.whl ../../../wheels_output/ # Ce chemin est correct
+          cp dist/*.whl ../../../wheels_output/
           cd ../../../
           rm -rf TRELLIS
 
       - name: Commit wheels to repository
         run: |
+          echo "Current directory before final cd: $(pwd)"
+          echo "Content of current directory:"
+          ls -A
+          
+          echo "GitHub Workspace is: ${{ github.workspace }}"
+          
+          # Créer le répertoire de destination pour les wheels si ce n'est pas déjà fait par checkout
           mkdir -p ${{ github.workspace }}/precompiled_wheels
+          
+          # Copier les wheels compilées
           cp wheels_output/*.whl ${{ github.workspace }}/precompiled_wheels/
           
+          # Se positionner explicitement dans le workspace où le repo a été cloné
           cd ${{ github.workspace }}
+          
+          echo "Current directory after cd to workspace: $(pwd)"
+          echo "Content of workspace (checking for .git):"
+          ls -A
+          if [ ! -d ".git" ]; then
+            echo "ERROR: .git directory not found in ${{ github.workspace }}. This is not a git repository."
+            # Optionnel: Lister le contenu du parent pour investigation si .git n'est pas trouvé
+            # echo "Content of parent directory ($(cd .. && pwd)):"
+            # ls -A ..
+            exit 1
+          fi
+          
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          
+          # Ajouter les wheels au staging
           git add precompiled_wheels/*.whl
+          
+          # Vérifier s'il y a des changements à commiter
           if ! git diff --staged --quiet; then
             git commit -m "Build: Update precompiled Python wheels"
             git push
