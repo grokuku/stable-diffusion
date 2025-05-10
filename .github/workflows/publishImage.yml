@@ -1,84 +1,114 @@
+# .github/workflows/publishImage.yml
 name: Publish Docker image to Dockerhub and GHCR
 
 on:
   push:
-    branches:
-      - 'test'
-      - 'Holaf_tests'
-    tags:
+    # branches: # Commenté pour ne pas builder sur push direct aux branches
+      # - 'main'
+      # - 'test'
+      # - 'Holaf_tests'
+    tags: # Le build se déclenche lors de la création de tags (releases)
       - '*.*.*'
-    # don't trigger if just updating docs
+    paths: # Ces filtres de chemins s'appliquent aux événements push (donc ici, aux tags)
+      - 'Dockerfile'
+      - 'docker/**'
+      - '*.sh' # Tous les scripts de lancement des UIs
+      - 'parameters/**'
+      - 'custom-sample.sh'
+      - 'functions.sh'
+      - '.github/workflows/publishImage.yml' # Ce workflow lui-même
+      - 'precompiled_wheels/**' # Reconstruire si les wheels ont été mises à jour
     paths-ignore:
       - '**.md'
+  workflow_dispatch: # Permet un déclenchement manuel
+  workflow_run: # Déclencher après la réussite du workflow de build des wheels
+    workflows: ["Build Python Wheels"] # Doit correspondre au 'name:' de build-wheels.yml
+    types:
+      - completed
+    # Optionnel: si vous voulez seulement déclencher si build-wheels s'exécute sur certaines branches
+    # branches:
+    #   - 'main'
 
 jobs:
   push_to_registry:
-    name: Push Docker image to Docker Hub
+    name: Build and Push Docker image
     runs-on: ubuntu-latest
-    # only run if we've specified image tag to push to
-    if: ${{ vars.DOCKERHUB_IMAGE_NAME != '' ||  vars.GHCR_IMAGE_NAME != '' }}
-    # https://docs.github.com/en/actions/security-guides/automatic-token-authentication#permissions-for-the-github_token
+    # Condition pour workflow_run: ne s'exécute que si build-wheels a réussi
+    # Et toujours s'exécuter pour les autres types d'événements (push tag, workflow_dispatch)
+    if: |
+      (vars.DOCKERHUB_IMAGE_NAME != '' || vars.GHCR_IMAGE_NAME != '') &&
+      (github.event_name != 'workflow_run' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'))
+
     permissions:
-      packages: write
-      contents: read
+      packages: write # Pour pousser vers GHCR
+      contents: read   # Pour checkout le code
+
     steps:
-      - name: Free Disk Space
+      - name: Free Disk Space (optional)
         uses: jlumbroso/free-disk-space@main
         with:
           tool-cache: true
-
-          # all of these default to true, but feel free to set to
-          # false if necessary for your workflow
           android: true
           dotnet: true
           haskell: true
           large-packages: true
           swap-storage: true
+
       - name: Check out the repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Log in to Docker Hub
-        if: github.event_name != 'pull_request'
-        uses: docker/login-action@v2
+        if: github.event_name != 'pull_request' && vars.DOCKERHUB_IMAGE_NAME != '' && secrets.DOCKER_USERNAME != ''
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Login to GitHub Container Registry
-        if: ${{ github.event_name != 'pull_request' && vars.GHCR_IMAGE_NAME != '' }}
-        uses: docker/login-action@v2
+        if: github.event_name != 'pull_request' && vars.GHCR_IMAGE_NAME != ''
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      
+          password: ${{ secrets.GITHUB_TOKEN }} # GITHUB_TOKEN a la permission 'packages: write'
+
       - name: Extract metadata (tags, labels) for Docker
         id: meta
-        uses: docker/metadata-action@v3
+        uses: docker/metadata-action@v4
         with:
           images: |
             ${{ vars.DOCKERHUB_IMAGE_NAME }}
             ${{ vars.GHCR_IMAGE_NAME }}
-          # generate Docker tags based on the following events/attributes
-          tags: |
-            type=raw,value=latest,enable=${{ github.ref_type == 'tag' }}
-            type=ref,event=branch,enable=${{ !endsWith(github.ref, 'main') }}
+          tags: | # Stratégie de tagging
+            # Tag 'latest' si c'est un tag Git (release) ou un push sur la branche 'main' (si main était activée pour push)
+            # Pour la configuration actuelle (pas de push sur branche main), 'latest' sera seulement sur les tags Git.
+            type=raw,value=latest,enable={{is_default_branch || github.ref_type == 'tag'}} 
+            # Tags pour les branches (si elles étaient activées pour push, ex: refs/heads/test -> test)
+            type=ref,event=branch 
+            # Tags pour les Pull Requests (ex: refs/pull/123/merge -> pr-123)
+            type=ref,event=pr
+            # Tags sémantiques pour les releases Git (ex: v1.2.3 -> 1.2.3)
             type=semver,pattern={{version}}
-#            type=raw,value=latest,enable=${{ endsWith(github.ref, 'main') }}
-#          flavor: |
-#            latest=false
+            # Tag basé sur le SHA du commit (utile pour le débogage)
+            type=sha,prefix=,suffix=,format=short
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
+        uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        id: buildx 
+        uses: docker/setup-buildx-action@v3
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v5
         with:
           context: .
+          file: ./Dockerfile 
+          # Pousser seulement si ce n'est pas une PR et si ce n'est pas un run local (ACT)
           push: ${{ github.event_name != 'pull_request' && !env.ACT}}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           platforms: linux/amd64
+          builder: ${{ steps.buildx.outputs.name }} 
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

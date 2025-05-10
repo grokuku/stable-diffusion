@@ -1,0 +1,146 @@
+# .github/workflows/build-wheels.yml
+name: Build Python Wheels
+
+on:
+  workflow_dispatch: # Permet un déclenchement manuel
+  push:
+    branches:
+      - main # Ou la branche où vous voulez que la compilation des wheels se fasse
+      - Holaf_tests # Si vous testez la compilation des wheels sur cette branche
+    paths:
+      # Déclencher si le Dockerfile source pour les wheels (ici, on prend le Dockerfile principal simplifié) change
+      # ou si les sources des bibliothèques que vous clonez manuellement changent (non applicable ici car clonées dans le script)
+      - 'Dockerfile' # Si vous décidez d'avoir une section spécifique dans le Dockerfile principal
+      - '.github/workflows/build-wheels.yml'
+
+jobs:
+  compile_wheels:
+    runs-on: ubuntu-latest
+    # Utiliser directement l'image CUDA pour l'environnement de build
+    # Ceci simplifie la configuration de l'environnement CUDA dans les steps
+    container:
+      image: nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies (Python, pip, compilers)
+        run: |
+          apt-get update
+          apt-get install -y -q=2 --no-install-recommends \
+            software-properties-common \
+            python3.11 python3.11-distutils python3.11-venv python3-pip python3.11-dev \
+            wget git cmake build-essential gcc-12 g++-12 ninja-build
+          update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
+          update-alternatives --set python3 /usr/bin/python3.11 # Assurer que python3 est bien 3.11
+          update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1
+          update-alternatives --set python /usr/bin/python3.11   # Assurer que python est bien 3.11
+          python3 -m pip install --upgrade pip
+          # Installer les dépendances de base nécessaires AVANT de compiler les wheels
+          # (celles qui sont requises par les setup.py des libs que vous compilez)
+          pip3 install torch==2.6.0 torchvision packaging cython==0.29.37
+
+      - name: Set Build Environment Variables
+        run: |
+          echo "CC=/usr/bin/gcc-12" >> $GITHUB_ENV
+          echo "CXX=/usr/bin/g++-12" >> $GITHUB_ENV
+          # IMPORTANT: Réduisez cette liste aux architectures GPU que vous ciblez réellement !
+          # Exemple pour Ampere (30xx), Ada (40xx), Hopper (H100)
+          echo "TORCH_CUDA_ARCH_LIST=8.6 8.9 9.0" >> $GITHUB_ENV
+          # Les variables CPLUS_INCLUDE_PATH, LIBRARY_PATH, LD_LIBRARY_PATH sont généralement bien gérées
+          # par le container nvidia/cuda, mais on peut les forcer si besoin.
+          # echo "CPLUS_INCLUDE_PATH=/usr/local/cuda/include:$CPLUS_INCLUDE_PATH" >> $GITHUB_ENV
+          # echo "LIBRARY_PATH=/usr/local/cuda/lib64:$LIBRARY_PATH" >> $GITHUB_ENV
+          # echo "LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH" >> $GITHUB_ENV
+          echo "NVIDIA_DRIVER_CAPABILITIES=compute,utility" >> $GITHUB_ENV
+          echo "NVIDIA_VISIBLE_DEVICES=all" >> $GITHUB_ENV
+
+
+      - name: Create temporary wheels directory
+        run: mkdir -p wheels_output
+
+      # --- Compilation de chaque wheel ---
+      # Note: Les commandes `cd ..` et `rm -rf <repo_name>` sont pour nettoyer après chaque build.
+
+      - name: Build flash-attention wheel
+        run: |
+          git clone https://github.com/Dao-AILab/flash-attention --recurse-submodules
+          cd flash-attention
+          python3 setup.py bdist_wheel
+          cp dist/*.whl ../wheels_output/
+          cd ..
+          rm -rf flash-attention
+
+      - name: Build diso wheel
+        run: |
+          git clone https://github.com/SarahWeiii/diso --recurse-submodules
+          cd diso
+          python3 setup.py bdist_wheel
+          cp dist/*.whl ../wheels_output/
+          cd ..
+          rm -rf diso
+          
+      - name: Build nvdiffrast wheel
+        run: |
+          git clone https://github.com/NVlabs/nvdiffrast.git
+          cd nvdiffrast
+          python3 setup.py bdist_wheel
+          cp dist/*.whl ../wheels_output/
+          cd ..
+          rm -rf nvdiffrast
+
+      - name: Build kaolin wheel
+        run: |
+          # Kaolin peut avoir des dépendances spécifiques à installer avant son propre setup.py
+          # pip3 install torch==2.6.0 torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124 # Déjà fait plus haut
+          # pip3 install Cython==0.29.37 # Déjà fait plus haut
+          git clone https://github.com/NVIDIAGameWorks/kaolin.git
+          cd kaolin
+          python3 setup.py bdist_wheel
+          cp dist/*.whl ../wheels_output/
+          cd ..
+          rm -rf kaolin
+
+      - name: Build mip-splatting (diff-gaussian-rasterization) wheel
+        run: |
+          git clone https://github.com/autonomousvision/mip-splatting --recurse-submodules
+          cd mip-splatting/submodules/diff-gaussian-rasterization
+          python3 setup.py bdist_wheel
+          cp dist/*.whl ../../wheels_output/ # Remonter de deux niveaux pour wheels_output
+          cd ../../
+          rm -rf mip-splatting
+
+      - name: Build TRELLIS (vox2seq) wheel
+        run: |
+          git clone https://github.com/microsoft/TRELLIS --recurse-submodules
+          cd TRELLIS/extensions/vox2seq
+          python3 setup.py bdist_wheel
+          cp dist/*.whl ../../../wheels_output/ # Remonter de trois niveaux
+          cd ../../../
+          rm -rf TRELLIS
+
+      # --- Fin de la compilation des wheels ---
+
+      - name: Commit wheels to repository
+        run: |
+          # S'assurer que le répertoire existe dans le repo cloné (il devrait après checkout)
+          # Si ce n'est pas le cas, le créer ici avant de copier
+          mkdir -p ${{ github.workspace }}/precompiled_wheels
+          cp wheels_output/*.whl ${{ github.workspace }}/precompiled_wheels/
+          
+          cd ${{ github.workspace }} # Se placer à la racine du repo
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add precompiled_wheels/*.whl
+          # Vérifier s'il y a des changements à commiter pour éviter un commit vide et une erreur de push
+          if ! git diff --staged --quiet; then
+            git commit -m "Build: Update precompiled Python wheels"
+            git push
+          else
+            echo "No new wheels to commit."
+          fi
+        env:
+          # GITHUB_TOKEN est automatiquement disponible et a les permissions pour pousser si le workflow
+          # est déclenché par un événement dans le même repo.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
