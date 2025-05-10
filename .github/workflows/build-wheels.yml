@@ -58,6 +58,10 @@ jobs:
       - name: Create temporary wheels directory
         run: mkdir -p wheels_output
 
+      # --- Steps de build des wheels ---
+      # Utilisation de WORK_DIR=$(pwd) pour simplifier les chemins relatifs pour cp et rm
+      # Et ajout de REPO_NAME pour rendre les rm -rf plus explicites et sûrs
+
       - name: Build flash-attention wheel
         shell: bash 
         run: |
@@ -134,29 +138,56 @@ jobs:
       - name: Build mip-splatting (diff-gaussian-rasterization) wheel
         shell: bash
         run: |
-          WORK_DIR=$(pwd)
+          WORK_DIR_ORIGINAL=$(pwd) 
           REPO_NAME="mip-splatting"
-          SUB_DIR_PATH="$REPO_NAME/submodules/diff-gaussian-rasterization"
-          echo "Building $REPO_NAME, WORK_DIR is $WORK_DIR. Checking for .git in $WORK_DIR:"
-          ls -la "$WORK_DIR/.git" || echo ".git not found in $WORK_DIR before $REPO_NAME clone"
-          git clone https://github.com/autonomousvision/mip-splatting --recurse-submodules "$REPO_NAME"
-          cd "$SUB_DIR_PATH"
+          CLONE_TARGET_PATH="$WORK_DIR_ORIGINAL/$REPO_NAME" 
+          SUB_DIR_BUILD_PATH="$CLONE_TARGET_PATH/submodules/diff-gaussian-rasterization"
+
+          echo "Building $REPO_NAME, WORK_DIR_ORIGINAL is $WORK_DIR_ORIGINAL. Checking for .git in $WORK_DIR_ORIGINAL:"
+          ls -la "$WORK_DIR_ORIGINAL/.git" || echo ".git not found in $WORK_DIR_ORIGINAL before $REPO_NAME clone"
+          
+          echo "Cloning into $CLONE_TARGET_PATH"
+          git clone https://github.com/autonomousvision/mip-splatting --recurse-submodules "$CLONE_TARGET_PATH"
+          
+          echo "Changing directory to $SUB_DIR_BUILD_PATH"
+          cd "$SUB_DIR_BUILD_PATH"
           python3 setup.py bdist_wheel
-          cp dist/*.whl "$WORK_DIR/wheels_output/" 
-          cd "$WORK_DIR"
-          rm -rf "$WORK_DIR/$REPO_NAME" 
-          echo "After $REPO_NAME build, PWD is $(pwd). Checking for .git in $WORK_DIR:"
-          ls -la "$WORK_DIR/.git" || echo ".git not found in $WORK_DIR after $REPO_NAME rm"
+          
+          echo "Copying wheel to $WORK_DIR_ORIGINAL/wheels_output/"
+          cp dist/*.whl "$WORK_DIR_ORIGINAL/wheels_output/" 
+          
+          echo "Changing directory back to $WORK_DIR_ORIGINAL"
+          cd "$WORK_DIR_ORIGINAL"
+          
+          echo "About to remove $CLONE_TARGET_PATH. Current PWD: $(pwd)"
+          echo "Inspecting content (especially symlinks) of $CLONE_TARGET_PATH before removal:"
+          ls -laR "$CLONE_TARGET_PATH" 
+          find "$CLONE_TARGET_PATH" -type l -ls 
+
+          if [[ "$CLONE_TARGET_PATH" == "$WORK_DIR_ORIGINAL" ]] || [[ "$CLONE_TARGET_PATH" == "$(pwd)" && "$REPO_NAME" == "" ]]; then
+            echo "CRITICAL ERROR: CLONE_TARGET_PATH ('$CLONE_TARGET_PATH') is the same as WORK_DIR_ORIGINAL ('$WORK_DIR_ORIGINAL') or PWD. Aborting before rm -rf."
+            exit 1
+          fi
+          if [ ! -d "$CLONE_TARGET_PATH" ]; then
+            echo "CRITICAL ERROR: Directory $CLONE_TARGET_PATH does not exist to be removed. Aborting."
+            exit 1
+          fi
+
+          echo "Executing: rm -rf \"$CLONE_TARGET_PATH\""
+          rm -rf "$CLONE_TARGET_PATH" 
+          
+          echo "After $REPO_NAME build and rm, PWD is $(pwd). Checking for .git in $WORK_DIR_ORIGINAL:"
+          ls -la "$WORK_DIR_ORIGINAL/.git" || echo ".git not found in $WORK_DIR_ORIGINAL after $REPO_NAME rm"
 
       - name: Build TRELLIS (vox2seq) wheel
         shell: bash
         run: |
           WORK_DIR=$(pwd)
           REPO_NAME="TRELLIS"
-          SUB_DIR_PATH="$REPO_NAME/extensions/vox2seq"
+          SUB_DIR_PATH="$WORK_DIR/$REPO_NAME/extensions/vox2seq" # Corrigé pour utiliser WORK_DIR
           echo "Building $REPO_NAME, WORK_DIR is $WORK_DIR. Checking for .git in $WORK_DIR:"
           ls -la "$WORK_DIR/.git" || echo ".git not found in $WORK_DIR before $REPO_NAME clone"
-          git clone https://github.com/microsoft/TRELLIS --recurse-submodules "$REPO_NAME"
+          git clone https://github.com/microsoft/TRELLIS --recurse-submodules "$REPO_NAME" # Clone dans $WORK_DIR/$REPO_NAME
           cd "$SUB_DIR_PATH"
           python3 setup.py bdist_wheel
           cp dist/*.whl "$WORK_DIR/wheels_output/"
