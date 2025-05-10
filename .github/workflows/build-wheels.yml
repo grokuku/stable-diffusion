@@ -48,11 +48,11 @@ jobs:
           # IMPORTANT: Réduisez cette liste aux architectures GPU que vous ciblez réellement !
           # Exemple pour Ampere (30xx), Ada (40xx), Hopper (H100)
           echo "TORCH_CUDA_ARCH_LIST=8.6 8.9 9.0" >> $GITHUB_ENV
-          # Les variables CPLUS_INCLUDE_PATH, LIBRARY_PATH, LD_LIBRARY_PATH sont généralement bien gérées
-          # par le container nvidia/cuda, mais on peut les forcer si besoin.
-          # echo "CPLUS_INCLUDE_PATH=/usr/local/cuda/include:$CPLUS_INCLUDE_PATH" >> $GITHUB_ENV
-          # echo "LIBRARY_PATH=/usr/local/cuda/lib64:$LIBRARY_PATH" >> $GITHUB_ENV
-          # echo "LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH" >> $GITHUB_ENV
+          # Explicitement définir les chemins CUDA
+          echo "CUDA_HOME=/usr/local/cuda" >> $GITHUB_ENV
+          echo "CPLUS_INCLUDE_PATH=/usr/local/cuda/include${CPLUS_INCLUDE_PATH:+:${CPLUS_INCLUDE_PATH}}" >> $GITHUB_ENV
+          echo "LIBRARY_PATH=/usr/local/cuda/lib64${LIBRARY_PATH:+:${LIBRARY_PATH}}" >> $GITHUB_ENV
+          echo "LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" >> $GITHUB_ENV
           echo "NVIDIA_DRIVER_CAPABILITIES=compute,utility" >> $GITHUB_ENV
           echo "NVIDIA_VISIBLE_DEVICES=all" >> $GITHUB_ENV
 
@@ -71,6 +71,28 @@ jobs:
           cp dist/*.whl ../wheels_output/
           cd ..
           rm -rf flash-attention
+
+      # Step de débogage avant la compilation de diso
+      - name: Check for cuda_runtime.h before diso build
+        run: |
+          echo "--- Checking CUDA_HOME: $CUDA_HOME"
+          echo "--- Checking CPLUS_INCLUDE_PATH: $CPLUS_INCLUDE_PATH"
+          echo "--- Checking LIBRARY_PATH: $LIBRARY_PATH"
+          echo "--- Checking LD_LIBRARY_PATH: $LD_LIBRARY_PATH"
+          if [ -f /usr/local/cuda/include/cuda_runtime.h ]; then
+            echo "cuda_runtime.h found at /usr/local/cuda/include/cuda_runtime.h"
+          else
+            echo "cuda_runtime.h NOT found at /usr/local/cuda/include/cuda_runtime.h"
+            echo "Contents of /usr/local/cuda/include/:"
+            ls -la /usr/local/cuda/include/
+            # Optionnel: explorer d'autres chemins si celui-ci est vide
+            # echo "Contents of /usr/include/:"
+            # ls -la /usr/include | grep cuda
+            exit 1 
+          fi
+          echo "--- Checking nvcc version ---"
+          nvcc --version || echo "nvcc not found"
+
 
       - name: Build diso wheel
         run: |
