@@ -16,37 +16,32 @@ jobs:
     runs-on: ubuntu-latest # Exécuteur standard
 
     steps:
-      - name: Free Disk Space (Optional)
-        uses: jlumbroso/free-disk-space@main # Peut aider si l'installation de CUDA prend beaucoup de place
-        with:
-          tool-cache: true
-          android: true
-          dotnet: true
-          haskell: true
-          large-packages: true # Important pour CUDA
-          swap-storage: true
+      # - name: Free Disk Space (Optional) # Désactivé pour le débogage
+      #   uses: jlumbroso/free-disk-space@main 
+      #   with:
+      #     tool-cache: true
+      #     android: true
+      #     dotnet: true
+      #     haskell: true
+      #     large-packages: true 
+      #     swap-storage: true
 
       - name: Install CUDA Toolkit
         run: |
-          # Méthode recommandée par NVIDIA pour installer le toolkit sur Ubuntu
-          # Voir: https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=22.04&target_type=deb_network
-          # Cela peut prendre du temps
           wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
           sudo dpkg -i cuda-keyring_1.1-1_all.deb
           sudo apt-get update
-          sudo apt-get -y install cuda-toolkit-12-4 # Vérifie que c'est la version que tu veux
-          # Ajout des chemins CUDA à l'environnement du workflow
+          sudo apt-get -y install cuda-toolkit-12-4 
           echo "/usr/local/cuda-12.4/bin" >> $GITHUB_PATH
           echo "LD_LIBRARY_PATH=/usr/local/cuda-12.4/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" >> $GITHUB_ENV
           echo "CUDA_HOME=/usr/local/cuda-12.4" >> $GITHUB_ENV
           export PATH="/usr/local/cuda-12.4/bin${PATH:+:${PATH}}"
           export LD_LIBRARY_PATH="/usr/local/cuda-12.4/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"
-          nvcc --version # Vérifier l'installation
+          nvcc --version 
 
       - name: Install Build Dependencies (Python, Git, Compilers)
         run: |
           sudo apt-get update
-          # Git est généralement déjà sur les runners ubuntu-latest, mais on s'en assure
           sudo apt-get install -y git build-essential gcc-12 g++-12 ninja-build wget cmake \
                                 python3.11 python3.11-distutils python3.11-venv python3-pip python3.11-dev
           sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
@@ -54,13 +49,12 @@ jobs:
           sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1
           sudo update-alternatives --set python /usr/bin/python3.11
           python3 -m pip install --upgrade pip
-          # Dépendances Python de base pour les builds de wheels
           pip3 install torch==2.6.0 torchvision packaging cython==0.29.37
 
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Assure un clone Git complet, avec l'historique et le .git
+          fetch-depth: 0 
 
       - name: Verify .git folder after checkout
         run: |
@@ -78,17 +72,12 @@ jobs:
         run: |
           echo "CC=/usr/bin/gcc-12" >> $GITHUB_ENV
           echo "CXX=/usr/bin/g++-12" >> $GITHUB_ENV
-          echo "TORCH_CUDA_ARCH_LIST=8.6 8.9 9.0" >> $GITHUB_ENV # Ajuste si besoin
-          # CUDA_HOME et LD_LIBRARY_PATH sont déjà dans GITHUB_ENV via le step d'install CUDA
+          echo "TORCH_CUDA_ARCH_LIST=8.6 8.9 9.0" >> $GITHUB_ENV 
           echo "CPLUS_INCLUDE_PATH=${CUDA_HOME}/include${CPLUS_INCLUDE_PATH:+:${CPLUS_INCLUDE_PATH}}" >> $GITHUB_ENV
           echo "LIBRARY_PATH=${CUDA_HOME}/lib64${LIBRARY_PATH:+:${LIBRARY_PATH}}" >> $GITHUB_ENV
 
       - name: Create temporary wheels directory
         run: mkdir -p wheels_output
-
-      # --- Steps de build des wheels ---
-      # Ils utilisent WORK_DIR pour naviguer et rm -rf pour nettoyer.
-      # Chaque step doit être 'shell: bash' si ce n'est pas le défaut.
 
       - name: Build flash-attention wheel
         shell: bash 
@@ -135,8 +124,7 @@ jobs:
           WORK_DIR=$(pwd)
           REPO_NAME="kaolin"
           echo "Building $REPO_NAME in $WORK_DIR"
-          # Kaolin peut nécessiter FORCE_CUDA=1 si les GPU ne sont pas actifs mais que le toolkit est là
-          # export FORCE_CUDA=1 # Décommenter si kaolin se plaint de l'absence de GPU pour la cross-compilation
+          export FORCE_CUDA=1 # Tentative pour Kaolin
           git clone https://github.com/NVIDIAGameWorks/kaolin.git "$REPO_NAME"
           cd "$REPO_NAME"
           python3 setup.py bdist_wheel
@@ -177,9 +165,8 @@ jobs:
       - name: Commit wheels to repository
         shell: bash
         run: |
-          # À ce stade, pwd est la racine du dépôt et .git DOIT être présent
           echo "Current directory before git commands: $(pwd)"
-          ls -la # Vérifier la présence de .git
+          ls -la 
           
           if ! git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
             echo "ERROR: Not a git repository in $(pwd)."
@@ -192,7 +179,6 @@ jobs:
           
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          # La commande suivante est cruciale si l'utilisateur du runner est différent du propriétaire des fichiers
           git config --global --add safe.directory "$(pwd)" 
           
           git add precompiled_wheels/*.whl
