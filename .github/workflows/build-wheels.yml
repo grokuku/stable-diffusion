@@ -16,22 +16,26 @@ jobs:
     runs-on: ubuntu-latest 
 
     steps:
-      # - name: Free Disk Space (Optional) # Toujours commenté pour l'instant
-      #   uses: jlumbroso/free-disk-space@main 
-      #   with:
-      #     tool-cache: true # ... etc
-      
+      - name: Install libtinfo5 and other potential pre-dependencies for CUDA
+        run: |
+          sudo apt-get update
+          # libncurses5 peut fournir libtinfo5 ou être une dépendance.
+          # Sur Ubuntu 22.04+, libtinfo6 est la norme, mais certains paquets CUDA anciens peuvent encore vouloir la v5.
+          # Essayons d'installer libncurses5, qui est généralement disponible.
+          sudo apt-get install -y libncurses5
+          # Si libtinfo5 est explicitement nécessaire et non fournie par libncurses5 :
+          # On peut essayer de le télécharger d'un dépôt plus ancien si vraiment bloquant,
+          # mais pour l'instant, voyons si libncurses5 suffit ou si le toolkit gère mieux.
+
       - name: Install CUDA Toolkit
         run: |
           wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
           sudo dpkg -i cuda-keyring_1.1-1_all.deb
           sudo apt-get update
-          # Installer des composants CUDA ciblés pour éviter les problèmes de dépendances comme libtinfo5
-          # On a besoin de nvcc (compiler), des headers (libraries-devel) et potentiellement d'autres libs de base.
-          # cuda-nvtx est souvent une dépendance pour PyTorch.
-          sudo apt-get -y install cuda-compiler-12-4 cuda-libraries-devel-12-4 cuda-nvtx-12-4
+          # Revenir à l'installation du toolkit complet, en espérant que libncurses5 ait aidé pour libtinfo5
+          # Si cela échoue toujours à cause de libtinfo5, nous devrons être plus créatifs.
+          sudo apt-get -y install cuda-toolkit-12-4 
           
-          # Déterminer le chemin d'installation de CUDA
           CUDA_VERSION_DIR="/usr/local/cuda-12.4" 
           if [ ! -d "$CUDA_VERSION_DIR/bin" ] || [ ! -f "$CUDA_VERSION_DIR/bin/nvcc" ]; then
              if [ -d "/usr/local/cuda/bin" ] && [ -f "/usr/local/cuda/bin/nvcc" ]; then
@@ -39,11 +43,8 @@ jobs:
                 echo "CUDA found at /usr/local/cuda"
              else
                 echo "ERROR: CUDA installation path not found after installing packages. Could not find nvcc."
-                echo "Listing /usr/local/ :"
-                ls -l /usr/local/
-                # Vérifier si un autre dossier cuda-X.Y existe
-                echo "Listing /usr/local/cuda* :"
-                ls -ld /usr/local/cuda* || echo "No /usr/local/cuda* found"
+                echo "Listing /usr/local/ :" && ls -l /usr/local/
+                echo "Listing /usr/local/cuda* :" && ls -ld /usr/local/cuda* || echo "No /usr/local/cuda* found"
                 exit 1
              fi
           else
@@ -53,7 +54,6 @@ jobs:
           echo "$CUDA_VERSION_DIR/bin" >> $GITHUB_PATH
           echo "LD_LIBRARY_PATH=$CUDA_VERSION_DIR/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" >> $GITHUB_ENV
           echo "CUDA_HOME=$CUDA_VERSION_DIR" >> $GITHUB_ENV
-          # Exporter pour le step courant également (important pour nvcc --version)
           export PATH="$CUDA_VERSION_DIR/bin${PATH:+:${PATH}}"
           export LD_LIBRARY_PATH="$CUDA_VERSION_DIR/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"
           nvcc --version 
@@ -98,6 +98,7 @@ jobs:
       - name: Create temporary wheels directory
         run: mkdir -p wheels_output
 
+      # ... (les steps de build des wheels restent les mêmes) ...
       - name: Build flash-attention wheel
         shell: bash 
         run: |
