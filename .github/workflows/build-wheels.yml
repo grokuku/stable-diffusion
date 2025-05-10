@@ -16,26 +16,31 @@ jobs:
     runs-on: ubuntu-latest 
 
     steps:
-      - name: Install libtinfo5 and other potential pre-dependencies for CUDA
-        run: |
-          sudo apt-get update
-          # libncurses5 peut fournir libtinfo5 ou être une dépendance.
-          # Sur Ubuntu 22.04+, libtinfo6 est la norme, mais certains paquets CUDA anciens peuvent encore vouloir la v5.
-          # Essayons d'installer libncurses5, qui est généralement disponible.
-          sudo apt-get install -y libncurses5
-          # Si libtinfo5 est explicitement nécessaire et non fournie par libncurses5 :
-          # On peut essayer de le télécharger d'un dépôt plus ancien si vraiment bloquant,
-          # mais pour l'instant, voyons si libncurses5 suffit ou si le toolkit gère mieux.
-
-      - name: Install CUDA Toolkit
+      # Pas d'installation de libncurses5 ici
+      
+      - name: Install CUDA Toolkit Components
         run: |
           wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
           sudo dpkg -i cuda-keyring_1.1-1_all.deb
-          sudo apt-get update
-          # Revenir à l'installation du toolkit complet, en espérant que libncurses5 ait aidé pour libtinfo5
-          # Si cela échoue toujours à cause de libtinfo5, nous devrons être plus créatifs.
-          sudo apt-get -y install cuda-toolkit-12-4 
+          # S'assurer que les sources NVIDIA sont bien prises en compte avant l'install
+          sudo apt-get update 
           
+          echo "Attempting to install targeted CUDA packages..."
+          # Essayer d'installer les composants ciblés.
+          # cuda-tools-12-4 peut être un bon méta-paquet pour les outils de base sans tout le SDK.
+          # Ou alors des paquets encore plus spécifiques.
+          # Essayons: cuda-compiler, cuda-libraries-devel, cuda-nvtx
+          # Si cuda-libraries-devel-12-4 n'est pas trouvé, cela indique un problème avec la liste des paquets du repo nvidia.
+          sudo apt-get install -y --no-install-recommends \
+            cuda-compiler-12-4 \
+            cuda-libraries-devel-12-4 \
+            cuda-nvcc-12-4 \
+            cuda-cudart-devel-12-4 \
+            cuda-nvtx-12-4
+            # Ajout de cuda-nvcc-12-4 et cuda-cudart-devel-12-4 pour être plus sûr d'avoir nvcc et les headers de base.
+            # --no-install-recommends pour éviter de tirer trop de dépendances optionnelles.
+
+          # Déterminer le chemin d'installation de CUDA (logique inchangée)
           CUDA_VERSION_DIR="/usr/local/cuda-12.4" 
           if [ ! -d "$CUDA_VERSION_DIR/bin" ] || [ ! -f "$CUDA_VERSION_DIR/bin/nvcc" ]; then
              if [ -d "/usr/local/cuda/bin" ] && [ -f "/usr/local/cuda/bin/nvcc" ]; then
@@ -45,6 +50,9 @@ jobs:
                 echo "ERROR: CUDA installation path not found after installing packages. Could not find nvcc."
                 echo "Listing /usr/local/ :" && ls -l /usr/local/
                 echo "Listing /usr/local/cuda* :" && ls -ld /usr/local/cuda* || echo "No /usr/local/cuda* found"
+                # Lister les paquets CUDA installés pour débogage
+                echo "Installed CUDA packages (dpkg -l | grep cuda):"
+                dpkg -l | grep cuda || echo "No cuda packages found by dpkg."
                 exit 1
              fi
           else
