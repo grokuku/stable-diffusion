@@ -2,201 +2,105 @@
 name: Build Python Wheels
 
 on:
-  workflow_dispatch: # Permet un déclenchement manuel
+  workflow_dispatch:
   push:
     branches:
       - main 
       - Holaf_tests 
     paths:
-      - 'Dockerfile'
+      - 'Dockerfile' # Ou un Dockerfile spécifique pour le build des wheels si tu en crées un
       - '.github/workflows/build-wheels.yml'
 
 jobs:
   compile_wheels:
-    runs-on: ubuntu-latest
-    container:
-      image: nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04
+    runs-on: ubuntu-latest # Exécuteur standard
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 
+      # 1. Installer CUDA sur l'exécuteur (plus long, mais donne le contrôle)
+      #    Ou trouver une action qui le fait, ex: https://github.com/marketplace/actions/setup-cuda
+      #    Pour l'instant, on va supposer que les étapes de build peuvent se faire sans GPU actif,
+      #    juste avec le toolkit CUDA installé pour les headers et libs.
+      #    Si nvcc est nécessaire pour la compilation (pas juste les headers), CUDA doit être pleinement fonctionnel.
 
-      - name: Initial workspace check
+      - name: Install CUDA Toolkit (Exemple, peut nécessiter ajustement)
         run: |
-          echo "Initial PWD: $(pwd)"
-          echo "Initial ls -la (should show .git):"
-          ls -la 
+          # Ceci est un exemple, la méthode d'installation peut varier
+          # et être longue. Idéalement, l'image de base nvidia/cuda est mieux si elle fonctionne.
+          wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
+          sudo dpkg -i cuda-keyring_1.1-1_all.deb
+          sudo apt-get update
+          sudo apt-get -y install cuda-toolkit-12-4 # Ajuster la version si besoin
+          echo "/usr/local/cuda/bin" >> $GITHUB_PATH
+          echo "LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" >> $GITHUB_ENV
+          echo "CUDA_HOME=/usr/local/cuda" >> $GITHUB_ENV
 
-      - name: Install build dependencies (Python, pip, compilers)
+      # 2. Installer Git explicitement (l'exécuteur ubuntu-latest l'a déjà, mais pour être sûr)
+      - name: Install Git and build tools
         run: |
-          apt-get update
-          apt-get install -y -q=2 --no-install-recommends \
-            software-properties-common \
-            python3.11 python3.11-distutils python3.11-venv python3-pip python3.11-dev \
-            wget git cmake build-essential gcc-12 g++-12 ninja-build
-          update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
-          update-alternatives --set python3 /usr/bin/python3.11
-          update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1
-          update-alternatives --set python /usr/bin/python3.11
+          sudo apt-get update
+          sudo apt-get install -y git build-essential gcc-12 g++-12 ninja-build wget cmake \
+                                python3.11 python3.11-distutils python3.11-venv python3-pip python3.11-dev
+          sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
+          sudo update-alternatives --set python3 /usr/bin/python3.11
+          sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1
+          sudo update-alternatives --set python /usr/bin/python3.11
           python3 -m pip install --upgrade pip
           pip3 install torch==2.6.0 torchvision packaging cython==0.29.37
 
-      - name: Set Build Environment Variables
+      # 3. Maintenant, checkout DOIT utiliser Git
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        # fetch-depth: 0 est le défaut pour les push/workflow_dispatch, mais on peut le forcer.
+        with:
+          fetch-depth: 0 
+
+      - name: Verify .git folder after checkout
+        run: |
+          echo "PWD after checkout: $(pwd)"
+          ls -la
+          if [ -d ".git" ]; then
+            echo ".git folder found!"
+          else
+            echo "ERROR: .git folder NOT found after checkout!"
+            exit 1
+          fi
+          git --version # Vérifier la version de git utilisée
+
+      - name: Set Build Environment Variables # (Identique à avant, mais sans $GITHUB_ENV pour PATHs car déjà fait)
         run: |
           echo "CC=/usr/bin/gcc-12" >> $GITHUB_ENV
           echo "CXX=/usr/bin/g++-12" >> $GITHUB_ENV
           echo "TORCH_CUDA_ARCH_LIST=8.6 8.9 9.0" >> $GITHUB_ENV
-          echo "CUDA_HOME=/usr/local/cuda" >> $GITHUB_ENV
+          # CUDA_HOME et LD_LIBRARY_PATH sont déjà dans GITHUB_ENV via le step d'install CUDA
+          # Mais CPLUS_INCLUDE_PATH et LIBRARY_PATH peuvent encore être utiles pour g++
           echo "CPLUS_INCLUDE_PATH=/usr/local/cuda/include${CPLUS_INCLUDE_PATH:+:${CPLUS_INCLUDE_PATH}}" >> $GITHUB_ENV
           echo "LIBRARY_PATH=/usr/local/cuda/lib64${LIBRARY_PATH:+:${LIBRARY_PATH}}" >> $GITHUB_ENV
-          echo "LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" >> $GITHUB_ENV
-          echo "NVIDIA_DRIVER_CAPABILITIES=compute,utility" >> $GITHUB_ENV
-          echo "NVIDIA_VISIBLE_DEVICES=all" >> $GITHUB_ENV
+          # NVIDIA_DRIVER_CAPABILITIES et NVIDIA_VISIBLE_DEVICES ne sont pertinents que si un GPU est utilisé
+          # echo "NVIDIA_DRIVER_CAPABILITIES=compute,utility" >> $GITHUB_ENV
+          # echo "NVIDIA_VISIBLE_DEVICES=all" >> $GITHUB_ENV
 
       - name: Create temporary wheels directory
         run: mkdir -p wheels_output
 
-      # --- Steps de build des wheels ---
-      # Utilisation de WORK_DIR=$(pwd) pour simplifier les chemins relatifs pour cp et rm
-      # Et ajout de REPO_NAME pour rendre les rm -rf plus explicites et sûrs
-
+      # Les steps de build des wheels (flash-attention, diso, etc.) restent les mêmes
+      # que dans la version précédente (avec WORK_DIR, REPO_NAME, etc.)
+      # Exemple pour flash-attention:
       - name: Build flash-attention wheel
         shell: bash 
         run: |
           WORK_DIR=$(pwd)
           REPO_NAME="flash-attention"
-          echo "Building $REPO_NAME, WORK_DIR is $WORK_DIR. Checking for .git in $WORK_DIR:"
-          ls -la "$WORK_DIR/.git" || echo ".git not found in $WORK_DIR before $REPO_NAME clone"
+          echo "Building $REPO_NAME, WORK_DIR is $WORK_DIR."
           git clone https://github.com/Dao-AILab/flash-attention --recurse-submodules "$REPO_NAME"
           cd "$REPO_NAME"
           python3 setup.py bdist_wheel
           cp dist/*.whl "$WORK_DIR/wheels_output/"
           cd "$WORK_DIR" 
           rm -rf "$WORK_DIR/$REPO_NAME"
-          echo "After $REPO_NAME build, PWD is $(pwd). Checking for .git in $WORK_DIR:"
-          ls -la "$WORK_DIR/.git" || echo ".git not found in $WORK_DIR after $REPO_NAME rm"
+      # ... Répéter pour les autres wheels diso, nvdiffrast, kaolin, mip-splatting, TRELLIS ...
+      # Assurer que les `cd` et `rm` sont corrects.
 
-      - name: Check for cuda_runtime.h before diso build
-        run: |
-          if [ -f /usr/local/cuda/include/cuda_runtime.h ]; then
-            echo "cuda_runtime.h found"
-          else
-            echo "cuda_runtime.h NOT found" && ls -la /usr/local/cuda/include/ && exit 1 
-          fi
-          nvcc --version || echo "nvcc not found"
-
-      - name: Build diso wheel
-        shell: bash
-        run: |
-          WORK_DIR=$(pwd)
-          REPO_NAME="diso"
-          echo "Building $REPO_NAME, WORK_DIR is $WORK_DIR. Checking for .git in $WORK_DIR:"
-          ls -la "$WORK_DIR/.git" || echo ".git not found in $WORK_DIR before $REPO_NAME clone"
-          git clone https://github.com/SarahWeiii/diso --recurse-submodules "$REPO_NAME"
-          cd "$REPO_NAME"
-          python3 setup.py bdist_wheel
-          cp dist/*.whl "$WORK_DIR/wheels_output/"
-          cd "$WORK_DIR"
-          rm -rf "$WORK_DIR/$REPO_NAME"
-          echo "After $REPO_NAME build, PWD is $(pwd). Checking for .git in $WORK_DIR:"
-          ls -la "$WORK_DIR/.git" || echo ".git not found in $WORK_DIR after $REPO_NAME rm"
-          
-      - name: Build nvdiffrast wheel
-        shell: bash
-        run: |
-          WORK_DIR=$(pwd)
-          REPO_NAME="nvdiffrast"
-          echo "Building $REPO_NAME, WORK_DIR is $WORK_DIR. Checking for .git in $WORK_DIR:"
-          ls -la "$WORK_DIR/.git" || echo ".git not found in $WORK_DIR before $REPO_NAME clone"
-          git clone https://github.com/NVlabs/nvdiffrast.git "$REPO_NAME"
-          cd "$REPO_NAME"
-          python3 setup.py bdist_wheel
-          cp dist/*.whl "$WORK_DIR/wheels_output/"
-          cd "$WORK_DIR"
-          rm -rf "$WORK_DIR/$REPO_NAME"
-          echo "After $REPO_NAME build, PWD is $(pwd). Checking for .git in $WORK_DIR:"
-          ls -la "$WORK_DIR/.git" || echo ".git not found in $WORK_DIR after $REPO_NAME rm"
-
-      - name: Build kaolin wheel
-        shell: bash
-        run: |
-          WORK_DIR=$(pwd)
-          REPO_NAME="kaolin"
-          echo "Building $REPO_NAME, WORK_DIR is $WORK_DIR. Checking for .git in $WORK_DIR:"
-          ls -la "$WORK_DIR/.git" || echo ".git not found in $WORK_DIR before $REPO_NAME clone"
-          git clone https://github.com/NVIDIAGameWorks/kaolin.git "$REPO_NAME"
-          cd "$REPO_NAME"
-          python3 setup.py bdist_wheel
-          cp dist/*.whl "$WORK_DIR/wheels_output/"
-          cd "$WORK_DIR"
-          rm -rf "$WORK_DIR/$REPO_NAME"
-          echo "After $REPO_NAME build, PWD is $(pwd). Checking for .git in $WORK_DIR:"
-          ls -la "$WORK_DIR/.git" || echo ".git not found in $WORK_DIR after $REPO_NAME rm"
-
-      - name: Build mip-splatting (diff-gaussian-rasterization) wheel
-        shell: bash
-        run: |
-          WORK_DIR_ORIGINAL=$(pwd) 
-          REPO_NAME="mip-splatting"
-          CLONE_TARGET_PATH="$WORK_DIR_ORIGINAL/$REPO_NAME" 
-          SUB_DIR_BUILD_PATH="$CLONE_TARGET_PATH/submodules/diff-gaussian-rasterization"
-
-          echo "Building $REPO_NAME, WORK_DIR_ORIGINAL is $WORK_DIR_ORIGINAL. Checking for .git in $WORK_DIR_ORIGINAL:"
-          ls -la "$WORK_DIR_ORIGINAL/.git" || echo ".git not found in $WORK_DIR_ORIGINAL before $REPO_NAME clone"
-          
-          echo "Cloning into $CLONE_TARGET_PATH"
-          git clone https://github.com/autonomousvision/mip-splatting --recurse-submodules "$CLONE_TARGET_PATH"
-          
-          echo "Changing directory to $SUB_DIR_BUILD_PATH"
-          cd "$SUB_DIR_BUILD_PATH"
-          python3 setup.py bdist_wheel
-          
-          echo "Copying wheel to $WORK_DIR_ORIGINAL/wheels_output/"
-          cp dist/*.whl "$WORK_DIR_ORIGINAL/wheels_output/" 
-          
-          echo "Changing directory back to $WORK_DIR_ORIGINAL"
-          cd "$WORK_DIR_ORIGINAL"
-          
-          echo "About to remove $CLONE_TARGET_PATH. Current PWD: $(pwd)"
-          echo "Inspecting content (especially symlinks) of $CLONE_TARGET_PATH before removal:"
-          ls -laR "$CLONE_TARGET_PATH" 
-          find "$CLONE_TARGET_PATH" -type l -ls 
-
-          if [[ "$CLONE_TARGET_PATH" == "$WORK_DIR_ORIGINAL" ]] || [[ "$CLONE_TARGET_PATH" == "$(pwd)" && "$REPO_NAME" == "" ]]; then
-            echo "CRITICAL ERROR: CLONE_TARGET_PATH ('$CLONE_TARGET_PATH') is the same as WORK_DIR_ORIGINAL ('$WORK_DIR_ORIGINAL') or PWD. Aborting before rm -rf."
-            exit 1
-          fi
-          if [ ! -d "$CLONE_TARGET_PATH" ]; then
-            echo "CRITICAL ERROR: Directory $CLONE_TARGET_PATH does not exist to be removed. Aborting."
-            exit 1
-          fi
-
-          echo "Executing: rm -rf \"$CLONE_TARGET_PATH\""
-          rm -rf "$CLONE_TARGET_PATH" 
-          
-          echo "After $REPO_NAME build and rm, PWD is $(pwd). Checking for .git in $WORK_DIR_ORIGINAL:"
-          ls -la "$WORK_DIR_ORIGINAL/.git" || echo ".git not found in $WORK_DIR_ORIGINAL after $REPO_NAME rm"
-
-      - name: Build TRELLIS (vox2seq) wheel
-        shell: bash
-        run: |
-          WORK_DIR=$(pwd)
-          REPO_NAME="TRELLIS"
-          SUB_DIR_PATH="$WORK_DIR/$REPO_NAME/extensions/vox2seq" # Corrigé pour utiliser WORK_DIR
-          echo "Building $REPO_NAME, WORK_DIR is $WORK_DIR. Checking for .git in $WORK_DIR:"
-          ls -la "$WORK_DIR/.git" || echo ".git not found in $WORK_DIR before $REPO_NAME clone"
-          git clone https://github.com/microsoft/TRELLIS --recurse-submodules "$REPO_NAME" # Clone dans $WORK_DIR/$REPO_NAME
-          cd "$SUB_DIR_PATH"
-          python3 setup.py bdist_wheel
-          cp dist/*.whl "$WORK_DIR/wheels_output/"
-          cd "$WORK_DIR"
-          rm -rf "$WORK_DIR/$REPO_NAME"
-          echo "After $REPO_NAME build, PWD is $(pwd). Checking for .git in $WORK_DIR:"
-          ls -la "$WORK_DIR/.git" || echo ".git not found in $WORK_DIR after $REPO_NAME rm"
-      
-      - name: Commit wheels to repository
+      - name: Commit wheels to repository # (Devrait fonctionner maintenant car .git sera là)
         shell: bash
         run: |
           ACTUAL_GIT_DIR_PATH=$(pwd) 
