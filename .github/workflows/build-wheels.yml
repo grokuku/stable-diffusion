@@ -62,17 +62,19 @@ jobs:
         shell: bash 
         run: |
           WORK_DIR=$(pwd)
-          echo "Building flash-attention, WORK_DIR is $WORK_DIR, ls -la .git check:" && ls -la .git || echo ".git not found before flash-attention clone"
-          git clone https://github.com/Dao-AILab/flash-attention --recurse-submodules
-          cd flash-attention
+          REPO_NAME="flash-attention"
+          echo "Building $REPO_NAME, WORK_DIR is $WORK_DIR. Checking for .git in $WORK_DIR:"
+          ls -la "$WORK_DIR/.git" || echo ".git not found in $WORK_DIR before $REPO_NAME clone"
+          git clone https://github.com/Dao-AILab/flash-attention --recurse-submodules "$REPO_NAME"
+          cd "$REPO_NAME"
           python3 setup.py bdist_wheel
-          cp dist/*.whl $WORK_DIR/wheels_output/
-          cd $WORK_DIR 
-          rm -rf flash-attention
-          echo "After flash-attention build, PWD is $(pwd) and ls -la (checking .git):"
-          ls -la
+          cp dist/*.whl "$WORK_DIR/wheels_output/"
+          cd "$WORK_DIR" 
+          rm -rf "$WORK_DIR/$REPO_NAME"
+          echo "After $REPO_NAME build, PWD is $(pwd). Checking for .git in $WORK_DIR:"
+          ls -la "$WORK_DIR/.git" || echo ".git not found in $WORK_DIR after $REPO_NAME rm"
 
-      - name: Check for cuda_runtime.h before diso build # (Step inchangé, supposé OK maintenant)
+      - name: Check for cuda_runtime.h before diso build
         run: |
           if [ -f /usr/local/cuda/include/cuda_runtime.h ]; then
             echo "cuda_runtime.h found"
@@ -81,104 +83,111 @@ jobs:
           fi
           nvcc --version || echo "nvcc not found"
 
-      - name: Build diso wheel # (et les autres builds de wheels...)
+      - name: Build diso wheel
         shell: bash
         run: |
           WORK_DIR=$(pwd)
-          echo "Building diso, WORK_DIR is $WORK_DIR, ls -la .git check:" && ls -la .git || echo ".git not found before diso clone"
-          git clone https://github.com/SarahWeiii/diso --recurse-submodules
-          cd diso
+          REPO_NAME="diso"
+          echo "Building $REPO_NAME, WORK_DIR is $WORK_DIR. Checking for .git in $WORK_DIR:"
+          ls -la "$WORK_DIR/.git" || echo ".git not found in $WORK_DIR before $REPO_NAME clone"
+          git clone https://github.com/SarahWeiii/diso --recurse-submodules "$REPO_NAME"
+          cd "$REPO_NAME"
           python3 setup.py bdist_wheel
-          cp dist/*.whl $WORK_DIR/wheels_output/
-          cd $WORK_DIR
-          rm -rf diso
-          echo "After diso build, PWD is $(pwd) and ls -la (checking .git):"
-          ls -la
+          cp dist/*.whl "$WORK_DIR/wheels_output/"
+          cd "$WORK_DIR"
+          rm -rf "$WORK_DIR/$REPO_NAME"
+          echo "After $REPO_NAME build, PWD is $(pwd). Checking for .git in $WORK_DIR:"
+          ls -la "$WORK_DIR/.git" || echo ".git not found in $WORK_DIR after $REPO_NAME rm"
           
       - name: Build nvdiffrast wheel
         shell: bash
         run: |
           WORK_DIR=$(pwd)
-          echo "Building nvdiffrast, WORK_DIR is $WORK_DIR, ls -la .git check:" && ls -la .git || echo ".git not found before nvdiffrast clone"
-          git clone https://github.com/NVlabs/nvdiffrast.git
-          cd nvdiffrast
+          REPO_NAME="nvdiffrast"
+          echo "Building $REPO_NAME, WORK_DIR is $WORK_DIR. Checking for .git in $WORK_DIR:"
+          ls -la "$WORK_DIR/.git" || echo ".git not found in $WORK_DIR before $REPO_NAME clone"
+          git clone https://github.com/NVlabs/nvdiffrast.git "$REPO_NAME"
+          cd "$REPO_NAME"
           python3 setup.py bdist_wheel
-          cp dist/*.whl $WORK_DIR/wheels_output/
-          cd $WORK_DIR
-          rm -rf nvdiffrast
-          echo "After nvdiffrast build, PWD is $(pwd) and ls -la (checking .git):"
-          ls -la
+          cp dist/*.whl "$WORK_DIR/wheels_output/"
+          cd "$WORK_DIR"
+          rm -rf "$WORK_DIR/$REPO_NAME"
+          echo "After $REPO_NAME build, PWD is $(pwd). Checking for .git in $WORK_DIR:"
+          ls -la "$WORK_DIR/.git" || echo ".git not found in $WORK_DIR after $REPO_NAME rm"
 
       - name: Build kaolin wheel
         shell: bash
         run: |
           WORK_DIR=$(pwd)
-          echo "Building kaolin, WORK_DIR is $WORK_DIR, ls -la .git check:" && ls -la .git || echo ".git not found before kaolin clone"
-          git clone https://github.com/NVIDIAGameWorks/kaolin.git
-          cd kaolin
+          REPO_NAME="kaolin"
+          echo "Building $REPO_NAME, WORK_DIR is $WORK_DIR. Checking for .git in $WORK_DIR:"
+          ls -la "$WORK_DIR/.git" || echo ".git not found in $WORK_DIR before $REPO_NAME clone"
+          git clone https://github.com/NVIDIAGameWorks/kaolin.git "$REPO_NAME"
+          cd "$REPO_NAME"
           python3 setup.py bdist_wheel
-          cp dist/*.whl $WORK_DIR/wheels_output/
-          cd $WORK_DIR
-          rm -rf kaolin
-          echo "After kaolin build, PWD is $(pwd) and ls -la (checking .git):"
-          ls -la
+          cp dist/*.whl "$WORK_DIR/wheels_output/"
+          cd "$WORK_DIR"
+          rm -rf "$WORK_DIR/$REPO_NAME"
+          echo "After $REPO_NAME build, PWD is $(pwd). Checking for .git in $WORK_DIR:"
+          ls -la "$WORK_DIR/.git" || echo ".git not found in $WORK_DIR after $REPO_NAME rm"
 
       - name: Build mip-splatting (diff-gaussian-rasterization) wheel
         shell: bash
         run: |
           WORK_DIR=$(pwd)
-          echo "Building mip-splatting, WORK_DIR is $WORK_DIR, ls -la .git check:" && ls -la .git || echo ".git not found before mip-splatting clone"
-          git clone https://github.com/autonomousvision/mip-splatting --recurse-submodules
-          cd mip-splatting/submodules/diff-gaussian-rasterization
+          REPO_NAME="mip-splatting"
+          SUB_DIR_PATH="$REPO_NAME/submodules/diff-gaussian-rasterization"
+          echo "Building $REPO_NAME, WORK_DIR is $WORK_DIR. Checking for .git in $WORK_DIR:"
+          ls -la "$WORK_DIR/.git" || echo ".git not found in $WORK_DIR before $REPO_NAME clone"
+          git clone https://github.com/autonomousvision/mip-splatting --recurse-submodules "$REPO_NAME"
+          cd "$SUB_DIR_PATH"
           python3 setup.py bdist_wheel
-          cp dist/*.whl $WORK_DIR/wheels_output/ 
-          cd $WORK_DIR
-          rm -rf mip-splatting 
-          echo "After mip-splatting build, PWD is $(pwd) and ls -la (checking .git):"
-          ls -la
+          cp dist/*.whl "$WORK_DIR/wheels_output/" 
+          cd "$WORK_DIR"
+          rm -rf "$WORK_DIR/$REPO_NAME" 
+          echo "After $REPO_NAME build, PWD is $(pwd). Checking for .git in $WORK_DIR:"
+          ls -la "$WORK_DIR/.git" || echo ".git not found in $WORK_DIR after $REPO_NAME rm"
 
       - name: Build TRELLIS (vox2seq) wheel
         shell: bash
         run: |
           WORK_DIR=$(pwd)
-          echo "Building TRELLIS, WORK_DIR is $WORK_DIR, ls -la .git check:" && ls -la .git || echo ".git not found before TRELLIS clone"
-          git clone https://github.com/microsoft/TRELLIS --recurse-submodules
-          cd TRELLIS/extensions/vox2seq
+          REPO_NAME="TRELLIS"
+          SUB_DIR_PATH="$REPO_NAME/extensions/vox2seq"
+          echo "Building $REPO_NAME, WORK_DIR is $WORK_DIR. Checking for .git in $WORK_DIR:"
+          ls -la "$WORK_DIR/.git" || echo ".git not found in $WORK_DIR before $REPO_NAME clone"
+          git clone https://github.com/microsoft/TRELLIS --recurse-submodules "$REPO_NAME"
+          cd "$SUB_DIR_PATH"
           python3 setup.py bdist_wheel
-          cp dist/*.whl $WORK_DIR/wheels_output/
-          cd $WORK_DIR
-          rm -rf TRELLIS 
-          echo "After TRELLIS build, PWD is $(pwd) and ls -la (checking .git):"
-          ls -la
+          cp dist/*.whl "$WORK_DIR/wheels_output/"
+          cd "$WORK_DIR"
+          rm -rf "$WORK_DIR/$REPO_NAME"
+          echo "After $REPO_NAME build, PWD is $(pwd). Checking for .git in $WORK_DIR:"
+          ls -la "$WORK_DIR/.git" || echo ".git not found in $WORK_DIR after $REPO_NAME rm"
       
       - name: Commit wheels to repository
         shell: bash
         run: |
-          ACTUAL_GIT_DIR_PATH=$(pwd) # Devrait être /__w/stable-diffusion/stable-diffusion ou /github/workspace
+          ACTUAL_GIT_DIR_PATH=$(pwd) 
           echo "Current directory before git commands: $ACTUAL_GIT_DIR_PATH"
           echo "Content of current directory (ls -la):"
-          ls -la $ACTUAL_GIT_DIR_PATH
+          ls -la "$ACTUAL_GIT_DIR_PATH"
           
-          # Configurer le dépôt comme sûr AVANT toute opération Git
-          # Utiliser le chemin absolu résolu par pwd
           echo "Adding $ACTUAL_GIT_DIR_PATH to git safe.directory"
           git config --global --add safe.directory "$ACTUAL_GIT_DIR_PATH"
           
-          # Vérifier à nouveau avec git rev-parse après avoir configuré safe.directory
           if ! git -C "$ACTUAL_GIT_DIR_PATH" rev-parse --is-inside-work-tree > /dev/null 2>&1; then
             echo "ERROR: Still not a git repository according to 'git rev-parse --is-inside-work-tree' in $ACTUAL_GIT_DIR_PATH even after setting safe.directory."
-            # Si cela échoue, le problème est plus profond que safe.directory, .git est vraiment manquant ou corrompu.
             exit 1
           fi
           echo ".git directory confirmed by 'git rev-parse' for $ACTUAL_GIT_DIR_PATH after setting safe.directory."
 
-          mkdir -p precompiled_wheels # Relatif au $ACTUAL_GIT_DIR_PATH
-          cp wheels_output/*.whl precompiled_wheels/ # Relatif
+          mkdir -p precompiled_wheels 
+          cp wheels_output/*.whl precompiled_wheels/ 
           
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           
-          # Les commandes git suivantes s'exécuteront dans $ACTUAL_GIT_DIR_PATH
           git add precompiled_wheels/*.whl
           
           if ! git diff --staged --quiet; then
