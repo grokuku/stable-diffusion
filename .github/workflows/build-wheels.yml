@@ -16,21 +16,21 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04
-      # Optionnel: Spécifier explicitement le working-directory pour le conteneur
-      # options: --workdir /github/workspace 
-      # (cela pourrait aider à standardiser où le code est placé, mais actions/checkout le gère)
 
     steps:
       - name: Checkout repository
-        # Par défaut, actions/checkout clone dans /github/workspace dans le conteneur
-        # Le working directory des steps suivants sera /github/workspace
-        uses: actions/checkout@v4 
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Assurer un clone complet
+
+      - name: Initial workspace check
+        run: |
+          echo "Initial PWD: $(pwd)"
+          echo "Initial ls -la:"
+          ls -la # Doit montrer .git ici
 
       - name: Install build dependencies (Python, pip, compilers)
         run: |
-          # Le pwd ici devrait être /github/workspace ou l'équivalent où le code a été checkouté
-          echo "Current directory at start of dependency install: $(pwd)"
-          ls -A # Pour voir si .git est là dès le début
           apt-get update
           apt-get install -y -q=2 --no-install-recommends \
             software-properties-common \
@@ -56,23 +56,24 @@ jobs:
           echo "NVIDIA_VISIBLE_DEVICES=all" >> $GITHUB_ENV
 
       - name: Create temporary wheels directory
-        # Le pwd est toujours la racine du checkout (/github/workspace)
-        run: mkdir -p wheels_output # Crée /github/workspace/wheels_output
+        run: mkdir -p wheels_output
 
-      # Les steps de build suivants font des 'cd <subdir>' puis 'cd ..' (ou '../../../')
-      # Ils doivent tous ramener le pwd à la racine du checkout (/github/workspace)
       - name: Build flash-attention wheel
+        shell: bash # Assurer bash pour WORK_DIR=$(pwd)
         run: |
+          WORK_DIR=$(pwd)
+          echo "Building flash-attention, WORK_DIR is $WORK_DIR"
           git clone https://github.com/Dao-AILab/flash-attention --recurse-submodules
           cd flash-attention
           python3 setup.py bdist_wheel
-          cp dist/*.whl ../wheels_output/ 
-          cd .. 
+          cp dist/*.whl $WORK_DIR/wheels_output/
+          cd $WORK_DIR 
           rm -rf flash-attention
+          echo "After flash-attention build, PWD is $(pwd) and ls -la:"
+          ls -la
 
       - name: Check for cuda_runtime.h before diso build
         run: |
-          echo "--- Checking CUDA_HOME: $CUDA_HOME" # etc. (step inchangé)
           if [ -f /usr/local/cuda/include/cuda_runtime.h ]; then
             echo "cuda_runtime.h found"
           else
@@ -81,63 +82,81 @@ jobs:
           nvcc --version || echo "nvcc not found"
 
       - name: Build diso wheel
+        shell: bash
         run: |
+          WORK_DIR=$(pwd)
+          echo "Building diso, WORK_DIR is $WORK_DIR"
           git clone https://github.com/SarahWeiii/diso --recurse-submodules
           cd diso
           python3 setup.py bdist_wheel
-          cp dist/*.whl ../wheels_output/
-          cd ..
+          cp dist/*.whl $WORK_DIR/wheels_output/
+          cd $WORK_DIR
           rm -rf diso
+          echo "After diso build, PWD is $(pwd) and ls -la:"
+          ls -la
           
       - name: Build nvdiffrast wheel
+        shell: bash
         run: |
+          WORK_DIR=$(pwd)
           git clone https://github.com/NVlabs/nvdiffrast.git
           cd nvdiffrast
           python3 setup.py bdist_wheel
-          cp dist/*.whl ../wheels_output/
-          cd ..
+          cp dist/*.whl $WORK_DIR/wheels_output/
+          cd $WORK_DIR
           rm -rf nvdiffrast
+          echo "After nvdiffrast build, PWD is $(pwd) and ls -la:"
+          ls -la
 
       - name: Build kaolin wheel
+        shell: bash
         run: |
+          WORK_DIR=$(pwd)
           git clone https://github.com/NVIDIAGameWorks/kaolin.git
           cd kaolin
           python3 setup.py bdist_wheel
-          cp dist/*.whl ../wheels_output/
-          cd ..
+          cp dist/*.whl $WORK_DIR/wheels_output/
+          cd $WORK_DIR
           rm -rf kaolin
+          echo "After kaolin build, PWD is $(pwd) and ls -la:"
+          ls -la
 
       - name: Build mip-splatting (diff-gaussian-rasterization) wheel
+        shell: bash
         run: |
+          WORK_DIR=$(pwd)
           git clone https://github.com/autonomousvision/mip-splatting --recurse-submodules
           cd mip-splatting/submodules/diff-gaussian-rasterization
           python3 setup.py bdist_wheel
-          cp dist/*.whl ../../../wheels_output/ 
-          cd ../../../ 
-          rm -rf mip-splatting
+          # Le cp doit aller vers $WORK_DIR/wheels_output, pas besoin de ../../../ si on utilise WORK_DIR
+          cp dist/*.whl $WORK_DIR/wheels_output/ 
+          cd $WORK_DIR
+          rm -rf mip-splatting # rm -rf $WORK_DIR/mip-splatting serait plus sûr
+          echo "After mip-splatting build, PWD is $(pwd) and ls -la:"
+          ls -la
 
       - name: Build TRELLIS (vox2seq) wheel
+        shell: bash
         run: |
+          WORK_DIR=$(pwd)
           git clone https://github.com/microsoft/TRELLIS --recurse-submodules
           cd TRELLIS/extensions/vox2seq
           python3 setup.py bdist_wheel
-          cp dist/*.whl ../../../wheels_output/ 
-          cd ../../../ 
-          rm -rf TRELLIS
+          cp dist/*.whl $WORK_DIR/wheels_output/
+          cd $WORK_DIR
+          rm -rf TRELLIS # rm -rf $WORK_DIR/TRELLIS
+          echo "After TRELLIS build, PWD is $(pwd) and ls -la:"
+          ls -la
       
       - name: Commit wheels to repository
+        shell: bash
         run: |
-          # À ce stade, pwd DEVRAIT être la racine du dépôt cloné (/github/workspace ou /__w/...)
           echo "Current directory before git commands: $(pwd)"
-          echo "Content of current directory:"
-          ls -A # Pour vérifier que .git est listé s'il est là.
+          echo "Content of current directory (ls -la):"
+          ls -la 
           
-          # Tentative de rendre la détection de .git plus robuste
           if ! git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
             echo "ERROR: Not a git repository according to 'git rev-parse --is-inside-work-tree' in $(pwd)."
-            # Lister explicitement avec -a pour voir .git
-            echo "Detailed content of current directory (ls -la):"
-            ls -la
             exit 1
           fi
           echo ".git directory confirmed by 'git rev-parse'."
@@ -148,9 +167,9 @@ jobs:
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           
-          # Configurer le dépôt comme sûr pour contourner les problèmes de propriété
-          git config --global --add safe.directory "$(pwd)" # Utilise le pwd courant
-          
+          # Le répertoire courant "$(pwd)" devrait être la racine du dépôt, déjà sûr.
+          # git config --global --add safe.directory "$(pwd)" # Peut-être pas nécessaire si on est bien dans le bon user/contexte
+
           git add precompiled_wheels/*.whl
           
           if ! git diff --staged --quiet; then
