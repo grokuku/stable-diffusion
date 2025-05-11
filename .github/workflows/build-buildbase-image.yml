@@ -10,8 +10,8 @@ on:
       - '.github/workflows/build-buildbase-image.yml' # Si ce workflow lui-même change
 
 jobs:
-  build_and_push_buildenv:
-    name: Build and Push stable-diffusion-builbase
+  build_and_push_buildbase:
+    name: Build and Push stable-diffusion-buildbase
     runs-on: ubuntu-latest
     permissions:
       packages: write
@@ -39,11 +39,11 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata for buildenv image
-        id: meta-buildenv
+      - name: Extract metadata for buildbase image
+        id: meta-buildbase
         uses: docker/metadata-action@v4
         with:
-          images: ghcr.io/${{ github.repository_owner }}/stable-diffusion-buildenv
+          images: ghcr.io/${{ github.repository_owner }}/stable-diffusion-buildbase
           tags: |
             type=raw,value=latest
             type=sha,prefix=,suffix=,format=short 
@@ -55,10 +55,10 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./Dockerfile.buildenv
+          file: ./Dockerfile.buildbase
           push: true
-          tags: ${{ steps.meta-buildenv.outputs.tags }}
-          labels: ${{ steps.meta-buildenv.outputs.labels }}
+          tags: ${{ steps.meta-buildbase.outputs.tags }}
+          labels: ${{ steps.meta-buildbase.outputs.labels }}
           platforms: linux/amd64
           cache-from: type=gha
           cache-to: type=gha,mode=max
