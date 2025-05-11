@@ -1,4 +1,4 @@
-FROM imagecontruiteavecwheels
+FROM ghcr.io/grokuku/stable-diffusion-buildbase:latest
 
 COPY docker/root/ /
 

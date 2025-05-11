@@ -4,7 +4,7 @@ on:
   workflow_dispatch: # Déclenchement manuel
   push:
     branches:
-      - main # Ou ta branche de développement principale
+      - '**' # Ou ta branche de développement principale
     paths:
       - 'Dockerfile.buildenv'
       - '.github/workflows/build-buildenv-image.yml' # Si ce workflow lui-même change
