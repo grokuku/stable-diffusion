@@ -5,9 +5,6 @@ on:
   push:
     tags: 
       - '*.*.*'
-    # Vous ne pouvez définir qu'un seul des filtres 'paths' ou 'paths-ignore' pour un événement.
-    # Si le but est de déclencher sur tag SAUF si les seuls changements sont des .md,
-    # alors utilisez paths-ignore.
     paths-ignore:
       - '**.md'
       # Ajoutez ici d'autres patterns à ignorer si nécessaire pour les événements push (tags et branches si activées)
