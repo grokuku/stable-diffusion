@@ -1,3 +1,0 @@
-# Ce fichier est vide.
-# Il sert juste à ce que Git puisse suivre le dossier precompiled_wheels/
-# même s'il est initialement vide (avant que le workflow build-wheels ne le remplisse)
