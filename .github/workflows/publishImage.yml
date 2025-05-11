@@ -7,17 +7,19 @@ on:
       - 'Holaf_tests' # Déclenche pour la branche Holaf_tests
     tags:
       - '*.*.*'       # Déclenche pour les tags (pour la version main)
-    # Pas de paths/paths-ignore ici pour simplifier, on se base sur les branches/tags.
-    # Si tu veux être plus restrictif, tu peux ajouter paths-ignore: ['**.md']
-    # mais cela s'appliquera aux pushes sur Holaf_tests ET aux tags.
+    # Si tu veux ignorer les changements de .md pour ces événements push:
+    paths-ignore:
+      - '**.md'
 
-  workflow_dispatch: # Garder la possibilité d'un déclenchement manuel pour l'image finale si besoin
+  workflow_dispatch: # Permet un déclenchement manuel de ce workflow
 
 jobs:
-  # Job pour construire l'image de la branche Holaf_tests
+  # Il n'y a plus de job build_compile_environment ici,
+  # car l'image buildenv est gérée manuellement ou par un workflow séparé.
+
   build_holaf_tests_image:
     name: Build Holaf_tests Docker Image
-    if: github.event_name == 'push' && github.ref == 'refs/heads/Holaf_tests' # S'exécute seulement sur push vers Holaf_tests
+    if: github.event_name == 'push' && github.ref == 'refs/heads/Holaf_tests'
     runs-on: ubuntu-latest
     permissions:
       packages: write 
@@ -25,23 +27,14 @@ jobs:
     steps:
       - name: Check out the Holaf_tests branch
         uses: actions/checkout@v4
-        # Pas besoin de fetch-depth:0 ici, car on ne commite rien depuis ce job.
 
-      - name: Login to Registries (Docker Hub & GHCR)
-        # (Combine les logins pour éviter la duplication)
-        if: vars.DOCKERHUB_IMAGE_NAME != '' || vars.GHCR_IMAGE_NAME != ''
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ प्योर vars.DOCKERHUB_IMAGE_NAME && 'docker.io' || 'ghcr.io' }} # Logique conditionnelle si un seul est utilisé, ou faire 2 steps
-          username: ${{ प्योर vars.DOCKERHUB_IMAGE_NAME && secrets.DOCKER_USERNAME || github.repository_owner }}
-          password: ${{ प्योर vars.DOCKERHUB_IMAGE_NAME && secrets.DOCKER_PASSWORD || secrets.GITHUB_TOKEN }}
-      # Alternative plus simple avec deux steps de login distincts:
       - name: Log in to Docker Hub (Holaf_tests)
-        if: vars.DOCKERHUB_IMAGE_NAME != '' && secrets.DOCKER_USERNAME != ''
+        if: vars.DOCKERHUB_IMAGE_NAME != '' && secrets.DOCKER_USERNAME != '' && secrets.DOCKER_PASSWORD != ''
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
+
       - name: Login to GitHub Container Registry (Holaf_tests)
         if: vars.GHCR_IMAGE_NAME != ''
         uses: docker/login-action@v3
@@ -58,8 +51,8 @@ jobs:
             ${{ vars.DOCKERHUB_IMAGE_NAME }}
             ${{ vars.GHCR_IMAGE_NAME }}
           tags: |
-            type=raw,value=holaf_tests # Tag fixe pour cette branche
-            type=sha,prefix=holaf_tests-,suffix=,format=short # Tag avec SHA pour traçabilité
+            type=raw,value=holaf_tests 
+            type=sha,prefix=holaf_tests-,suffix=,format=short 
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -71,17 +64,16 @@ jobs:
         with:
           context: .
           file: ./Dockerfile 
-          push: true # Toujours pusher pour Holaf_tests
+          push: true 
           tags: ${{ steps.meta-holaf-tests.outputs.tags }}
           labels: ${{ steps.meta-holaf-tests.outputs.labels }}
           platforms: linux/amd64
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  # Job pour construire l'image main (sur tag)
   build_main_image_on_tag:
     name: Build Main Docker Image (on Tag)
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/') # S'exécute seulement sur création de tag
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     permissions:
       packages: write 
@@ -89,14 +81,14 @@ jobs:
     steps:
       - name: Check out the tagged commit
         uses: actions/checkout@v4
-        # Pas besoin de fetch-depth:0 ici pour le build de l'image.
 
       - name: Log in to Docker Hub (Main Tag)
-        if: vars.DOCKERHUB_IMAGE_NAME != '' && secrets.DOCKER_USERNAME != ''
+        if: vars.DOCKERHUB_IMAGE_NAME != '' && secrets.DOCKER_USERNAME != '' && secrets.DOCKER_PASSWORD != ''
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
+
       - name: Login to GitHub Container Registry (Main Tag)
         if: vars.GHCR_IMAGE_NAME != ''
         uses: docker/login-action@v3
@@ -113,10 +105,9 @@ jobs:
             ${{ vars.DOCKERHUB_IMAGE_NAME }}
             ${{ vars.GHCR_IMAGE_NAME }}
           tags: | 
-            type=raw,value=latest # Tag 'latest' sur création de tag Git
-            type=semver,pattern={{version}} # Tags sémantiques (ex: v1.2.3 -> 1.2.3)
-            # Tu peux ajouter un tag avec le nom du tag Git lui-même si tu veux :
-            # type=ref,event=tag
+            type=raw,value=latest 
+            type=semver,pattern={{version}} 
+            type=ref,event=tag # Ajoute un tag avec le nom exact du tag Git (ex: v1.2.3 -> v1.2.3)
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -128,14 +119,13 @@ jobs:
         with:
           context: .
           file: ./Dockerfile 
-          push: true # Toujours pusher pour les tags
+          push: true 
           tags: ${{ steps.meta-main-tag.outputs.tags }}
           labels: ${{ steps.meta-main-tag.outputs.labels }}
           platforms: linux/amd64
           cache-from: type=gha
           cache-to: type=gha,mode=max
           
-  # Job pour le déclenchement manuel de l'image finale (optionnel, si tu veux pouvoir builder manuellement une branche spécifique)
   build_manual_dispatch_image:
     name: Build Docker Image (Manual Dispatch)
     if: github.event_name == 'workflow_dispatch'
@@ -147,14 +137,16 @@ jobs:
       - name: Check out repository (branch from dispatch)
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref }} # Checkout la branche sur laquelle le dispatch a été lancé
+          # github.ref contiendra refs/heads/branch-name pour un dispatch sur une branche
+          ref: ${{ github.ref }} 
 
       - name: Log in to Docker Hub (Manual)
-        if: vars.DOCKERHUB_IMAGE_NAME != '' && secrets.DOCKER_USERNAME != ''
+        if: vars.DOCKERHUB_IMAGE_NAME != '' && secrets.DOCKER_USERNAME != '' && secrets.DOCKER_PASSWORD != ''
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
+
       - name: Login to GitHub Container Registry (Manual)
         if: vars.GHCR_IMAGE_NAME != ''
         uses: docker/login-action@v3
@@ -171,9 +163,8 @@ jobs:
             ${{ vars.DOCKERHUB_IMAGE_NAME }}
             ${{ vars.GHCR_IMAGE_NAME }}
           tags: |
-            # Pour un déclenchement manuel, tu peux taguer avec le nom de la branche et 'manual'
-            type=ref,event=branch,prefix=manual- 
-            type=sha,prefix=manual-,suffix=,format=short
+            type=ref,event=branch,prefix=manual- # Ex: manual-main, manual-Holaf_tests
+            type=sha,prefix=manual-sha-,format=short # Ex: manual-sha-abcdef
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
