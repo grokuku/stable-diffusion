@@ -5,18 +5,16 @@ on:
   push:
     tags: 
       - '*.*.*'
-    paths: 
-      - 'Dockerfile'
-      - 'Dockerfile.buildenv' 
-      - 'docker/**'
-      - '*.sh' 
-      - 'parameters/**'
-      - 'custom-sample.sh'
-      - 'functions.sh'
-      - '.github/workflows/publishImage.yml' 
-      - 'precompiled_wheels/**' 
+    # Vous ne pouvez définir qu'un seul des filtres 'paths' ou 'paths-ignore' pour un événement.
+    # Si le but est de déclencher sur tag SAUF si les seuls changements sont des .md,
+    # alors utilisez paths-ignore.
     paths-ignore:
       - '**.md'
+      # Ajoutez ici d'autres patterns à ignorer si nécessaire pour les événements push (tags et branches si activées)
+      # Par exemple:
+      # - 'docs/**'
+      # - 'examples/**'
+
   workflow_dispatch: 
   workflow_run: 
     workflows: ["Build Python Wheels"] 
@@ -82,8 +80,8 @@ jobs:
       - name: Free Disk Space (optional)
         uses: jlumbroso/free-disk-space@main
         with:
-          tool-cache: true       # Correction ici
-          android: true          # Chaque paramètre sur une nouvelle ligne
+          tool-cache: true       
+          android: true          
           dotnet: true
           haskell: true
           large-packages: true
