@@ -6,8 +6,8 @@ on:
     branches:
       - '**' # Ou ta branche de développement principale
     paths:
-      - 'Dockerfile.buildenv'
-      - '.github/workflows/build-buildenv-image.yml' # Si ce workflow lui-même change
+      - 'Dockerfile.builbase'
+      - '.github/workflows/build-buildbase-image.yml' # Si ce workflow lui-même change
 
 jobs:
   build_and_push_buildenv:
