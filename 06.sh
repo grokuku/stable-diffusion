@@ -33,7 +33,7 @@
 #   - Additional Python dependencies can be added to `$SD06_DIR/requirements.txt`.
 source /functions.sh
 
-export PATH="/home/abc/miniconda3/bin:$PATH"
+export PATH="/opt/miniconda3/bin:$PATH"
 export SD06_DIR=${BASE_DIR}/06-Fooocus
 
 log_message "INFO" "Starting Fooocus installation and setup"

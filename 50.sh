@@ -27,7 +27,7 @@
 #   - Additional Python dependencies can be added to `$SD50_DIR/requirements.txt`.
 source /functions.sh
 
-export PATH="/home/abc/miniconda3/bin:$PATH"
+export PATH="/opt/miniconda3/bin:$PATH"
 export SD50_DIR=${BASE_DIR}/50-IOPaint
 
 mkdir -p "${SD50_DIR}/IOPaint"

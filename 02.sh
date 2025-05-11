@@ -33,7 +33,7 @@
 #   - Additional Python dependencies can be added to `$SD02_DIR/requirements.txt`.
 source /functions.sh
 
-export PATH="/home/abc/miniconda3/bin:$PATH"
+export PATH="/opt/miniconda3/bin:$PATH"
 export SD02_DIR=${BASE_DIR}/02-sd-webui
 
 log_message "INFO" "Starting Automatic1111 installation and setup"

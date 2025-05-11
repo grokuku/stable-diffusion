@@ -1,61 +1,95 @@
 # .github/workflows/publishImage.yml
-name: Publish Docker image to Dockerhub and GHCR
+name: Publish Docker images
 
 on:
   push:
-    # branches: # Commenté pour ne pas builder sur push direct aux branches
-      # - 'main'
-      # - 'test'
-      # - 'Holaf_tests'
-    tags: # Le build se déclenche lors de la création de tags (releases)
+    tags: 
       - '*.*.*'
-    paths: # Ces filtres de chemins s'appliquent aux événements push (donc ici, aux tags)
+    paths: 
       - 'Dockerfile'
+      - 'Dockerfile.buildenv' # Nouveau Dockerfile
       - 'docker/**'
-      - '*.sh' # Tous les scripts de lancement des UIs
+      - '*.sh' 
       - 'parameters/**'
       - 'custom-sample.sh'
       - 'functions.sh'
-      - '.github/workflows/publishImage.yml' # Ce workflow lui-même
-      - 'precompiled_wheels/**' # Reconstruire si les wheels ont été mises à jour
+      - '.github/workflows/publishImage.yml' 
+      - 'precompiled_wheels/**' 
     paths-ignore:
       - '**.md'
-  workflow_dispatch: # Permet un déclenchement manuel
-  workflow_run: # Déclencher après la réussite du workflow de build des wheels
-    workflows: ["Build Python Wheels"] # Doit correspondre au 'name:' de build-wheels.yml
+  workflow_dispatch: 
+  workflow_run: 
+    workflows: ["Build Python Wheels"] 
     types:
       - completed
-    # Optionnel: si vous voulez seulement déclencher si build-wheels s'exécute sur certaines branches
-    # branches:
-    #   - 'main'
 
 jobs:
-  push_to_registry:
-    name: Build and Push Docker image
+  build_compile_environment:
+    name: Build and Push Compilation Environment Image
     runs-on: ubuntu-latest
-    # Condition pour workflow_run: ne s'exécute que si build-wheels a réussi
-    # Et toujours s'exécuter pour les autres types d'événements (push tag, workflow_dispatch)
+    # Déclencher ce job uniquement si les fichiers pertinents pour l'environnement de build changent,
+    # ou lors d'un déclenchement manuel/tag pour s'assurer qu'il est à jour.
+    # Pour l'instant, on le laisse se construire avec les mêmes déclencheurs que l'image principale.
+    # Ou tu pourrais le rendre conditionnel, ex: if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
+    permissions:
+      packages: write 
+      contents: read   
+    outputs: # Rendre le tag de l'image de build disponible pour d'autres jobs
+      image_tag: ${{ steps.meta-buildenv.outputs.tags }}
+      image_name: ghcr.io/${{ github.repository_owner }}/stable-diffusion-buildenv # Nom fixe
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for buildenv image
+        id: meta-buildenv
+        uses: docker/metadata-action@v4
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/stable-diffusion-buildenv
+          tags: | # Tag simple pour l'image de build, 'latest' est suffisant
+            type=raw,value=latest
+            type=sha,prefix=,suffix=,format=short # Utile pour le débogage
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push compilation environment image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile.buildenv 
+          push: true # Toujours pusher cette image de base si elle est construite
+          tags: ${{ steps.meta-buildenv.outputs.tags }}
+          labels: ${{ steps.meta-buildenv.outputs.labels }}
+          platforms: linux/amd64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  push_final_image_to_registry: # Renommé pour plus de clarté
+    name: Build and Push Final Docker image
+    runs-on: ubuntu-latest
+    needs: build_compile_environment # S'assurer que l'image de build est prête (optionnel si les tags sont bien gérés)
     if: |
       (vars.DOCKERHUB_IMAGE_NAME != '' || vars.GHCR_IMAGE_NAME != '') &&
       (github.event_name != 'workflow_run' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'))
-
     permissions:
-      packages: write # Pour pousser vers GHCR
-      contents: read   # Pour checkout le code
-
+      packages: write 
+      contents: read   
     steps:
       - name: Free Disk Space (optional)
         uses: jlumbroso/free-disk-space@main
         with:
-          tool-cache: true
-          android: true
-          dotnet: true
-          haskell: true
-          large-packages: true
-          swap-storage: true
+          tool-cache: true; android: true; dotnet: true; haskell: true; large-packages: true; swap-storage: true
 
       - name: Check out the repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4 # Pour avoir le Dockerfile final et precompiled_wheels/
 
       - name: Log in to Docker Hub
         if: github.event_name != 'pull_request' && vars.DOCKERHUB_IMAGE_NAME != '' && secrets.DOCKER_USERNAME != ''
@@ -70,26 +104,20 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }} # GITHUB_TOKEN a la permission 'packages: write'
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
+      - name: Extract metadata (tags, labels) for final Docker image
+        id: meta-final
         uses: docker/metadata-action@v4
         with:
           images: |
             ${{ vars.DOCKERHUB_IMAGE_NAME }}
             ${{ vars.GHCR_IMAGE_NAME }}
-          tags: | # Stratégie de tagging
-            # Tag 'latest' si c'est un tag Git (release) ou un push sur la branche 'main' (si main était activée pour push)
-            # Pour la configuration actuelle (pas de push sur branche main), 'latest' sera seulement sur les tags Git.
+          tags: | 
             type=raw,value=latest,enable={{is_default_branch || github.ref_type == 'tag'}} 
-            # Tags pour les branches (si elles étaient activées pour push, ex: refs/heads/test -> test)
             type=ref,event=branch 
-            # Tags pour les Pull Requests (ex: refs/pull/123/merge -> pr-123)
             type=ref,event=pr
-            # Tags sémantiques pour les releases Git (ex: v1.2.3 -> 1.2.3)
             type=semver,pattern={{version}}
-            # Tag basé sur le SHA du commit (utile pour le débogage)
             type=sha,prefix=,suffix=,format=short
 
       - name: Set up QEMU
@@ -99,15 +127,14 @@ jobs:
         id: buildx 
         uses: docker/setup-buildx-action@v3
 
-      - name: Build and push Docker image
+      - name: Build and push final Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./Dockerfile 
-          # Pousser seulement si ce n'est pas une PR et si ce n'est pas un run local (ACT)
+          file: ./Dockerfile # Le Dockerfile principal pour l'image finale
           push: ${{ github.event_name != 'pull_request' && !env.ACT}}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ steps.meta-final.outputs.tags }}
+          labels: ${{ steps.meta-final.outputs.labels }}
           platforms: linux/amd64
           builder: ${{ steps.buildx.outputs.name }} 
           cache-from: type=gha

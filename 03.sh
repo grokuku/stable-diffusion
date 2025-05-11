@@ -28,7 +28,7 @@
 #   - Additional Python dependencies can be added to `$SD03_DIR/requirements.txt`.
 source /functions.sh
 
-export PATH="/home/abc/miniconda3/bin:$PATH"
+export PATH="/opt/miniconda3/bin:$PATH"
 export use_venv=0
 export SD03_DIR=${BASE_DIR}/03-invokeai
 export INVOKEAI_ROOT=${SD03_DIR}/invokeai

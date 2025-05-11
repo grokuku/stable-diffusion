@@ -2,145 +2,69 @@
 name: Build Python Wheels
 
 on:
-  workflow_dispatch: # Permet un déclenchement manuel
+  workflow_dispatch: 
   push:
     branches:
       - main 
       - Holaf_tests 
     paths:
-      - 'Dockerfile' # Ou un Dockerfile spécifique si tu en crées un pour le build des wheels
+      # Déclencher si le Dockerfile.buildenv change (car cela affecte l'env de compil)
+      # ou si les sources des bibliothèques que tu clones manuellement changent 
+      # (non applicable ici car clonées dans le script, mais bon à garder à l'esprit)
+      - 'Dockerfile.buildenv' 
       - '.github/workflows/build-wheels.yml'
+  # Optionnel: Déclencher après la mise à jour de l'image buildenv
+  # workflow_run:
+  #   workflows: ["Publish Docker images"] # Nom du workflow qui build l'image buildenv
+  #   types: [completed]
+  #   # Il faudrait une condition plus fine ici pour s'assurer que c'est bien le job build_compile_environment qui a réussi
 
 jobs:
   compile_wheels:
-    runs-on: ubuntu-latest # L'exécuteur hôte
-    container: # Utiliser le conteneur NVIDIA pour l'environnement de build
-      image: nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04
-      # Les options du conteneur peuvent être utiles si des GPU sont activement utilisés pour la compilation,
-      # mais pour l'instant, on a surtout besoin du toolkit pour les headers/libs.
-      # options: --gpus all 
-
+    runs-on: ubuntu-latest
+    container:
+      # Utilise l'image de compilation que tu as construite et pushée
+      image: ghcr.io/${{ github.repository_owner }}/stable-diffusion-buildenv:latest 
+    
     steps:
-      - name: Install essential tools (if missing from base container, though unlikely for git)
-        run: |
-          # L'image nvidia/cuda devrait déjà avoir apt, git, etc.
-          # Mais au cas où, et pour s'assurer des versions ou d'autres outils.
-          apt-get update -y
-          apt-get install -y -q=2 --no-install-recommends \
-            git \
-            wget \
-            cmake \
-            build-essential \
-            gcc-12 \
-            g++-12 \
-            ninja-build \
-            python3.11 python3.11-distutils python3.11-venv python3-pip python3.11-dev
-          update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
-          update-alternatives --set python3 /usr/bin/python3.11
-          update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1
-          update-alternatives --set python /usr/bin/python3.11
-          python3 -m pip install --upgrade pip
-          pip3 install torch==2.6.0 torchvision packaging cython==0.29.37
-          git --version # Vérifier la version de git dans le conteneur
+      # L'environnement (CUDA, Python, Git, Compilateurs, PyTorch de base) est déjà dans le conteneur.
+      # Pas besoin d'installer ces dépendances système ici.
 
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          # fetch-depth: 0 # Par défaut, pour push/workflow_dispatch, c'est un clone complet.
-          # persist-credentials: false # N'a pas d'impact sur la méthode de checkout (archive vs git)
-          token: ${{ secrets.GITHUB_TOKEN }} # Fournir un token peut parfois encourager l'utilisation de git
+          fetch-depth: 0 # Nécessaire pour avoir le .git pour le commit final
 
-      - name: Ensure .git folder by manual clone if necessary
-        shell: bash
+      - name: Verify .git folder after checkout
         run: |
-          echo "Current PWD after checkout: $(pwd)"
+          echo "Current PWD: $(pwd)"
           ls -la
-          if [ ! -d ".git" ]; then
-            echo "WARNING: .git folder not found after initial checkout by actions/checkout@v4. Workspace content was likely downloaded as an archive."
-            echo "Attempting manual git clone to ensure .git folder presence..."
-            
-            # Créer un répertoire temporaire pour cloner, puis déplacer le contenu
-            # Cela évite les problèmes si le dossier courant n'est pas vide ou a des permissions étranges.
-            TEMP_CLONE_DIR=$(mktemp -d)
-            echo "Cloning repository manually into $TEMP_CLONE_DIR..."
-            
-            # Cloner la branche/commit spécifique de l'événement
-            # GITHUB_REF_NAME contient le nom de la branche ou du tag
-            # GITHUB_SHA contient le SHA du commit
-            git clone --branch ${{ github.ref_name }} --single-branch https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git "$TEMP_CLONE_DIR"
-            
-            # Vérifier si le clone a réussi et contient .git
-            if [ ! -d "$TEMP_CLONE_DIR/.git" ]; then
-              echo "ERROR: Manual git clone failed or .git folder still missing in $TEMP_CLONE_DIR."
-              exit 1
-            fi
-            
-            echo "Manual clone successful. Moving contents to current workspace $(pwd)..."
-            # Supprimer le contenu actuel (qui vient de l'archive) AVANT de copier le nouveau
-            # Attention: être sûr du répertoire courant !
-            # On liste les fichiers avant pour être sûr de ne pas faire de bêtise.
-            echo "Files in $(pwd) before cleaning for manual clone:"
-            ls -A
-            find . -mindepth 1 -maxdepth 1 -not -path "./${TEMP_CLONE_DIR##*/}" -exec rm -rf {} \; # Supprime tout sauf le dossier temp_clone_dir s'il est dedans
-            
-            # Déplacer le contenu du clone (y compris .git) vers le répertoire de travail courant
-            # L'option -T de rsync est utile ici, ou shopt -s dotglob avec mv
-            echo "Moving from $TEMP_CLONE_DIR to $(pwd)"
-            if command -v rsync &> /dev/null; then
-              rsync -av --remove-source-files "$TEMP_CLONE_DIR/." "." # Copie tout, y compris les fichiers cachés, puis supprime la source
-            else
-              shopt -s dotglob # Permet à * de matcher les fichiers cachés
-              mv "$TEMP_CLONE_DIR"/* "."
-              mv "$TEMP_CLONE_DIR"/.git* "." # S'assurer que .git et .gitignore etc. sont déplacés
-              shopt -u dotglob
-              rm -rf "$TEMP_CLONE_DIR"
-            fi
-
-            # Vérifier que le commit est bien celui attendu par le workflow
-            # Cela est important si on clone juste la branche et pas le SHA exact.
-            echo "Checking out specific commit SHA: ${{ github.sha }}"
-            git reset --hard ${{ github.sha }} # Assure qu'on est sur le bon commit
-            
-            if [ -d ".git" ]; then
-              echo ".git folder is now present in $(pwd)."
-              ls -la
-            else
-              echo "ERROR: .git folder still missing after attempting to move from manual clone."
-              exit 1
-            fi
-          else
-            echo ".git folder was present after initial checkout by actions/checkout@v4."
-            ls -la # Montrer le contenu si .git était là
+          if [ ! -d ".git" ]; then 
+            echo "ERROR: .git folder NOT FOUND after checkout! This should not happen with job.container and a proper base image."
+            # Si cela arrive encore, le problème est profond avec la gestion du workspace par Actions/Docker.
+            # Une solution de contournement serait un clone manuel ici aussi (voir versions précédentes du workflow).
+            exit 1
           fi
-        env:
-          # GITHUB_TOKEN est nécessaire pour le clone manuel si le dépôt est privé
-          # Pour les dépôts publics, il n'est pas strictement nécessaire mais ne fait pas de mal
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          echo ".git folder found!"
+          git --version
 
-
-      - name: Set Build Environment Variables for Compilers
-        run: |
-          echo "CC=/usr/bin/gcc-12" >> $GITHUB_ENV
-          echo "CXX=/usr/bin/g++-12" >> $GITHUB_ENV
-          echo "TORCH_CUDA_ARCH_LIST=8.6 8.9 9.0" >> $GITHUB_ENV 
-          # CUDA_HOME est défini par l'image nvidia/cuda (généralement /usr/local/cuda)
-          echo "CUDA_HOME=${CUDA_HOME:-/usr/local/cuda}" >> $GITHUB_ENV # Utilise la var d'env si elle existe, sinon default
-          echo "CPLUS_INCLUDE_PATH=${CUDA_HOME}/include${CPLUS_INCLUDE_PATH:+:${CPLUS_INCLUDE_PATH}}" >> $GITHUB_ENV
-          echo "LIBRARY_PATH=${CUDA_HOME}/lib64${LIBRARY_PATH:+:${LIBRARY_PATH}}" >> $GITHUB_ENV
-          # LD_LIBRARY_PATH est généralement déjà bien configuré dans l'image nvidia/cuda
-          # echo "LD_LIBRARY_PATH=${CUDA_HOME}/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" >> $GITHUB_ENV
+      # Les variables d'environnement CC, CXX, CUDA_HOME, TORCH_CUDA_ARCH_LIST 
+      # sont déjà définies dans l'image de base 'stable-diffusion-buildenv'.
+      # On peut les redéfinir si on veut surcharger, mais ce n'est pas nécessaire.
+      # - name: Set Build Environment Variables for Compilers 
+      #   run: |
+      #     echo "CC=/usr/bin/gcc-12" >> $GITHUB_ENV # Déjà dans l'image buildenv
+      #     # ... etc.
 
       - name: Create temporary wheels directory
-        run: mkdir -p wheels_output
+        run: mkdir -p wheels_output # Sera dans /github/workspace/wheels_output par défaut
 
-      # ... (les steps de build des wheels restent les mêmes que dans la version précédente) ...
-      # Exemple pour flash-attention:
+      # --- Steps de build des wheels (inchangés par rapport à la version précédente qui fonctionnait bien dans un env contrôlé) ---
       - name: Build flash-attention wheel
         shell: bash 
         run: |
           WORK_DIR=$(pwd)
           REPO_NAME="flash-attention"
-          echo "Building $REPO_NAME in $WORK_DIR"
           git clone https://github.com/Dao-AILab/flash-attention --recurse-submodules "$REPO_NAME"
           cd "$REPO_NAME"
           python3 setup.py bdist_wheel
@@ -153,7 +77,6 @@ jobs:
         run: |
           WORK_DIR=$(pwd)
           REPO_NAME="diso"
-          echo "Building $REPO_NAME in $WORK_DIR"
           git clone https://github.com/SarahWeiii/diso --recurse-submodules "$REPO_NAME"
           cd "$REPO_NAME"
           python3 setup.py bdist_wheel
@@ -166,7 +89,6 @@ jobs:
         run: |
           WORK_DIR=$(pwd)
           REPO_NAME="nvdiffrast"
-          echo "Building $REPO_NAME in $WORK_DIR"
           git clone https://github.com/NVlabs/nvdiffrast.git "$REPO_NAME"
           cd "$REPO_NAME"
           python3 setup.py bdist_wheel
@@ -179,8 +101,7 @@ jobs:
         run: |
           WORK_DIR=$(pwd)
           REPO_NAME="kaolin"
-          echo "Building $REPO_NAME in $WORK_DIR"
-          export FORCE_CUDA=1 
+          export FORCE_CUDA=1 # Kaolin peut en avoir besoin si GPU non actif
           git clone https://github.com/NVIDIAGameWorks/kaolin.git "$REPO_NAME"
           cd "$REPO_NAME"
           python3 setup.py bdist_wheel
@@ -195,7 +116,6 @@ jobs:
           REPO_NAME="mip-splatting"
           CLONE_TARGET_PATH="$WORK_DIR/$REPO_NAME" 
           SUB_DIR_BUILD_PATH="$CLONE_TARGET_PATH/submodules/diff-gaussian-rasterization"
-          echo "Building $REPO_NAME in $WORK_DIR"
           git clone https://github.com/autonomousvision/mip-splatting --recurse-submodules "$CLONE_TARGET_PATH"
           cd "$SUB_DIR_BUILD_PATH"
           python3 setup.py bdist_wheel
@@ -210,7 +130,6 @@ jobs:
           REPO_NAME="TRELLIS"
           CLONE_TARGET_PATH="$WORK_DIR/$REPO_NAME"
           SUB_DIR_BUILD_PATH="$CLONE_TARGET_PATH/extensions/vox2seq"
-          echo "Building $REPO_NAME in $WORK_DIR"
           git clone https://github.com/microsoft/TRELLIS --recurse-submodules "$CLONE_TARGET_PATH"
           cd "$SUB_DIR_BUILD_PATH"
           python3 setup.py bdist_wheel
@@ -221,16 +140,15 @@ jobs:
       - name: Commit wheels to repository
         shell: bash
         run: |
-          # Le répertoire de travail courant $(pwd) est /github/workspace dans le conteneur
           echo "Current directory before git commands: $(pwd)"
           ls -la 
           
-          # Configurer safe.directory pour le répertoire courant DANS LE CONTENEUR
-          # Le chemin /github/workspace est généralement celui utilisé par les actions dans un conteneur
-          git config --global --add safe.directory "$(pwd)" # ou /github/workspace si c'est le chemin fixe
+          # Le répertoire de travail devrait être la racine du checkout, /github/workspace
+          # Configurer safe.directory pour ce chemin.
+          git config --global --add safe.directory "$(pwd)" 
           
           if ! git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
-            echo "ERROR: Not a git repository in $(pwd) even after setting safe.directory and attempting manual clone."
+            echo "ERROR: Not a git repository in $(pwd). This is unexpected in the buildenv container after checkout."
             exit 1
           fi
           echo ".git directory confirmed by 'git rev-parse'."

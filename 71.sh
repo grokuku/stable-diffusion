@@ -32,7 +32,7 @@
 #   - Additional Python dependencies can be added to `$SD71_DIR/requirements.txt`.
 source /functions.sh
 
-export PATH="/home/abc/miniconda3/bin:$PATH"
+export PATH="/opt/miniconda3/bin:$PATH"
 export SD71_DIR=${BASE_DIR}/71-fluxgym
 
 log_message "INFO" "Starting Fluxgym installation and setup"

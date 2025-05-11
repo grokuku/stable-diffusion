@@ -31,7 +31,7 @@
 #   - Additional Python dependencies can be added to `$SD72_DIR/requirements.txt`.
 source /functions.sh
 
-export PATH="/home/abc/miniconda3/bin:$PATH"
+export PATH="/opt/miniconda3/bin:$PATH"
 export SD72_DIR=${BASE_DIR}/72-onetrainer
 
 log_message "INFO" "Starting OneTrainer installation and setup"

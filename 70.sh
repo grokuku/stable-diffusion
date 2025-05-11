@@ -33,7 +33,7 @@
 #   - Additional Python dependencies can be added to `$SD70_DIR/requirements.txt`.
 source /functions.sh
 
-export PATH="/home/abc/miniconda3/bin:$PATH"
+export PATH="/opt/miniconda3/bin:$PATH"
 export SD70_DIR=${BASE_DIR}/70-kohya
 
 log_message "INFO" "Starting Kohya installation and setup"

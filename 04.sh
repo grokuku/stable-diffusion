@@ -31,7 +31,7 @@
 #   - This script structure is very similar to 02.sh (Automatic1111) and 02.forge.sh (Forge).
 source /functions.sh
 
-export PATH="/home/abc/miniconda3/bin:$PATH"
+export PATH="/opt/miniconda3/bin:$PATH"
 export SD04_DIR=${BASE_DIR}/04-sd-next
 
 log_message "INFO" "Starting SD.Next installation and setup"

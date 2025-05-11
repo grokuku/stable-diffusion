@@ -32,7 +32,7 @@
 #   - Check the source of `$SD02_DIR/requirements.txt` if used, as it might conflict with Forge's own dependencies.
 source /functions.sh
 
-export PATH="/home/abc/miniconda3/bin:$PATH"
+export PATH="/opt/miniconda3/bin:$PATH"
 export SD02_DIR=${BASE_DIR}/02-sd-webui
 
 # Disable the use of a python venv

@@ -31,7 +31,7 @@
 #   - Additional Python dependencies can be added to `$SD07_DIR/requirements.txt`.
 source /functions.sh
 
-export PATH="/home/abc/miniconda3/bin:$PATH"
+export PATH="/opt/miniconda3/bin:$PATH"
 export SD07_DIR=${BASE_DIR}/07-swarm-ui
 
 log_message "INFO" "Starting SwarmUI installation and setup"

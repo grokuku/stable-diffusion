@@ -41,7 +41,7 @@
 #   - Assumes necessary `.whl` files are present in `/wheels/` inside the container image.
 source /functions.sh
 
-export PATH="/home/abc/miniconda3/bin:$PATH"
+export PATH="/opt/miniconda3/bin:$PATH"
 export SD05_DIR=${BASE_DIR}/05-ComfyUI
 
 log_message "INFO" "Starting ComfyUI installation and setup"

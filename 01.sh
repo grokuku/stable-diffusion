@@ -27,7 +27,7 @@
 #   - Installs Easy Diffusion v3.0.2. To update, the download URL and potentially other steps might need changes.
 source /functions.sh
 
-export PATH="/home/abc/miniconda3/bin:$PATH"
+export PATH="/opt/miniconda3/bin:$PATH"
 export SD01_DIR=${BASE_DIR}/01-easy-diffusion
 
 #clean conda env

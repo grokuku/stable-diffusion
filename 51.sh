@@ -36,7 +36,7 @@ cp /dummy.sh /usr/bin/openbox-session
 chmod +x /usr/bin/openbox-session
 source /functions.sh
 
-export PATH="/home/abc/miniconda3/bin:$PATH"
+export PATH="/opt/miniconda3/bin:$PATH"
 export SD51_DIR=${BASE_DIR}/51-facefusion
 
 mkdir -p ${SD51_DIR}
