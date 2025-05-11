@@ -1,0 +1,52 @@
+name: Build and Push BuildEnv Image
+
+on:
+  workflow_dispatch: # Déclenchement manuel
+  push:
+    branches:
+      - main # Ou ta branche de développement principale
+    paths:
+      - 'Dockerfile.buildenv'
+      - '.github/workflows/build-buildenv-image.yml' # Si ce workflow lui-même change
+
+jobs:
+  build_and_push_buildenv:
+    name: Build and Push stable-diffusion-buildenv
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for buildenv image
+        id: meta-buildenv
+        uses: docker/metadata-action@v4
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/stable-diffusion-buildenv
+          tags: |
+            type=raw,value=latest
+            type=sha,prefix=,suffix=,format=short 
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push compilation environment image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile.buildenv
+          push: true
+          tags: ${{ steps.meta-buildenv.outputs.tags }}
+          labels: ${{ steps.meta-buildenv.outputs.labels }}
+          platforms: linux/amd64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

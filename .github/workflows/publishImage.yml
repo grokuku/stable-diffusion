@@ -1,137 +1,193 @@
 # .github/workflows/publishImage.yml
-name: Publish Docker images
+name: Publish Docker Image
 
 on:
   push:
-    tags: 
-      - '*.*.*'
-    paths-ignore:
-      - '**.md'
-      # Ajoutez ici d'autres patterns à ignorer si nécessaire pour les événements push (tags et branches si activées)
-      # Par exemple:
-      # - 'docs/**'
-      # - 'examples/**'
+    branches:
+      - 'Holaf_tests' # Déclenche pour la branche Holaf_tests
+    tags:
+      - '*.*.*'       # Déclenche pour les tags (pour la version main)
+    # Pas de paths/paths-ignore ici pour simplifier, on se base sur les branches/tags.
+    # Si tu veux être plus restrictif, tu peux ajouter paths-ignore: ['**.md']
+    # mais cela s'appliquera aux pushes sur Holaf_tests ET aux tags.
 
-  workflow_dispatch: 
-  workflow_run: 
-    workflows: ["Build Python Wheels"] 
-    types:
-      - completed
+  workflow_dispatch: # Garder la possibilité d'un déclenchement manuel pour l'image finale si besoin
 
 jobs:
-  build_compile_environment:
-    name: Build and Push Compilation Environment Image
+  # Job pour construire l'image de la branche Holaf_tests
+  build_holaf_tests_image:
+    name: Build Holaf_tests Docker Image
+    if: github.event_name == 'push' && github.ref == 'refs/heads/Holaf_tests' # S'exécute seulement sur push vers Holaf_tests
     runs-on: ubuntu-latest
     permissions:
       packages: write 
       contents: read   
-    outputs: 
-      image_tag: ${{ steps.meta-buildenv.outputs.tags }}
-      image_name: ghcr.io/${{ github.repository_owner }}/stable-diffusion-buildenv 
     steps:
-      - name: Check out the repo
+      - name: Check out the Holaf_tests branch
         uses: actions/checkout@v4
+        # Pas besoin de fetch-depth:0 ici, car on ne commite rien depuis ce job.
 
-      - name: Login to GitHub Container Registry
+      - name: Login to Registries (Docker Hub & GHCR)
+        # (Combine les logins pour éviter la duplication)
+        if: vars.DOCKERHUB_IMAGE_NAME != '' || vars.GHCR_IMAGE_NAME != ''
         uses: docker/login-action@v3
         with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Extract metadata for buildenv image
-        id: meta-buildenv
-        uses: docker/metadata-action@v4
-        with:
-          images: ghcr.io/${{ github.repository_owner }}/stable-diffusion-buildenv
-          tags: | 
-            type=raw,value=latest
-            type=sha,prefix=,suffix=,format=short 
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build and push compilation environment image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./Dockerfile.buildenv 
-          push: true 
-          tags: ${{ steps.meta-buildenv.outputs.tags }}
-          labels: ${{ steps.meta-buildenv.outputs.labels }}
-          platforms: linux/amd64
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-  push_final_image_to_registry: 
-    name: Build and Push Final Docker image
-    runs-on: ubuntu-latest
-    needs: build_compile_environment 
-    if: | 
-      (vars.DOCKERHUB_IMAGE_NAME != '' || vars.GHCR_IMAGE_NAME != '') &&
-      (github.event_name != 'workflow_run' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'))
-    permissions:
-      packages: write 
-      contents: read   
-    steps:
-      - name: Free Disk Space (optional)
-        uses: jlumbroso/free-disk-space@main
-        with:
-          tool-cache: true       
-          android: true          
-          dotnet: true
-          haskell: true
-          large-packages: true
-          swap-storage: true
-
-      - name: Check out the repo
-        uses: actions/checkout@v4 
-
-      - name: Log in to Docker Hub
-        if: github.event_name != 'pull_request' && vars.DOCKERHUB_IMAGE_NAME != '' && secrets.DOCKER_USERNAME != ''
+          registry: ${{ प्योर vars.DOCKERHUB_IMAGE_NAME && 'docker.io' || 'ghcr.io' }} # Logique conditionnelle si un seul est utilisé, ou faire 2 steps
+          username: ${{ प्योर vars.DOCKERHUB_IMAGE_NAME && secrets.DOCKER_USERNAME || github.repository_owner }}
+          password: ${{ प्योर vars.DOCKERHUB_IMAGE_NAME && secrets.DOCKER_PASSWORD || secrets.GITHUB_TOKEN }}
+      # Alternative plus simple avec deux steps de login distincts:
+      - name: Log in to Docker Hub (Holaf_tests)
+        if: vars.DOCKERHUB_IMAGE_NAME != '' && secrets.DOCKER_USERNAME != ''
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Login to GitHub Container Registry
-        if: github.event_name != 'pull_request' && vars.GHCR_IMAGE_NAME != ''
+      - name: Login to GitHub Container Registry (Holaf_tests)
+        if: vars.GHCR_IMAGE_NAME != ''
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata (tags, labels) for final Docker image
-        id: meta-final
+      - name: Extract metadata for Holaf_tests image
+        id: meta-holaf-tests
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            ${{ vars.DOCKERHUB_IMAGE_NAME }}
+            ${{ vars.GHCR_IMAGE_NAME }}
+          tags: |
+            type=raw,value=holaf_tests # Tag fixe pour cette branche
+            type=sha,prefix=holaf_tests-,suffix=,format=short # Tag avec SHA pour traçabilité
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push Holaf_tests image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile 
+          push: true # Toujours pusher pour Holaf_tests
+          tags: ${{ steps.meta-holaf-tests.outputs.tags }}
+          labels: ${{ steps.meta-holaf-tests.outputs.labels }}
+          platforms: linux/amd64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # Job pour construire l'image main (sur tag)
+  build_main_image_on_tag:
+    name: Build Main Docker Image (on Tag)
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/') # S'exécute seulement sur création de tag
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write 
+      contents: read   
+    steps:
+      - name: Check out the tagged commit
+        uses: actions/checkout@v4
+        # Pas besoin de fetch-depth:0 ici pour le build de l'image.
+
+      - name: Log in to Docker Hub (Main Tag)
+        if: vars.DOCKERHUB_IMAGE_NAME != '' && secrets.DOCKER_USERNAME != ''
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Login to GitHub Container Registry (Main Tag)
+        if: vars.GHCR_IMAGE_NAME != ''
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for Main (tag) image
+        id: meta-main-tag
         uses: docker/metadata-action@v4
         with:
           images: |
             ${{ vars.DOCKERHUB_IMAGE_NAME }}
             ${{ vars.GHCR_IMAGE_NAME }}
           tags: | 
-            type=raw,value=latest,enable={{is_default_branch || github.ref_type == 'tag'}} 
-            type=ref,event=branch 
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=sha,prefix=,suffix=,format=short
+            type=raw,value=latest # Tag 'latest' sur création de tag Git
+            type=semver,pattern={{version}} # Tags sémantiques (ex: v1.2.3 -> 1.2.3)
+            # Tu peux ajouter un tag avec le nom du tag Git lui-même si tu veux :
+            # type=ref,event=tag
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
-
       - name: Set up Docker Buildx
-        id: buildx 
         uses: docker/setup-buildx-action@v3
 
-      - name: Build and push final Docker image
+      - name: Build and push Main (tag) image
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./Dockerfile 
-          push: ${{ github.event_name != 'pull_request' && !env.ACT}}
-          tags: ${{ steps.meta-final.outputs.tags }}
-          labels: ${{ steps.meta-final.outputs.labels }}
+          push: true # Toujours pusher pour les tags
+          tags: ${{ steps.meta-main-tag.outputs.tags }}
+          labels: ${{ steps.meta-main-tag.outputs.labels }}
           platforms: linux/amd64
-          builder: ${{ steps.buildx.outputs.name }} 
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          
+  # Job pour le déclenchement manuel de l'image finale (optionnel, si tu veux pouvoir builder manuellement une branche spécifique)
+  build_manual_dispatch_image:
+    name: Build Docker Image (Manual Dispatch)
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write 
+      contents: read   
+    steps:
+      - name: Check out repository (branch from dispatch)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }} # Checkout la branche sur laquelle le dispatch a été lancé
+
+      - name: Log in to Docker Hub (Manual)
+        if: vars.DOCKERHUB_IMAGE_NAME != '' && secrets.DOCKER_USERNAME != ''
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Login to GitHub Container Registry (Manual)
+        if: vars.GHCR_IMAGE_NAME != ''
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for Manual Dispatch image
+        id: meta-manual
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            ${{ vars.DOCKERHUB_IMAGE_NAME }}
+            ${{ vars.GHCR_IMAGE_NAME }}
+          tags: |
+            # Pour un déclenchement manuel, tu peux taguer avec le nom de la branche et 'manual'
+            type=ref,event=branch,prefix=manual- 
+            type=sha,prefix=manual-,suffix=,format=short
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push Manual Dispatch image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile 
+          push: true
+          tags: ${{ steps.meta-manual.outputs.tags }}
+          labels: ${{ steps.meta-manual.outputs.labels }}
+          platforms: linux/amd64
           cache-from: type=gha
           cache-to: type=gha,mode=max

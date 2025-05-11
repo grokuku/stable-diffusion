@@ -1,169 +1,78 @@
 # .github/workflows/build-wheels.yml
-name: Build Python Wheels
+name: Build Python Wheels (Manual)
 
 on:
-  workflow_dispatch: 
-  push:
-    branches:
-      - main 
-      - Holaf_tests 
-    paths:
-      # Déclencher si le Dockerfile.buildenv change (car cela affecte l'env de compil)
-      # ou si les sources des bibliothèques que tu clones manuellement changent 
-      # (non applicable ici car clonées dans le script, mais bon à garder à l'esprit)
-      - 'Dockerfile.buildenv' 
-      - '.github/workflows/build-wheels.yml'
-  # Optionnel: Déclencher après la mise à jour de l'image buildenv
-  # workflow_run:
-  #   workflows: ["Publish Docker images"] # Nom du workflow qui build l'image buildenv
-  #   types: [completed]
-  #   # Il faudrait une condition plus fine ici pour s'assurer que c'est bien le job build_compile_environment qui a réussi
+  workflow_dispatch: # Uniquement déclenchement manuel
+    inputs:
+      branch_to_commit_wheels:
+        description: 'Branch to checkout and commit wheels to (e.g., main, Holaf_tests)'
+        required: true
+        default: 'main'
 
 jobs:
-  compile_wheels:
+  compile_and_commit_wheels:
+    name: Compile and Commit Wheels
     runs-on: ubuntu-latest
     container:
-      # Utilise l'image de compilation que tu as construite et pushée
+      # S'assurer que cette image existe et est accessible sur GHCR
       image: ghcr.io/${{ github.repository_owner }}/stable-diffusion-buildenv:latest 
     
     steps:
-      # L'environnement (CUDA, Python, Git, Compilateurs, PyTorch de base) est déjà dans le conteneur.
-      # Pas besoin d'installer ces dépendances système ici.
-
-      - name: Checkout repository
+      - name: Checkout specific branch
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Nécessaire pour avoir le .git pour le commit final
+          ref: ${{ github.event.inputs.branch_to_commit_wheels }} # Checkout la branche spécifiée
+          fetch-depth: 0 # Nécessaire pour le commit
 
       - name: Verify .git folder after checkout
         run: |
-          echo "Current PWD: $(pwd)"
           ls -la
-          if [ ! -d ".git" ]; then 
-            echo "ERROR: .git folder NOT FOUND after checkout! This should not happen with job.container and a proper base image."
-            # Si cela arrive encore, le problème est profond avec la gestion du workspace par Actions/Docker.
-            # Une solution de contournement serait un clone manuel ici aussi (voir versions précédentes du workflow).
-            exit 1
-          fi
+          if [ ! -d ".git" ]; then echo "ERROR: .git NOT FOUND!"; exit 1; fi
           echo ".git folder found!"
-          git --version
-
-      # Les variables d'environnement CC, CXX, CUDA_HOME, TORCH_CUDA_ARCH_LIST 
-      # sont déjà définies dans l'image de base 'stable-diffusion-buildenv'.
-      # On peut les redéfinir si on veut surcharger, mais ce n'est pas nécessaire.
-      # - name: Set Build Environment Variables for Compilers 
-      #   run: |
-      #     echo "CC=/usr/bin/gcc-12" >> $GITHUB_ENV # Déjà dans l'image buildenv
-      #     # ... etc.
 
       - name: Create temporary wheels directory
-        run: mkdir -p wheels_output # Sera dans /github/workspace/wheels_output par défaut
+        run: mkdir -p wheels_output
 
-      # --- Steps de build des wheels (inchangés par rapport à la version précédente qui fonctionnait bien dans un env contrôlé) ---
+      # --- Steps de build des wheels (identiques à avant) ---
       - name: Build flash-attention wheel
         shell: bash 
         run: |
-          WORK_DIR=$(pwd)
-          REPO_NAME="flash-attention"
-          git clone https://github.com/Dao-AILab/flash-attention --recurse-submodules "$REPO_NAME"
-          cd "$REPO_NAME"
-          python3 setup.py bdist_wheel
-          cp dist/*.whl "$WORK_DIR/wheels_output/"
-          cd "$WORK_DIR" 
-          rm -rf "$WORK_DIR/$REPO_NAME"
-
+          WORK_DIR=$(pwd); REPO_NAME="flash-attention"; git clone https://github.com/Dao-AILab/flash-attention --recurse-submodules "$REPO_NAME"; cd "$REPO_NAME"; python3 setup.py bdist_wheel; cp dist/*.whl "$WORK_DIR/wheels_output/"; cd "$WORK_DIR"; rm -rf "$WORK_DIR/$REPO_NAME"
       - name: Build diso wheel
         shell: bash
         run: |
-          WORK_DIR=$(pwd)
-          REPO_NAME="diso"
-          git clone https://github.com/SarahWeiii/diso --recurse-submodules "$REPO_NAME"
-          cd "$REPO_NAME"
-          python3 setup.py bdist_wheel
-          cp dist/*.whl "$WORK_DIR/wheels_output/"
-          cd "$WORK_DIR"
-          rm -rf "$WORK_DIR/$REPO_NAME"
-          
+          WORK_DIR=$(pwd); REPO_NAME="diso"; git clone https://github.com/SarahWeiii/diso --recurse-submodules "$REPO_NAME"; cd "$REPO_NAME"; python3 setup.py bdist_wheel; cp dist/*.whl "$WORK_DIR/wheels_output/"; cd "$WORK_DIR"; rm -rf "$WORK_DIR/$REPO_NAME"
       - name: Build nvdiffrast wheel
         shell: bash
         run: |
-          WORK_DIR=$(pwd)
-          REPO_NAME="nvdiffrast"
-          git clone https://github.com/NVlabs/nvdiffrast.git "$REPO_NAME"
-          cd "$REPO_NAME"
-          python3 setup.py bdist_wheel
-          cp dist/*.whl "$WORK_DIR/wheels_output/"
-          cd "$WORK_DIR"
-          rm -rf "$WORK_DIR/$REPO_NAME"
-
+          WORK_DIR=$(pwd); REPO_NAME="nvdiffrast"; git clone https://github.com/NVlabs/nvdiffrast.git "$REPO_NAME"; cd "$REPO_NAME"; python3 setup.py bdist_wheel; cp dist/*.whl "$WORK_DIR/wheels_output/"; cd "$WORK_DIR"; rm -rf "$WORK_DIR/$REPO_NAME"
       - name: Build kaolin wheel
         shell: bash
         run: |
-          WORK_DIR=$(pwd)
-          REPO_NAME="kaolin"
-          export FORCE_CUDA=1 # Kaolin peut en avoir besoin si GPU non actif
-          git clone https://github.com/NVIDIAGameWorks/kaolin.git "$REPO_NAME"
-          cd "$REPO_NAME"
-          python3 setup.py bdist_wheel
-          cp dist/*.whl "$WORK_DIR/wheels_output/"
-          cd "$WORK_DIR"
-          rm -rf "$WORK_DIR/$REPO_NAME"
-
+          WORK_DIR=$(pwd); REPO_NAME="kaolin"; export FORCE_CUDA=1; git clone https://github.com/NVIDIAGameWorks/kaolin.git "$REPO_NAME"; cd "$REPO_NAME"; python3 setup.py bdist_wheel; cp dist/*.whl "$WORK_DIR/wheels_output/"; cd "$WORK_DIR"; rm -rf "$WORK_DIR/$REPO_NAME"
       - name: Build mip-splatting (diff-gaussian-rasterization) wheel
         shell: bash
         run: |
-          WORK_DIR=$(pwd) 
-          REPO_NAME="mip-splatting"
-          CLONE_TARGET_PATH="$WORK_DIR/$REPO_NAME" 
-          SUB_DIR_BUILD_PATH="$CLONE_TARGET_PATH/submodules/diff-gaussian-rasterization"
-          git clone https://github.com/autonomousvision/mip-splatting --recurse-submodules "$CLONE_TARGET_PATH"
-          cd "$SUB_DIR_BUILD_PATH"
-          python3 setup.py bdist_wheel
-          cp dist/*.whl "$WORK_DIR/wheels_output/" 
-          cd "$WORK_DIR"
-          rm -rf "$CLONE_TARGET_PATH" 
-
+          WORK_DIR=$(pwd); REPO_NAME="mip-splatting"; CLONE_TARGET_PATH="$WORK_DIR/$REPO_NAME"; SUB_DIR_BUILD_PATH="$CLONE_TARGET_PATH/submodules/diff-gaussian-rasterization"; git clone https://github.com/autonomousvision/mip-splatting --recurse-submodules "$CLONE_TARGET_PATH"; cd "$SUB_DIR_BUILD_PATH"; python3 setup.py bdist_wheel; cp dist/*.whl "$WORK_DIR/wheels_output/"; cd "$WORK_DIR"; rm -rf "$CLONE_TARGET_PATH" 
       - name: Build TRELLIS (vox2seq) wheel
         shell: bash
         run: |
-          WORK_DIR=$(pwd)
-          REPO_NAME="TRELLIS"
-          CLONE_TARGET_PATH="$WORK_DIR/$REPO_NAME"
-          SUB_DIR_BUILD_PATH="$CLONE_TARGET_PATH/extensions/vox2seq"
-          git clone https://github.com/microsoft/TRELLIS --recurse-submodules "$CLONE_TARGET_PATH"
-          cd "$SUB_DIR_BUILD_PATH"
-          python3 setup.py bdist_wheel
-          cp dist/*.whl "$WORK_DIR/wheels_output/"
-          cd "$WORK_DIR"
-          rm -rf "$CLONE_TARGET_PATH"
+          WORK_DIR=$(pwd); REPO_NAME="TRELLIS"; CLONE_TARGET_PATH="$WORK_DIR/$REPO_NAME"; SUB_DIR_BUILD_PATH="$CLONE_TARGET_PATH/extensions/vox2seq"; git clone https://github.com/microsoft/TRELLIS --recurse-submodules "$CLONE_TARGET_PATH"; cd "$SUB_DIR_BUILD_PATH"; python3 setup.py bdist_wheel; cp dist/*.whl "$WORK_DIR/wheels_output/"; cd "$WORK_DIR"; rm -rf "$CLONE_TARGET_PATH"
       
       - name: Commit wheels to repository
         shell: bash
         run: |
-          echo "Current directory before git commands: $(pwd)"
-          ls -la 
-          
-          # Le répertoire de travail devrait être la racine du checkout, /github/workspace
-          # Configurer safe.directory pour ce chemin.
           git config --global --add safe.directory "$(pwd)" 
-          
-          if ! git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
-            echo "ERROR: Not a git repository in $(pwd). This is unexpected in the buildenv container after checkout."
-            exit 1
-          fi
-          echo ".git directory confirmed by 'git rev-parse'."
-
+          if ! git rev-parse --is-inside-work-tree > /dev/null 2>&1; then echo "ERROR: Not a git repository."; exit 1; fi
           mkdir -p precompiled_wheels 
           cp wheels_output/*.whl precompiled_wheels/ 
-          
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          
           git add precompiled_wheels/*.whl
-          
           if ! git diff --staged --quiet; then
-            git commit -m "Build: Update precompiled Python wheels"
-            git push
+            git commit -m "Build: Update precompiled Python wheels (manual trigger)"
+            # Push vers la branche spécifiée lors du déclenchement manuel
+            git push origin ${{ github.event.inputs.branch_to_commit_wheels }} 
           else
             echo "No new wheels to commit."
           fi
