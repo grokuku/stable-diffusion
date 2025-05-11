@@ -1,4 +1,4 @@
-name: Build and Push BuildEnv Image
+name: Build and Push Buildbase Image
 
 on:
   workflow_dispatch: # Déclenchement manuel
@@ -6,17 +6,29 @@ on:
     branches:
       - '**' # Ou ta branche de développement principale
     paths:
-      - 'Dockerfile.builbase'
+      - 'Dockerfile.buildbase'
       - '.github/workflows/build-buildbase-image.yml' # Si ce workflow lui-même change
 
 jobs:
   build_and_push_buildenv:
-    name: Build and Push stable-diffusion-buildenv
+    name: Build and Push stable-diffusion-builbase
     runs-on: ubuntu-latest
     permissions:
       packages: write
       contents: read
     steps:
+      - name: Free Disk Space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: true
+
+          # all of these default to true, but feel free to set to
+          # false if necessary for your workflow
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          swap-storage: true
       - name: Check out repository
         uses: actions/checkout@v4
 
