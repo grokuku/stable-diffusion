@@ -52,8 +52,6 @@ ADD parameters/* ${SD_INSTALL_DIR}/parameters/
 
 RUN mkdir -p /root/defaults
 
-COPY --from=builder /build/*.whl /wheels/
-
 COPY --chown=abc:abc *.sh ./
 RUN chmod +x /entry.sh
 
