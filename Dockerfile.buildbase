@@ -1,19 +1,40 @@
 FROM nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04 AS builder
 
-# Installer les dépendances nécessaires pour la compilation
-RUN apt-get update
-
-RUN apt-get install -y -q=2 software-properties-common && \
-    apt-get install -y python3.11 python3.11-distutils python3.11-venv python3-pip python3.11-dev && \
-    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1 && \
-    update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1
-
-    RUN apt-get install -y -q=2 wget \
+# Installer les dépendances de base et software-properties-common pour add-apt-repository
+RUN apt-get update && \
+    apt-get install -y -q=2 --no-install-recommends \
+    software-properties-common \
+    wget \
     gnupg \
+    ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
+
+# Ajouter le PPA deadsnakes pour les versions plus récentes de Python
+# Installer Python 3.11 et les paquets de développement associés
+RUN add-apt-repository ppa:deadsnakes/ppa && \
+    apt-get update && \
+    apt-get install -y -q=2 --no-install-recommends \
+    python3.11 \
+    python3.11-dev \
+    python3.11-venv \
+    python3-pip && \
+    # Mettre à jour les alternatives pour que python3 et python pointent vers python3.11
+    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1 && \
+    update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1 && \
+    # S'assurer que pip est à jour pour python3.11
+    python3.11 -m pip install --upgrade pip && \
+    rm -rf /var/lib/apt/lists/*
+
+# Continuer avec l'installation des autres dépendances
+RUN apt-get update && \
+    apt-get install -y -q=2 --no-install-recommends \
     bc \
     rsync \
     libgl1-mesa-glx \
     libtcmalloc-minimal4 \
+    # libcufft10 est pour CUDA 10.x. CUDA 12.4 est utilisé, donc ce paquet pourrait ne pas être nécessaire ou s'appeler différemment.
+    # Pour CUDA 12.x, les bibliothèques sont typiquement incluses dans le toolkit ou via des paquets comme libcublas-12-x, etc.
+    # Je le laisse pour l'instant, mais il pourrait être source de problèmes ou inutile.
     libcufft10 \
     libxft2 \
     xvfb \
@@ -23,8 +44,8 @@ RUN apt-get install -y -q=2 software-properties-common && \
     gcc-12 \
     g++-12 \
     ninja-build \
-    git \
-    gcc-12 g++-12
+    git && \
+    rm -rf /var/lib/apt/lists/*
 
 RUN pip install torch torchvision packaging
 
@@ -32,9 +53,9 @@ RUN pip install torch torchvision packaging
 ENV CC=/usr/bin/gcc-12
 ENV CXX=/usr/bin/g++-12
 ENV TORCH_CUDA_ARCH_LIST="8.0 8.6 8.7 8.9 9.0 9.0a"
-ENV CPLUS_INCLUDE_PATH=/usr/local/cuda/include:$CPLUS_INCLUDE_PATH
-ENV LIBRARY_PATH=/usr/local/cuda/lib64:$LIBRARY_PATH
-ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
+ENV CPLUS_INCLUDE_PATH=/usr/local/cuda/include${CPLUS_INCLUDE_PATH:+:${CPLUS_INCLUDE_PATH}}
+ENV LIBRARY_PATH=/usr/local/cuda/lib64${LIBRARY_PATH:+:${LIBRARY_PATH}}
+ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
 
 # Créer un dossier pour les artefacts
 WORKDIR /build
@@ -78,6 +99,7 @@ RUN git clone https://github.com/microsoft/TRELLIS --recurse-submodules && \
 
 RUN cd 
 
+# --- Début de la deuxième étape (FROM ghcr.io/linuxserver/baseimage-kasmvnc:ubuntujammy) ---
 FROM ghcr.io/linuxserver/baseimage-kasmvnc:ubuntujammy
 
 COPY docker/root/ /
@@ -86,10 +108,10 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV CC=/usr/bin/gcc-12
 ENV CXX=/usr/bin/g++-12
 ENV TORCH_CUDA_ARCH_LIST="8.0 8.6 8.7 8.9 9.0 9.0a"
-# SD_INSTALL_DIR n'est plus nécessaire ici car le chown correspondant est retiré
 
 RUN apt-get update -q && \
-    apt-get install -y -q=2 curl \
+    apt-get install -y -q=2 --no-install-recommends \
+    curl \
     software-properties-common \
     wget \
     gnupg \
@@ -99,6 +121,7 @@ RUN apt-get update -q && \
     rsync \
     libgl1-mesa-glx \
     libtcmalloc-minimal4 \
+    # libcufft10 ici aussi, même remarque que pour l'étape builder
     libcufft10 \
     libxft2 \
     xvfb \
@@ -109,14 +132,18 @@ RUN apt-get update -q && \
     g++-12 \
     dotnet-sdk-8.0 \
     git && \
-    apt purge gcc-11 g++-11 -y && \
-    apt-get purge python3 -y && \
+    # La suppression de gcc-11/g++-11 n'est utile que s'ils sont installés par défaut et causent des conflits.
+    # apt purge python3 -y va supprimer le python3.10 par défaut, ce qui pourrait être problématique si d'autres outils système en dépendent
+    # AVANT que miniconda ne soit configuré. Je le commente pour l'instant.
+    # Si le but est d'utiliser UNIQUEMENT le python de miniconda, alors cela peut être reconsidéré, mais avec prudence.
+    apt purge gcc-11 g++-11 -y # && \
+    # apt-get purge python3 -y && \ 
 # CUDA toolkit installation
     cd /tmp/ && \
     wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb && \
     dpkg -i cuda-keyring_1.1-1_all.deb && \
     apt-get update && \
-    apt-get -y install cuda-toolkit-12-4 && \
+    apt-get -y install --no-install-recommends cuda-toolkit-12-4 && \
 # CLEAN
     apt autoremove -y && \
     apt-get clean && \
@@ -129,15 +156,11 @@ RUN mkdir -p /opt/miniconda3 /home/abc && \
     wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh && \
     bash Miniconda3-latest-Linux-x86_64.sh -b -p /opt/miniconda3 && \
     rm Miniconda3-latest-Linux-x86_64.sh && \
+    # Donner les droits à abc sur miniconda et son home
     chown -R abc:abc /opt/miniconda3 && \
     chown -R abc:abc /home/abc
-# Les chown pour /root et ${SD_INSTALL_DIR} ont été retirés ici.
-# /root ne devrait pas appartenir à abc.
-# ${SD_INSTALL_DIR} n'est pas créé à ce stade ; le Dockerfile final s'occupera de sa création et de ses permissions.
-# Les chown originaux dans le Dockerfile principal (celui qui utilise cette image de base) :
-# chown -R abc:abc /root && \
-# chown -R abc:abc ${SD_INSTALL_DIR} && \
-# devront être revus. Pour l'instant, nous corrigeons le build de buildbase.
+    # Le chown -R abc:abc /root a été retiré car c'est une mauvaise pratique.
+    # Le chown -R abc:abc ${SD_INSTALL_DIR} a été retiré car ${SD_INSTALL_DIR} n'est pas défini ici et est géré dans le Dockerfile final.
 
 EXPOSE 9000/tcp
 EXPOSE 3000/tcp
