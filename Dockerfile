@@ -1,4 +1,4 @@
-FROM ghcr.io/${{ github.repository_owner }}/stable-diffusion-buildbase:latest
+FROM ghcr.io/grokuku/stable-diffusion-buildbase:latest
 
 COPY docker/root/ /
 
