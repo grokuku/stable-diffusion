@@ -1,5 +1,8 @@
 FROM nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04 AS builder
 
+ARG DEBIAN_FRONTEND=noninteractive
+ENV DEBIAN_FRONTEND=${DEBIAN_FRONTEND}
+
 # Installer les dépendances de base et software-properties-common pour add-apt-repository
 RUN apt-get update && \
     apt-get install -y -q=2 --no-install-recommends \
@@ -34,7 +37,7 @@ RUN apt-get update && \
     libtcmalloc-minimal4 \
     # libcufft10 est pour CUDA 10.x. CUDA 12.4 est utilisé, donc ce paquet pourrait ne pas être nécessaire ou s'appeler différemment.
     # Pour CUDA 12.x, les bibliothèques sont typiquement incluses dans le toolkit ou via des paquets comme libcublas-12-x, etc.
-    # Je le laisse pour l'instant, mais il pourrait être source de problèmes ou inutile.
+    # Si le build échoue à cause de libcufft10, essayez de le supprimer.
     libcufft10 \
     libxft2 \
     xvfb \
@@ -102,9 +105,11 @@ RUN cd
 # --- Début de la deuxième étape (FROM ghcr.io/linuxserver/baseimage-kasmvnc:ubuntujammy) ---
 FROM ghcr.io/linuxserver/baseimage-kasmvnc:ubuntujammy
 
+ARG DEBIAN_FRONTEND=noninteractive
+ENV DEBIAN_FRONTEND=${DEBIAN_FRONTEND}
+
 COPY docker/root/ /
 
-ENV DEBIAN_FRONTEND=noninteractive
 ENV CC=/usr/bin/gcc-12
 ENV CXX=/usr/bin/g++-12
 ENV TORCH_CUDA_ARCH_LIST="8.0 8.6 8.7 8.9 9.0 9.0a"
@@ -132,12 +137,7 @@ RUN apt-get update -q && \
     g++-12 \
     dotnet-sdk-8.0 \
     git && \
-    # La suppression de gcc-11/g++-11 n'est utile que s'ils sont installés par défaut et causent des conflits.
-    # apt purge python3 -y va supprimer le python3.10 par défaut, ce qui pourrait être problématique si d'autres outils système en dépendent
-    # AVANT que miniconda ne soit configuré. Je le commente pour l'instant.
-    # Si le but est d'utiliser UNIQUEMENT le python de miniconda, alors cela peut être reconsidéré, mais avec prudence.
-    apt purge gcc-11 g++-11 -y # && \
-    # apt-get purge python3 -y && \ 
+    apt purge gcc-11 g++-11 -y && \
 # CUDA toolkit installation
     cd /tmp/ && \
     wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb && \
@@ -159,8 +159,6 @@ RUN mkdir -p /opt/miniconda3 /home/abc && \
     # Donner les droits à abc sur miniconda et son home
     chown -R abc:abc /opt/miniconda3 && \
     chown -R abc:abc /home/abc
-    # Le chown -R abc:abc /root a été retiré car c'est une mauvaise pratique.
-    # Le chown -R abc:abc ${SD_INSTALL_DIR} a été retiré car ${SD_INSTALL_DIR} n'est pas défini ici et est géré dans le Dockerfile final.
 
 EXPOSE 9000/tcp
 EXPOSE 3000/tcp
