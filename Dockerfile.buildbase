@@ -42,7 +42,7 @@ WORKDIR /build
 
 RUN git clone https://github.com/Dao-AILab/flash-attention --recurse-submodules
 RUN cd flash-attention && \
-    python3 setup.py bdist_wheel && \
+    TORCH_CUDA_ARCH_LIST="8.6" python3 setup.py bdist_wheel && \
     cp dist/*.whl /build/
 
 RUN git clone https://github.com/SarahWeiii/diso --recurse-submodules && \
@@ -76,3 +76,8 @@ RUN git clone https://github.com/microsoft/TRELLIS --recurse-submodules && \
 #    cd SageAttention && \
 #    python3 setup.py bdist_wheel && \
 #    cp dist/*.whl /build/
+
+RUN cd 
+
+FROM ghcr.io/linuxserver/baseimage-kasmvnc:ubuntujammy
+COPY --from=builder /build/*.whl /wheels/
