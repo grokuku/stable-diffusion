@@ -1,4 +1,4 @@
-# <--- MODIFIÉ ICI (commentaire déplacé)
+# Renommage de l'étape pour éviter les conflits potentiels
 FROM nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04 AS build_stage
 
 ARG DEBIAN_FRONTEND=noninteractive
@@ -10,7 +10,9 @@ RUN apt-get update && \
     software-properties-common \
     wget \
     gnupg \
-    ca-certificates && \
+    ca-certificates \
+    bzip2 && \
+    # bzip2 est ajouté car certains installeurs conda en ont besoin
     rm -rf /var/lib/apt/lists/*
 
 # Ajouter le PPA deadsnakes pour les versions plus récentes de Python
@@ -133,7 +135,9 @@ RUN apt-get update -q && \
     gcc-12 \
     g++-12 \
     dotnet-sdk-8.0 \
-    git && \
+    git \
+    bzip2 && \
+    # bzip2 est ajouté car certains installeurs conda en ont besoin
     apt purge gcc-11 g++-11 -y && \
 # CUDA toolkit installation
     cd /tmp/ && \
@@ -148,31 +152,20 @@ RUN apt-get update -q && \
 
 COPY --from=build_stage /build/*.whl /wheels/
 
-RUN echo "Création des répertoires..." && \
-    mkdir -p /opt/miniconda3 /home/abc
-
-RUN echo "Téléchargement de Miniconda..." && \
+# Installation de Miniconda et configuration des permissions
+RUN mkdir -p /opt/miniconda3 /home/abc && \
     cd /tmp && \
     wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh && \
-    ls -lh /tmp/Miniconda3-latest-Linux-x86_64.sh && \
-    chmod +x /tmp/Miniconda3-latest-Linux-x86_64.sh
-
-RUN echo "Installation de Miniconda (avec trace sh -x)..." && \
-    sh -x /tmp/Miniconda3-latest-Linux-x86_64.sh -b -p /opt/miniconda3 && \
-    echo "Miniconda installé avec succès (ou échec tracé ci-dessus)."
-
-RUN echo "Suppression du script d'installation de Miniconda..." && \
-    rm /tmp/Miniconda3-latest-Linux-x86_64.sh
-
-RUN echo "Vérification de l'utilisateur abc et du groupe users (si présent)..." && \
-    id abc ; \
-    getent group users || echo "Le groupe 'users' n'existe pas, ce qui est normal pour kasmvnc base." ; \
-    getent group abc || echo "Le groupe 'abc' n'existe pas."
-
-RUN echo "Attribution des droits sur Miniconda et /home/abc à abc:abc (ou abc:users si le groupe users existe)..." && \
+    # Ajout de sh -x ici pour le débogage si cela échoue encore
+    sh -x Miniconda3-latest-Linux-x86_64.sh -b -p /opt/miniconda3 && \
+    rm Miniconda3-latest-Linux-x86_64.sh && \
+    # S'assurer que l'utilisateur abc existe et a le bon groupe (par défaut abc pour kasmvnc)
     chown -R abc:abc /opt/miniconda3 && \
     chown -R abc:abc /home/abc && \
-    echo "Permissions mises à jour pour abc:abc."
+    # Ajouter le chemin de conda à PATH pour l'utilisateur abc via .bashrc
+    # Cela ne sera effectif que pour les nouvelles sessions shell interactives ou sourcées.
+    # Pour les scripts lancés par s6-overlay, le PATH est souvent géré différemment.
+    echo 'export PATH="/opt/miniconda3/bin:$PATH"' >> /home/abc/.bashrc
 
 EXPOSE 9000/tcp
 EXPOSE 3000/tcp
