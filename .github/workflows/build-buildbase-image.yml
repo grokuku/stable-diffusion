@@ -61,5 +61,5 @@ jobs:
           labels: ${{ steps.meta-buildbase.outputs.labels }}
           platforms: linux/amd64
           no-cache: true
-#          cache-from: type=gha
-#          cache-to: type=gha,mode=max
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

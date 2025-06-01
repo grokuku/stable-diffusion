@@ -1,4 +1,4 @@
-FROM vidia/cuda:12.8.0-cudnn-runtime-ubuntu22.04
+FROM nvidia/cuda:12.8.1-devel-ubuntu22.04
 
 # Installer les dépendances nécessaires pour la compilation
 RUN apt-get update
