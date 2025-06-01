@@ -86,6 +86,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV CC=/usr/bin/gcc-12
 ENV CXX=/usr/bin/g++-12
 ENV TORCH_CUDA_ARCH_LIST="8.0 8.6 8.7 8.9 9.0 9.0a"
+# SD_INSTALL_DIR n'est plus nécessaire ici car le chown correspondant est retiré
 
 RUN apt-get update -q && \
     apt-get install -y -q=2 curl \
@@ -123,13 +124,20 @@ RUN apt-get update -q && \
 
 COPY --from=builder /build/*.whl /wheels/
 
-RUN cd /tmp && \
+RUN mkdir -p /opt/miniconda3 /home/abc && \
+    cd /tmp && \
     wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh && \
-    bash Miniconda3-latest-Linux-x86_64.sh -b && \
+    bash Miniconda3-latest-Linux-x86_64.sh -b -p /opt/miniconda3 && \
     rm Miniconda3-latest-Linux-x86_64.sh && \
-    chown -R abc:abc /root && \
-    chown -R abc:abc ${SD_INSTALL_DIR} && \
+    chown -R abc:abc /opt/miniconda3 && \
     chown -R abc:abc /home/abc
+# Les chown pour /root et ${SD_INSTALL_DIR} ont été retirés ici.
+# /root ne devrait pas appartenir à abc.
+# ${SD_INSTALL_DIR} n'est pas créé à ce stade ; le Dockerfile final s'occupera de sa création et de ses permissions.
+# Les chown originaux dans le Dockerfile principal (celui qui utilise cette image de base) :
+# chown -R abc:abc /root && \
+# chown -R abc:abc ${SD_INSTALL_DIR} && \
+# devront être revus. Pour l'instant, nous corrigeons le build de buildbase.
 
 EXPOSE 9000/tcp
 EXPOSE 3000/tcp
