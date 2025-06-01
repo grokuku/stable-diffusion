@@ -10,42 +10,44 @@ export venv_dir="-"
 # Install or update Stable-Diffusion-WebUI
 mkdir -p ${SD02_DIR}
 
-# clone repository
-if [ ! -d ${SD02_DIR}/webui ]; then
-    git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git ${SD02_DIR}/webui
+# MODIFICATION GIT CI-DESSOUS
+if [ ! -d "${SD02_DIR}/webui/.git" ]; then
+    echo "Cloning Stable-Diffusion-WebUI repository..."
+    git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git "${SD02_DIR}/webui"
+    cd "${SD02_DIR}/webui" # S'assurer d'être dans le dossier du repo après clone
+else
+    echo "Existing Stable-Diffusion-WebUI repository found. Synchronizing..."
+    cd "${SD02_DIR}/webui" # S'assurer d'être dans le dossier du repo
+    check_remote "GIT_REF" # Utilisation de la variable commune GIT_REF
 fi
+# FIN DE LA MODIFICATION GIT
 
-
-# check if remote is ahead of local
-cd ${SD02_DIR}/webui
-check_remote
-
-#clean conda env
+#clean conda env (logique originale)
 clean_env ${SD02_DIR}/conda-env
 
-# create conda env if needed
+# create conda env if needed (logique originale)
 if [ ! -d ${SD02_DIR}/conda-env ]; then
     conda create -p ${SD02_DIR}/conda-env -y
 fi
 
-# activate conda env and install base tools
+# activate conda env and install base tools (logique originale)
 source activate ${SD02_DIR}/conda-env
 conda install -n base conda-libmamba-solver -y
 conda install -c conda-forge python=3.11 pip gcc gxx libcurand --solver=libmamba -y
 
-#copy default parameters if absent
+#copy default parameters if absent (logique originale)
 if [ ! -f "$SD02_DIR/parameters.txt" ]; then
     cp -v "/opt/sd-install/parameters/02.txt" "$SD02_DIR/parameters.txt"
 fi
 
-# install custom requirements
+# install custom requirements (logique originale)
 pip install --upgrade pip
 
 if [ -f ${SD02_DIR}/requirements.txt ]; then
     pip install -r ${SD02_DIR}/requirements.txt
 fi
 
-# Merge Models, vae, lora, and hypernetworks, and outputs
+# Merge Models, vae, lora, and hypernetworks, and outputs (logique originale)
 # Ignore move errors if they occur
 sl_folder ${SD02_DIR}/webui/models Stable-diffusion ${BASE_DIR}/models stable-diffusion
 sl_folder ${SD02_DIR}/webui/models hypernetworks ${BASE_DIR}/models hypernetwork
@@ -61,10 +63,10 @@ sl_folder ${SD02_DIR}/webui/models ControlNet ${BASE_DIR}/models controlnet
 
 sl_folder ${SD02_DIR}/webui outputs ${BASE_DIR}/outputs 02-sd-webui
 
-#Force using correct version of Python
+#Force using correct version of Python (logique originale)
 export python_cmd="$(which python)"
 
-# run webUI
+# run webUI (logique originale)
 echo "Run Stable-Diffusion-WebUI"
 cd ${SD02_DIR}/webui
 CMD="bash webui.sh"
