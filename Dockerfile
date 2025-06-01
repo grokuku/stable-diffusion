@@ -1,4 +1,4 @@
-FROM ghcr.io/linuxserver/baseimage-kasmvnc:ubuntujammy
+FROM ghcr.io/${{ github.repository_owner }}/stable-diffusion-buildbase:latest
 
 COPY docker/root/ /
 
