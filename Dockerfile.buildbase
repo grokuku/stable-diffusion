@@ -1,39 +1,15 @@
-# Renommage de l'étape pour éviter les conflits potentiels
-FROM nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04 AS build_stage
+FROM nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04 AS builder
 
-ARG DEBIAN_FRONTEND=noninteractive
-ENV DEBIAN_FRONTEND=${DEBIAN_FRONTEND}
+# Installer les dépendances nécessaires pour la compilation
+RUN apt-get update
 
-# Installer les dépendances de base et software-properties-common pour add-apt-repository
-RUN apt-get update && \
-    apt-get install -y -q=2 --no-install-recommends \
-    software-properties-common \
-    wget \
-    gnupg \
-    ca-certificates \
-    bzip2 && \
-    # bzip2 est ajouté car certains installeurs conda en ont besoin
-    rm -rf /var/lib/apt/lists/*
-
-# Ajouter le PPA deadsnakes pour les versions plus récentes de Python
-# Installer Python 3.11 et les paquets de développement associés
-RUN add-apt-repository ppa:deadsnakes/ppa && \
-    apt-get update && \
-    apt-get install -y -q=2 --no-install-recommends \
-    python3.11 \
-    python3.11-dev \
-    python3.11-venv \
-    python3-pip && \
-    # Mettre à jour les alternatives pour que python3 et python pointent vers python3.11
+RUN apt-get install -y -q=2 software-properties-common && \
+    apt-get install -y python3.11 python3.11-distutils python3.11-venv python3-pip python3.11-dev && \
     update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1 && \
-    update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1 && \
-    # S'assurer que pip est à jour pour python3.11
-    python3.11 -m pip install --upgrade pip && \
-    rm -rf /var/lib/apt/lists/*
+    update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1
 
-# Continuer avec l'installation des autres dépendances
-RUN apt-get update && \
-    apt-get install -y -q=2 --no-install-recommends \
+    RUN apt-get install -y -q=2 wget \
+    gnupg \
     bc \
     rsync \
     libgl1-mesa-glx \
@@ -47,8 +23,8 @@ RUN apt-get update && \
     gcc-12 \
     g++-12 \
     ninja-build \
-    git && \
-    rm -rf /var/lib/apt/lists/*
+    git \
+    gcc-12 g++-12
 
 RUN pip install torch torchvision packaging
 
@@ -56,17 +32,17 @@ RUN pip install torch torchvision packaging
 ENV CC=/usr/bin/gcc-12
 ENV CXX=/usr/bin/g++-12
 ENV TORCH_CUDA_ARCH_LIST="8.0 8.6 8.7 8.9 9.0 9.0a"
-ENV CPLUS_INCLUDE_PATH=/usr/local/cuda/include${CPLUS_INCLUDE_PATH:+:${CPLUS_INCLUDE_PATH}}
-ENV LIBRARY_PATH=/usr/local/cuda/lib64${LIBRARY_PATH:+:${LIBRARY_PATH}}
-ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+ENV CPLUS_INCLUDE_PATH=/usr/local/cuda/include:$CPLUS_INCLUDE_PATH
+ENV LIBRARY_PATH=/usr/local/cuda/lib64:$LIBRARY_PATH
+ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
 
 # Créer un dossier pour les artefacts
 WORKDIR /build
 
-#RUN git clone https://github.com/Dao-AILab/flash-attention --recurse-submodules
-#RUN cd flash-attention && \
-#    python3 setup.py bdist_wheel && \
-#    cp dist/*.whl /build/
+RUN git clone https://github.com/Dao-AILab/flash-attention --recurse-submodules
+RUN cd flash-attention && \
+    python3 setup.py bdist_wheel && \
+    cp dist/*.whl /build/
 
 RUN git clone https://github.com/SarahWeiii/diso --recurse-submodules && \
     cd diso && \
@@ -78,10 +54,10 @@ RUN git clone https://github.com/NVlabs/nvdiffrast.git && \
     python3 setup.py bdist_wheel && \
     cp dist/*.whl /build/
 
-#RUN git clone https://github.com/NVIDIAGameWorks/kaolin.git && \
-#    cd kaolin && \
-#    python3 setup.py bdist_wheel && \
-#    cp dist/*.whl /build/
+RUN git clone https://github.com/NVIDIAGameWorks/kaolin.git && \
+    cd kaolin && \
+    python3 setup.py bdist_wheel && \
+    cp dist/*.whl /build/
 
 RUN git clone https://github.com/autonomousvision/mip-splatting --recurse-submodules && \
     cd mip-splatting/submodules/diff-gaussian-rasterization && \
@@ -99,73 +75,3 @@ RUN git clone https://github.com/microsoft/TRELLIS --recurse-submodules && \
 #    cd SageAttention && \
 #    python3 setup.py bdist_wheel && \
 #    cp dist/*.whl /build/
-
-RUN cd 
-
-# --- Début de la deuxième étape (FROM ghcr.io/linuxserver/baseimage-kasmvnc:ubuntujammy) ---
-FROM ghcr.io/linuxserver/baseimage-kasmvnc:ubuntujammy
-
-ARG DEBIAN_FRONTEND=noninteractive
-ENV DEBIAN_FRONTEND=${DEBIAN_FRONTEND}
-
-COPY docker/root/ /
-
-ENV CC=/usr/bin/gcc-12
-ENV CXX=/usr/bin/g++-12
-ENV TORCH_CUDA_ARCH_LIST="8.0 8.6 8.7 8.9 9.0 9.0a"
-
-RUN apt-get update -q && \
-    apt-get install -y -q=2 --no-install-recommends \
-    curl \
-    software-properties-common \
-    wget \
-    gnupg \
-    mc \
-    bc \
-    nano \
-    rsync \
-    libgl1-mesa-glx \
-    libtcmalloc-minimal4 \
-    libcufft10 \
-    libxft2 \
-    xvfb \
-    cmake \
-    build-essential \
-    ffmpeg \
-    gcc-12 \
-    g++-12 \
-    dotnet-sdk-8.0 \
-    git \
-    bzip2 && \
-    # bzip2 est ajouté car certains installeurs conda en ont besoin
-    apt purge gcc-11 g++-11 -y && \
-# CUDA toolkit installation
-    cd /tmp/ && \
-    wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb && \
-    dpkg -i cuda-keyring_1.1-1_all.deb && \
-    apt-get update && \
-    apt-get -y install --no-install-recommends cuda-toolkit-12-4 && \
-# CLEAN
-    apt autoremove -y && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
-COPY --from=build_stage /build/*.whl /wheels/
-
-# Installation de Miniconda et configuration des permissions
-RUN mkdir -p /opt/miniconda3 /home/abc && \
-    cd /tmp && \
-    wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh && \
-    # Ajout de sh -x ici pour le débogage si cela échoue encore
-    sh -x Miniconda3-latest-Linux-x86_64.sh -b -p /opt/miniconda3 && \
-    rm Miniconda3-latest-Linux-x86_64.sh && \
-    # S'assurer que l'utilisateur abc existe et a le bon groupe (par défaut abc pour kasmvnc)
-    chown -R abc:abc /opt/miniconda3 && \
-    chown -R abc:abc /home/abc && \
-    # Ajouter le chemin de conda à PATH pour l'utilisateur abc via .bashrc
-    # Cela ne sera effectif que pour les nouvelles sessions shell interactives ou sourcées.
-    # Pour les scripts lancés par s6-overlay, le PATH est souvent géré différemment.
-    echo 'export PATH="/opt/miniconda3/bin:$PATH"' >> /home/abc/.bashrc
-
-EXPOSE 9000/tcp
-EXPOSE 3000/tcp

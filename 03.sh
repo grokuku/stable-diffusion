@@ -1,34 +1,7 @@
 #!/bin/bash
-# Description: Installs and runs the InvokeAI WebUI.
-# Functionalities:
-#   - Sources shared utility functions from /functions.sh.
-#   - Sets up necessary environment variables (PATH, SD03_DIR, INVOKEAI_ROOT). Sets `use_venv=0`.
-#   - Creates the main directory for this UI (`$SD03_DIR`) and a specific output directory (`/config/outputs/03-InvokeAI/tensors`).
-#   - Renames an old `parameters.txt` file if it exists, favoring `config.yaml`.
-#   - Copies a default configuration from `/opt/sd-install/parameters/03.txt` to `$SD03_DIR/config.yaml` if it doesn't exist.
-#   - Conditionally cleans the Conda environment (`$SD03_DIR/env`) based on `active_clean`.
-#   - Creates a dedicated Conda environment (`$SD03_DIR/env`) if needed.
-#   - Activates the Conda environment, installs Python 3.11, and upgrades pip.
-#   - Installs InvokeAI using pip (`InvokeAI[xformers]`) if the `$SD03_DIR/invokeai` directory doesn't exist. The version is determined by `$UI_BRANCH` (defaulting to 'latest'). Includes PyTorch index URL.
-#   - Upgrades InvokeAI using pip if the directory already exists.
-#   - Installs additional Python requirements from `$SD03_DIR/requirements.txt` if it exists.
-#   - Launches the InvokeAI web UI using the `invokeai-web` command, pointing it to the configuration file.
-#   - Uses `sleep infinity` to keep the script running after launching the UI.
-# Choices and Reasons:
-#   - Uses Conda (Python 3.11) for environment management.
-#   - Installs/upgrades InvokeAI directly via pip, including the performance-enhancing `xformers` extra. Uses `--use-pep517` for modern build systems.
-#   - Manages configuration via `$SD03_DIR/config.yaml`, migrating away from an older `parameters.txt`.
-#   - Sets `INVOKEAI_ROOT` which InvokeAI uses to find its models, outputs, and configuration internally. Model symlinking (`sl_folder`) is not used here, assuming InvokeAI handles model locations based on its config.
-#   - `sleep infinity` keeps the container alive.
-# Usage Notes:
-#   - Requires `functions.sh`.
-#   - Expects `BASE_DIR`, `SD_INSTALL_DIR`, and optionally `UI_BRANCH` environment variables.
-#   - `active_clean` controls environment cleaning.
-#   - Configuration is primarily managed through `$SD03_DIR/config.yaml`.
-#   - Additional Python dependencies can be added to `$SD03_DIR/requirements.txt`.
 source /functions.sh
 
-export PATH="/opt/miniconda3/bin:$PATH"
+export PATH="/home/abc/miniconda3/bin:$PATH"
 export use_venv=0
 export SD03_DIR=${BASE_DIR}/03-invokeai
 export INVOKEAI_ROOT=${SD03_DIR}/invokeai
@@ -65,7 +38,7 @@ cd ${SD03_DIR}
 # Install if the folder is not present
 if [ ! -d "${SD03_DIR}/invokeai" ]; then
     mkdir -p ${SD03_DIR}/invokeai
-    pip install "InvokeAI[xformers]==${UI_BRANCH:-latest}" --use-pep517 --extra-index-url https://download.pytorch.org/whl/cu121
+    pip install "InvokeAI" --use-pep517 --extra-index-url https://download.pytorch.org/whl/cu121
 #    invokeai-configure --yes --root ${SD03_DIR}/invokeai
 fi
 

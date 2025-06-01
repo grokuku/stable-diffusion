@@ -1,26 +1,4 @@
 #!/bin/bash
-# Description: This script installs and runs a custom WebUI based on Fooocus-MRE.
-# Functionalities:
-#   - Sets up the environment for the custom WebUI.
-#   - Clones the Fooocus-MRE repository.
-#   - Creates and activates a conda environment.
-#   - Installs necessary Python packages.
-#   - Creates symbolic links for models and outputs.
-#   - Runs the custom WebUI.
-# Choices and Reasons:
-#   - Conda is used for environment management to isolate dependencies.
-#   - Specific versions of Python and other packages are installed to ensure compatibility.
-#   - Symbolic links are used to merge models to avoid duplication.
-#   - The Fooocus-MRE is cloned from GitHub.
-#
-# Additional Notes:
-#   - This script assumes that the /functions.sh file exists and contains necessary helper functions.
-#   - The script uses environment variables such as BASE_DIR, which should be defined before running the script.
-#   - The script clones the Fooocus-MRE from GitHub. Ensure that the repository is accessible and up-to-date.
-#   - The script creates a conda environment with Python 3.10. This version should be compatible with Fooocus-MRE.
-#   - The script creates symbolic links for models and outputs. This can save disk space but may cause issues if the source files are modified or deleted.
-#   - The script installs cuda-cudart from the nvidia channel. This is necessary for running Fooocus-MRE with CUDA support.
-#   - The script installs requirements from requirements_versions.txt. This file should contain specific versions of the required packages.
 source /functions.sh
 
 export PATH="/home/abc/miniconda3/bin:$PATH"
@@ -42,8 +20,6 @@ export CustomPARAMETERS="--listen 0.0.0.0 --port 9000"
 # Folders creation (Program files and output)
 mkdir -p ${CustomPATH}
 mkdir -p $BASE_DIR/outputs/$CustomBASE/$CustomNAME
-
-show_system_info
 
 # Creation and Activation on the Conda Virtual Env
 if [ ! -d ${CustomPATH}/env ]; then
