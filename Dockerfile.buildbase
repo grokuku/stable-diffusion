@@ -126,7 +126,7 @@ RUN apt-get update -q && \
     rsync \
     libgl1-mesa-glx \
     libtcmalloc-minimal4 \
-    # libcufft10 ici aussi, même remarque que pour l'étape builder
+    # libcufft10 ici aussi, même remarque que pour l'étape builder. Si le build échoue à cause de lui, supprimez-le.
     libcufft10 \
     libxft2 \
     xvfb \
@@ -151,14 +151,33 @@ RUN apt-get update -q && \
 
 COPY --from=builder /build/*.whl /wheels/
 
-RUN mkdir -p /opt/miniconda3 /home/abc && \
+RUN echo "Création des répertoires..." && \
+    mkdir -p /opt/miniconda3 /home/abc
+
+RUN echo "Téléchargement de Miniconda..." && \
     cd /tmp && \
-    wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh && \
-    bash Miniconda3-latest-Linux-x86_64.sh -b -p /opt/miniconda3 && \
-    rm Miniconda3-latest-Linux-x86_64.sh && \
-    # Donner les droits à abc sur miniconda et son home
+    wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+
+RUN echo "Installation de Miniconda..." && \
+    bash /tmp/Miniconda3-latest-Linux-x86_64.sh -b -p /opt/miniconda3 && \
+    echo "Miniconda installé avec succès."
+
+RUN echo "Suppression du script d'installation de Miniconda..." && \
+    rm /tmp/Miniconda3-latest-Linux-x86_64.sh
+
+RUN echo "Vérification de l'utilisateur abc et du groupe users (si présent)..." && \
+    id abc ; \
+    getent group users || echo "Le groupe 'users' n'existe pas, ce qui est normal pour kasmvnc base." ; \
+    getent group abc || echo "Le groupe 'abc' n'existe pas."
+
+RUN echo "Attribution des droits sur Miniconda et /home/abc à abc:abc (ou abc:users si le groupe users existe)..." && \
+    # Les images linuxserver.io utilisent généralement PUID/PGID qui mappent à un utilisateur (ex: abc) et un groupe (ex: users)
+    # L'image kasmvnc crée l'utilisateur 'abc' (UID 1000) et le groupe 'abc' (GID 1000) par défaut.
+    # Si le groupe 'users' existe et est différent du GID de 'abc', on pourrait vouloir l'utiliser.
+    # Pour simplifier et être cohérent avec la création par défaut de l'utilisateur 'abc' par kasmvnc, utiliser 'abc:abc' est plus sûr.
     chown -R abc:abc /opt/miniconda3 && \
-    chown -R abc:abc /home/abc
+    chown -R abc:abc /home/abc && \
+    echo "Permissions mises à jour pour abc:abc."
 
 EXPOSE 9000/tcp
 EXPOSE 3000/tcp
