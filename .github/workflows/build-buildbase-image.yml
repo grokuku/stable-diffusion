@@ -60,5 +60,6 @@ jobs:
           tags: ${{ steps.meta-buildbase.outputs.tags }}
           labels: ${{ steps.meta-buildbase.outputs.labels }}
           platforms: linux/amd64
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          no-cache: true
+#          cache-from: type=gha
+#          cache-to: type=gha,mode=max
