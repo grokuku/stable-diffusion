@@ -1,4 +1,5 @@
-FROM nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04 AS build_stage # <--- MODIFIÉ ICI
+# <--- MODIFIÉ ICI (commentaire déplacé)
+FROM nvidia/cuda:12.4.1-cudnn-devel-ubuntu22.04 AS build_stage
 
 ARG DEBIAN_FRONTEND=noninteractive
 ENV DEBIAN_FRONTEND=${DEBIAN_FRONTEND}
@@ -145,7 +146,7 @@ RUN apt-get update -q && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-COPY --from=build_stage /build/*.whl /wheels/ # <--- MODIFIÉ ICI
+COPY --from=build_stage /build/*.whl /wheels/
 
 RUN echo "Création des répertoires..." && \
     mkdir -p /opt/miniconda3 /home/abc
