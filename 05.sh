@@ -59,7 +59,7 @@ fi
 #activate env and install basic dependencies (logique originale)
 source activate ${SD05_DIR}/env
 conda install -n base conda-libmamba-solver -y
-conda install -c conda-forge git python=3.11 pip gxx libcurand --solver=libmamba -y
+conda install -c conda-forge git python=3.12 pip gxx libcurand --solver=libmamba -y
 conda install -c nvidia cuda-cudart --solver=libmamba -y
 
 #Install custom nodes dependencies if a clean Venv has been done (logique originale)
