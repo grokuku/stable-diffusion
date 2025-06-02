@@ -16,7 +16,7 @@ fi
 #active env and install python
 source activate ${SD01_DIR}/conda-env
 conda install -n base conda-libmamba-solver -y
-conda install -c python=3.11 pip --solver=libmamba -y
+conda install -c python=3.12 pip --solver=libmamba -y
 
 #create 'models' folders
 mkdir -p ${SD01_DIR}/{models,version,plugins/ui,scripts}

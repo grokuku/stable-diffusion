@@ -1,2 +1,15 @@
+# Description: This file specifies intentionally untracked files that Git should ignore.
+# Functionalities:
+#   - Prevents sensitive information (e.g., API keys, passwords) from being committed to the repository.
+#   - Excludes build artifacts and temporary files from version control.
+#   - Reduces the size of the repository by excluding unnecessary files.
+# Choices and Reasons:
+#   - .env: Excludes environment variable files, which often contain sensitive information.
+#   - data/: Excludes the data directory, which may contain large datasets or other files that are not essential to the codebase.
+#
+# Additional Notes:
+#   - This file should be placed in the root directory of the Git repository.
+#   - Each line in the file specifies a pattern to be ignored.
+#   - Patterns can include wildcards (e.g., *.log) and directory names.
 .env
 data/
