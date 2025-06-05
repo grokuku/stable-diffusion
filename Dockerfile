@@ -26,7 +26,8 @@ RUN apt-get install -y -q=2 software-properties-common && \
     git \
     gcc-12 g++-12
 
-RUN pip install torch torchvision packaging
+RUN pip install torch==2.6.0 torchvision packaging
+RUN pip install cython==0.29.37
 
 # Configurer gcc et g++
 ENV CC=/usr/bin/gcc-12
