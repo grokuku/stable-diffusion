@@ -5,54 +5,49 @@ source /functions.sh
 export PATH="/home/abc/miniconda3/bin:$PATH"
 export SD02_DIR=${BASE_DIR}/02-sd-webui
 
-# disable the use of a python venv
+# Disable the webui's built-in Python venv creation
 export venv_dir="-"
 
-# Install or update Stable-Diffusion-WebUI
-mkdir -p ${SD02_DIR} # Assure que le dossier de base existe
+# Create the main directory for this UI
+mkdir -p ${SD02_DIR}
+mkdir -p "${SD02_DIR}/forge"
 
-# MODIFICATION GIT CI-DESSOUS
-# Le script original clone dans SD02_DIR/forge
-mkdir -p "${SD02_DIR}/forge" # S'assure que le sous-dossier pour forge existe
-
+# Install or update the Stable-Diffusion-WebUI-Forge repository
 if [ ! -d "${SD02_DIR}/forge/.git" ]; then
     echo "Cloning Stable-Diffusion-WebUI-Forge repository..."
-    # Le script original clone dans ${SD02_DIR}/forge
     git clone https://github.com/lllyasviel/stable-diffusion-webui-forge.git "${SD02_DIR}/forge"
-    cd "${SD02_DIR}/forge" # S'assurer d'être dans le dossier du repo après clone
+    cd "${SD02_DIR}/forge"
 else
     echo "Existing Stable-Diffusion-WebUI-Forge repository found. Synchronizing..."
-    cd "${SD02_DIR}/forge" # S'assurer d'être dans le dossier du repo
-    check_remote "GIT_REF" # Utilisation de la variable commune GIT_REF
+    cd "${SD02_DIR}/forge"
+    check_remote "GIT_REF"
 fi
-# FIN DE LA MODIFICATION GIT
 
-#clean conda env (logique originale)
-clean_env ${SD02_DIR}/conda-env # Note: Le script original utilise le même nom d'env que 02.sh
+# Clean the Conda environment if required
+clean_env ${SD02_DIR}/conda-env
 
-# Create Conda virtual env (logique originale)
+# Create the Conda environment if it doesn't exist
 if [ ! -d ${SD02_DIR}/conda-env ]; then
     conda create -p ${SD02_DIR}/conda-env -y
 fi
 
-#activate conda env + install base tools (logique originale)
+# Activate the environment and install base packages
 source activate ${SD02_DIR}/conda-env
 conda install -n base conda-libmamba-solver -y
 conda install -c conda-forge python=3.11 pip gcc gxx libcurand --solver=libmamba -y
 
-if [ ! -f "$SD02_DIR/parameters.forge.txt" ]; then # Logique originale
+# Copy default launch parameters if they don't exist
+if [ ! -f "$SD02_DIR/parameters.forge.txt" ]; then
     cp -v "/opt/sd-install/parameters/02.forge.txt" "$SD02_DIR/parameters.forge.txt"
 fi
 
-#install custom requirements (logique originale)
+# Install custom user requirements if specified
 pip install --upgrade pip
-
 if [ -f ${SD02_DIR}/requirements.txt ]; then
     pip install -r ${SD02_DIR}/requirements.txt
 fi
 
-# Merge Models, vae, lora, and hypernetworks, and outputs (logique originale)
-# Ignore move errors if they occur
+# Symlink shared models folders into the Forge directory
 sl_folder ${SD02_DIR}/forge/models Stable-diffusion ${BASE_DIR}/models stable-diffusion
 sl_folder ${SD02_DIR}/forge/models hypernetworks ${BASE_DIR}/models hypernetwork
 sl_folder ${SD02_DIR}/forge/models Lora ${BASE_DIR}/models lora
@@ -65,12 +60,13 @@ sl_folder ${SD02_DIR}/forge/models GFPGAN ${BASE_DIR}/models gfpgan
 sl_folder ${SD02_DIR}/forge/models LDSR ${BASE_DIR}/models ldsr
 sl_folder ${SD02_DIR}/forge/models ControlNet ${BASE_DIR}/models controlnet
 
-sl_folder ${SD02_DIR}/forge outputs ${BASE_DIR}/outputs 02-sd-webui # Logique originale pour le dossier de sortie
+# Symlink the output folder
+sl_folder ${SD02_DIR}/forge outputs ${BASE_DIR}/outputs 02-sd-webui
 
-#Force using correct version of Python (logique originale)
+# Force the use of the Conda environment's Python executable
 export python_cmd="$(which python)"
 
-# Run webUI (logique originale)
+# Launch Stable-Diffusion-WebUI-Forge
 echo "Run Stable-Diffusion-WebUI-forge"
 cd ${SD02_DIR}/forge
 CMD="bash webui.sh"

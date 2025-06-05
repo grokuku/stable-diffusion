@@ -131,6 +131,9 @@ This applies to the launching project only.
 If something went wrong and you can't access certain files, you can reset access rights by deleting the file named 'Delete_this_file_to_reset_access_rights_at_next_launch' in the root folder.   
 This applies to all the /config folder.   
 
+#### A note on development
+Starting from version 4.0, this project is being developed with the assistance of Google's Gemini.
+
 # History
 
 See [**Changelog**](/CHANGELOG.md)
