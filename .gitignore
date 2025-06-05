@@ -13,3 +13,4 @@
 #   - Patterns can include wildcards (e.g., *.log) and directory names.
 .env
 data/
+*.tech
