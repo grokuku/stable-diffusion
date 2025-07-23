@@ -8,20 +8,30 @@ FROM nvidia/cuda:12.8.1-cudnn-devel-ubuntu24.04 AS builder
 # Set non-interactive frontend for apt to prevent it from hanging.
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install all build-time dependencies in a single, robust command.
-RUN apt-get update && \
-    apt-get install -y -q=2 \
-    # System and build tools
-    build-essential wget curl git cmake gnupg bc rsync ffmpeg ninja-build \
-    # Non-conflicting library dependencies
-    libxft2 xvfb \
-    # Python 3.12 and its development packages
-    python3.12 python3.12-dev python3.12-venv \
-    && \
-    # Post-install steps
-    curl -sS https://bootstrap.pypa.io/get-pip.py | python3.12 && \
-    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1 && \
-    update-alternatives --install /usr/bin/python python /usr/bin/python3.12 1 && \
+# --- DEBUGGING STEP 2 ---
+# We have a new error (exit code 1). We need to isolate which command is failing.
+# We will install packages in separate RUN commands again.
+RUN apt-get update
+
+RUN echo "--- Step 1: Installing build tools ---" && \
+    apt-get install -y -q=2 build-essential wget curl git cmake gnupg bc rsync ffmpeg ninja-build
+
+RUN echo "--- Step 2: Installing library dependencies ---" && \
+    apt-get install -y -q=2 libxft2 xvfb
+
+RUN echo "--- Step 3: Installing Python ---" && \
+    apt-get install -y -q=2 python3.12 python3.12-dev python3.12-venv
+
+RUN echo "--- Step 4: Installing pip ---" && \
+    curl -sS https://bootstrap.pypa.io/get-pip.py | python3.12
+
+RUN echo "--- Step 5: Configuring python3 alternative ---" && \
+    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1
+
+RUN echo "--- Step 6: Configuring python alternative ---" && \
+    update-alternatives --install /usr/bin/python python /usr/bin/python3.12 1
+
+RUN echo "--- Step 7: Cleaning up ---" && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
