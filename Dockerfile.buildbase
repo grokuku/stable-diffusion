@@ -1,84 +1,67 @@
-# This is a multi-stage Dockerfile to pre-compile hardware-accelerated Python wheels.
-# This avoids the need for a full build environment in the final, smaller production image.
-
 # --- Builder Stage ---
-# Use an Ubuntu 24.04 based image with CUDA development tools.
 FROM nvidia/cuda:12.8.1-cudnn-devel-ubuntu24.04 AS builder
 
-# Set non-interactive frontend for apt and allow pip to modify the system environment.
+# Eviter les prompts interactifs
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PIP_BREAK_SYSTEM_PACKAGES=1
-
-# Install all build-time dependencies in a single, robust command.
-RUN apt-get update && \
-    apt-get install -y -q=2 \
-    # System and build tools
-    build-essential wget curl git cmake gnupg bc rsync ffmpeg ninja-build \
-    # Non-conflicting library dependencies
-    libxft2 xvfb \
-    # Python 3.12, its development packages, and setuptools
-    python3.12 python3.12-dev python3.12-venv python3-setuptools \
-    && \
-    # Install pip using the recommended bootstrap script.
-    curl -sS https://bootstrap.pypa.io/get-pip.py | python3.12 && \
-    # Set Python 3.12 as the default
-    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1 && \
-    update-alternatives --install /usr/bin/python python /usr/bin/python3.12 1 && \
-    # Clean up apt cache
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
-# Install base Python packages required for building the wheels
-# CRITICAL FIX: Added 'wheel' package, which is necessary to build wheels.
-RUN pip install wheel torch==2.7.1 torchvision torchaudio packaging --index-url https://download.pytorch.org/whl/cu128
-
-RUN pip install cython==0.29.37
-
-# --- Build Environment Configuration ---
-ENV TORCH_CUDA_ARCH_LIST="8.0 8.6 8.7 8.9 9.0 9.0a"
-
-# --- Compile Wheels ---
+ENV TORCH_CUDA_ARCH_LIST="8.0 8.6 8.7 8.9 9.0 9.0 10"
 WORKDIR /build
 
-# Build flash-attention wheel
-RUN git clone https://github.com/Dao-AILab/flash-attention --recurse-submodules
-RUN cd flash-attention && \
-    python3 setup.py bdist_wheel && \
-    cp dist/*.whl /build/
+# --- Dépendances système + Python 3.12 ---
+RUN apt-get update && apt-get install -y -q=2 \
+    build-essential wget curl git cmake gnupg bc rsync ffmpeg ninja-build \
+    libxft2 xvfb \
+    python3.12 python3.12-dev python3.12-venv python3-setuptools \
+ && curl -sS https://bootstrap.pypa.io/get-pip.py | python3.12 \
+ && update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1 \
+ && update-alternatives --install /usr/bin/python python /usr/bin/python3.12 1 \
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
 
-# Build diso wheel
-RUN git clone https://github.com/SarahWeiii/diso --recurse-submodules && \
-    cd diso && \
-    python3 setup.py bdist_wheel && \
-    cp dist/*.whl /build/
+# --- Paquets Python (wheel, torch, etc.) ---
+RUN python3.12 -m pip install --no-cache-dir wheel packaging \
+ && python3.12 -m pip install --no-cache-dir torch==2.7.1 torchvision torchaudio \
+      --extra-index-url https://download.pytorch.org/whl/cu128 \
+ && python3.12 -m pip install --no-cache-dir cython==0.29.37
 
-# Build nvdiffrast wheel
-RUN git clone https://github.com/NVlabs/nvdiffrast.git && \
-    cd nvdiffrast && \
-    python3 setup.py bdist_wheel && \
-    cp dist/*.whl /build/
+# --- Compilation des wheels personnalisés ---
+# flash-attention
+RUN git clone https://github.com/Dao-AILab/flash-attention --recurse-submodules \
+ && cd flash-attention \
+ && python3.12 setup.py bdist_wheel \
+ && cp dist/*.whl /build/
 
-# Build kaolin wheel
-RUN git clone https://github.com/HarrisonPrism/kaolin_5090.git && \
-    cd kaolin_5090 && \
-    python3 setup.py bdist_wheel && \
-    cp dist/*.whl /build/
+# diso
+RUN git clone https://github.com/SarahWeiii/diso --recurse-submodules \
+ && cd diso \
+ && python3.12 setup.py bdist_wheel \
+ && cp dist/*.whl /build/
 
-# Build diff-gaussian-rasterization from mip-splatting wheel
-RUN git clone https://github.com/autonomousvision/mip-splatting --recurse-submodules && \
-    cd mip-splatting/submodules/diff-gaussian-rasterization && \
-    python3 setup.py bdist_wheel && \
-    cp dist/*.whl /build/
+# nvdiffrast
+RUN git clone https://github.com/NVlabs/nvdiffrast.git \
+ && cd nvdiffrast \
+ && python3.12 setup.py bdist_wheel \
+ && cp dist/*.whl /build/
 
-# Build vox2seq from TRELLIS wheel
-RUN git clone https://github.com/microsoft/TRELLIS --recurse-submodules && \
-    cd TRELLIS/extensions/vox2seq && \
-    python3 setup.py bdist_wheel && \
-    cp dist/*.whl /build/
+# kaolin
+RUN git clone https://github.com/HarrisonPrism/kaolin_5090.git \
+ && cd kaolin_5090 \
+ && python3.12 setup.py bdist_wheel \
+ && cp dist/*.whl /build/
+
+# mip-splatting / diff-gaussian-rasterization
+RUN git clone https://github.com/autonomousvision/mip-splatting --recurse-submodules \
+ && cd mip-splatting/submodules/diff-gaussian-rasterization \
+ && python3.12 setup.py bdist_wheel \
+ && cp dist/*.whl /build/
+
+# vox2seq / TRELLIS
+RUN git clone https://github.com/microsoft/TRELLIS --recurse-submodules \
+ && cd TRELLIS/extensions/vox2seq \
+ && python3.12 setup.py bdist_wheel \
+ && cp dist/*.whl /build/
 
 # --- Final Stage ---
-# Use a lightweight Ubuntu 24.04 based image for the final product.
 FROM ghcr.io/linuxserver/baseimage-kasmvnc:ubuntunoble
 
-# Copy the pre-compiled wheels from the builder stage
 COPY --from=builder /build/*.whl /wheels/
