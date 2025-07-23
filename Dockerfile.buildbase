@@ -2,31 +2,22 @@
 # This avoids the need for a full build environment in the final, smaller production image.
 
 # --- Builder Stage ---
-# Use a development image with the full CUDA toolkit for compilation.
+# Use an Ubuntu 24.04 based image with CUDA development tools.
 FROM nvidia/cuda:12.8.1-cudnn-devel-ubuntu24.04 AS builder
 
-# Install build-time dependencies
+# Install build-time dependencies in a robust way
 RUN apt-get update && \
-    # Ubuntu 24.04 a Python 3.12 et GCC 13 par défaut
-    apt-get install -y -q=2 python3.12 python3.12-dev python3.12-venv python3-pip && \
+    # Install base tools and compilers (gcc/g++ will default to version 13 on Ubuntu 24.04)
+    apt-get install -y -q=2 wget gnupg bc rsync libgl1-mesa-glx libxft2 xvfb cmake build-essential ffmpeg gcc g++ ninja-build git curl && \
+    # Install Python 3.12 base packages
+    apt-get install -y -q=2 python3.12 python3.12-dev python3.12-venv && \
+    # Install pip for Python 3.12 using the recommended bootstrap script
+    curl -sS https://bootstrap.pypa.io/get-pip.py | python3.12 && \
+    # Set Python 3.12 as the default
     update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1 && \
     update-alternatives --install /usr/bin/python python /usr/bin/python3.12 1 && \
-    # Installation des autres outils de build
-    # NOTE: libcufft10 et libtcmalloc-minimal4 ont été retirés car non disponibles/nécessaires sur Ubuntu 24.04
-    apt-get install -y -q=2 wget \
-    gnupg \
-    bc \
-    rsync \
-    libgl1-mesa-glx \
-    libxft2 \
-    xvfb \
-    cmake \
-    build-essential \
-    ffmpeg \
-    gcc-13 \
-    g++-13 \
-    ninja-build \
-    git
+    # Clean up apt cache
+    rm -rf /var/lib/apt/lists/*
 
 # Install base Python packages required for building the wheels
 RUN pip install torch==2.6.0 torchvision packaging
@@ -34,12 +25,8 @@ RUN pip install cython==0.29.37
 
 # --- Build Environment Configuration ---
 # Configure compilers and target CUDA architecture
-ENV CC=/usr/bin/gcc-13
-ENV CXX=/usr/bin/g++-13
-ENV TORCH_CUDA_ARCH_LIST="8.0 8.6 8.7 8.9 9.0 9.0a 10.0"
-#ENV CPLUS_INCLUDE_PATH=/usr/local/cuda/include:$CPLUS_INCLUDE_PATH
-#ENV LIBRARY_PATH=/usr/local/cuda/lib64:$LIBRARY_PATH
-#ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
+# CC and CXX will use the system defaults (gcc-13/g++-13)
+ENV TORCH_CUDA_ARCH_LIST="8.0 8.6 8.7 8.9 9.0 9.0a 10"
 
 # --- Compile Wheels ---
 # Create a directory for build artifacts
@@ -64,6 +51,7 @@ RUN git clone https://github.com/NVlabs/nvdiffrast.git && \
     cp dist/*.whl /build/
 
 # Build kaolin wheel
+# Note: Using a fork that may have better compatibility.
 RUN git clone https://github.com/HarrisonPrism/kaolin_5090.git && \
     cd kaolin_5090 && \
     python3 setup.py bdist_wheel && \
@@ -82,7 +70,7 @@ RUN git clone https://github.com/microsoft/TRELLIS --recurse-submodules && \
     cp dist/*.whl /build/
 
 # --- Final Stage ---
-# Use a lightweight base image for the final product
+# Use a lightweight Ubuntu 24.04 based image for the final product.
 FROM ghcr.io/linuxserver/baseimage-kasmvnc:ubuntunoble
 
 # Copy the pre-compiled wheels from the builder stage
