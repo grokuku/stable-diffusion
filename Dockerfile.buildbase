@@ -3,19 +3,15 @@
 
 # --- Builder Stage ---
 # Use a development image with the full CUDA toolkit for compilation.
-FROM nvidia/cuda:12.8.1-devel-ubuntu22.04 AS builder
+FROM nvidia/cuda:12.8.1-cudnn-devel-ubuntu24.04 AS builder
 
 # Install build-time dependencies
 RUN apt-get update && \
-    apt-get install -y -q=2 software-properties-common && \
-    # Ajout du PPA deadsnakes pour avoir accès aux versions récentes de Python
-    add-apt-repository ppa:deadsnakes/ppa -y && \
-    # Mise à jour de la liste des paquets APRES avoir ajouté le PPA
-    apt-get update && \
-    # Maintenant, l'installation de Python 3.12 devrait fonctionner
-    apt-get install -y python3.12 python3.12-distutils python3.12-venv python3.12-pip python3.12-dev && \
+    # Ubuntu 24.04 inclut Python 3.12 par défaut.
+    apt-get install -y -q=2 python3.12 python3.12-dev python3.12-venv python3-pip && \
     update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1 && \
     update-alternatives --install /usr/bin/python python /usr/bin/python3.12 1 && \
+    # Installation des autres outils de build
     apt-get install -y -q=2 wget \
     gnupg \
     bc \
@@ -88,7 +84,7 @@ RUN git clone https://github.com/microsoft/TRELLIS --recurse-submodules && \
 
 # --- Final Stage ---
 # Use a lightweight base image for the final product
-FROM ghcr.io/linuxserver/baseimage-kasmvnc:ubuntujammy
+FROM ghcr.io/linuxserver/baseimage-kasmvnc:ubuntunoble
 
 # Copy the pre-compiled wheels from the builder stage
 COPY --from=builder /build/*.whl /wheels/
