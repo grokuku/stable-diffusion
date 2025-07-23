@@ -29,8 +29,8 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Install base Python packages required for building the wheels
-# FINAL FIX: Using the latest stable torch version (2.7.1) with the correct CUDA 12.8 URL.
-RUN pip install torch==2.7.1 torchvision torchaudio packaging --index-url https://download.pytorch.org/whl/cu128
+# CRITICAL FIX: Added 'wheel' package, which is necessary to build wheels.
+RUN pip install wheel torch==2.7.1 torchvision torchaudio packaging --index-url https://download.pytorch.org/whl/cu128
 
 RUN pip install cython==0.29.37
 
