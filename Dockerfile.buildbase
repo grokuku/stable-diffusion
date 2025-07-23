@@ -8,8 +8,8 @@ FROM nvidia/cuda:12.8.1-cudnn-devel-ubuntu24.04 AS builder
 # Set non-interactive frontend for apt to prevent it from hanging.
 ENV DEBIAN_FRONTEND=noninteractive
 
-# --- DEBUGGING STEP 3 ---
-# We are isolating the failure at the pip installation step.
+# --- DEBUGGING STEP 4 ---
+# The error is confirmed to be the pip installation script.
 RUN apt-get update
 
 RUN echo "--- Step 1: Installing build tools ---" && \
@@ -18,12 +18,13 @@ RUN echo "--- Step 1: Installing build tools ---" && \
 RUN echo "--- Step 2: Installing library dependencies ---" && \
     apt-get install -y -q=2 libxft2 xvfb
 
-RUN echo "--- Step 3: Installing Python and its core dependency setuptools ---" && \
+RUN echo "--- Step 3: Installing Python and setuptools ---" && \
     apt-get install -y -q=2 python3.12 python3.12-dev python3.12-venv python3-setuptools
 
-RUN echo "--- Step 4: Installing pip (using a more robust method) ---" && \
+# The change is only in the line below: adding --break-system-packages
+RUN echo "--- Step 4: Installing pip (with --break-system-packages flag) ---" && \
     curl -sS -o /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py && \
-    python3.12 /tmp/get-pip.py
+    python3.12 /tmp/get-pip.py --break-system-packages
 
 RUN echo "--- Step 5: Configuring python3 alternative ---" && \
     update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1
