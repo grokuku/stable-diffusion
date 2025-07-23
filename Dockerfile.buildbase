@@ -8,22 +8,30 @@ FROM nvidia/cuda:12.8.1-cudnn-devel-ubuntu24.04 AS builder
 # Set non-interactive frontend for apt to prevent it from hanging.
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install all build-time dependencies in a single, robust command.
-RUN apt-get update && \
-    apt-get install -y -q=2 \
-    # System and build tools
-    build-essential wget curl git cmake gnupg bc rsync ffmpeg ninja-build \
-    # Non-conflicting library dependencies
-    libxft2 xvfb \
-    # Python 3.12, its development packages, and the crucial setuptools package
-    python3.12 python3.12-dev python3.12-venv python3-setuptools \
-    && \
-    # With setuptools present, the pip bootstrap script will now succeed.
-    curl -sS https://bootstrap.pypa.io/get-pip.py | python3.12 && \
-    # Set Python 3.12 as the default
-    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1 && \
-    update-alternatives --install /usr/bin/python python /usr/bin/python3.12 1 && \
-    # Clean up apt cache to reduce final image size
+# --- DEBUGGING STEP 3 ---
+# We are isolating the failure at the pip installation step.
+RUN apt-get update
+
+RUN echo "--- Step 1: Installing build tools ---" && \
+    apt-get install -y -q=2 build-essential wget curl git cmake gnupg bc rsync ffmpeg ninja-build
+
+RUN echo "--- Step 2: Installing library dependencies ---" && \
+    apt-get install -y -q=2 libxft2 xvfb
+
+RUN echo "--- Step 3: Installing Python and its core dependency setuptools ---" && \
+    apt-get install -y -q=2 python3.12 python3.12-dev python3.12-venv python3-setuptools
+
+RUN echo "--- Step 4: Installing pip (using a more robust method) ---" && \
+    curl -sS -o /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py && \
+    python3.12 /tmp/get-pip.py
+
+RUN echo "--- Step 5: Configuring python3 alternative ---" && \
+    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1
+
+RUN echo "--- Step 6: Configuring python alternative ---" && \
+    update-alternatives --install /usr/bin/python python /usr/bin/python3.12 1
+
+RUN echo "--- Step 7: Cleaning up ---" && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
