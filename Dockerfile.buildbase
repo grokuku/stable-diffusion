@@ -8,30 +8,20 @@ FROM nvidia/cuda:12.8.1-cudnn-devel-ubuntu24.04 AS builder
 # Set non-interactive frontend for apt to prevent it from hanging.
 ENV DEBIAN_FRONTEND=noninteractive
 
-# --- DEBUGGING STEP ---
-# Installing packages in separate RUN commands to precisely identify the point of failure.
-RUN apt-get update
-
-RUN echo "--- Installing build-essential ---" && \
-    apt-get install -y -q=2 build-essential
-
-RUN echo "--- Installing core utilities ---" && \
-    apt-get install -y -q=2 wget curl git cmake gnupg bc rsync ffmpeg ninja-build
-
-RUN echo "--- Installing library dependencies ---" && \
-    apt-get install -y -q=2 libgl1-mesa-glx libxft2 xvfb
-
-RUN echo "--- Installing Python ---" && \
-    apt-get install -y -q=2 python3.12 python3.12-dev python3.12-venv
-
-RUN echo "--- Installing pip ---" && \
-    curl -sS https://bootstrap.pypa.io/get-pip.py | python3.12
-
-RUN echo "--- Configuring python alternatives ---" && \
+# Install all build-time dependencies in a single, robust command.
+RUN apt-get update && \
+    apt-get install -y -q=2 \
+    # System and build tools
+    build-essential wget curl git cmake gnupg bc rsync ffmpeg ninja-build \
+    # Non-conflicting library dependencies
+    libxft2 xvfb \
+    # Python 3.12 and its development packages
+    python3.12 python3.12-dev python3.12-venv \
+    && \
+    # Post-install steps
+    curl -sS https://bootstrap.pypa.io/get-pip.py | python3.12 && \
     update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1 && \
-    update-alternatives --install /usr/bin/python python /usr/bin/python3.12 1
-
-RUN echo "--- Cleaning up ---" && \
+    update-alternatives --install /usr/bin/python python /usr/bin/python3.12 1 && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
