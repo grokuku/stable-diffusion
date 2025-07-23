@@ -1,30 +1,36 @@
 # --- Builder Stage ---
 FROM nvidia/cuda:12.8.1-cudnn-devel-ubuntu24.04 AS builder
 
-# Eviter les prompts interactifs
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PIP_BREAK_SYSTEM_PACKAGES=1
-ENV TORCH_CUDA_ARCH_LIST="8.0 8.6 8.7 8.9 9.0 9.0 10"
+ENV TORCH_CUDA_ARCH_LIST="8.0 8.6 8.7 8.9 9.0 9.0a"
+ENV MAX_JOBS=8
 WORKDIR /build
 
-# --- Dépendances système + Python 3.12 ---
+# --- Dépendances système ---
 RUN apt-get update && apt-get install -y -q=2 \
     build-essential wget curl git cmake gnupg bc rsync ffmpeg ninja-build \
     libxft2 xvfb \
     python3.12 python3.12-dev python3.12-venv python3-setuptools \
+    cuda-toolkit-12-8 \
  && curl -sS https://bootstrap.pypa.io/get-pip.py | python3.12 \
  && update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1 \
  && update-alternatives --install /usr/bin/python python /usr/bin/python3.12 1 \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
 
-# --- Paquets Python (wheel, torch, etc.) ---
+# Ajouter CUDA dans le PATH (au cas où)
+ENV PATH="/usr/local/cuda/bin:$PATH"
+ENV CPLUS_INCLUDE_PATH="/usr/local/cuda/include"
+
+# --- Paquets Python ---
 RUN python3.12 -m pip install --no-cache-dir wheel packaging \
  && python3.12 -m pip install --no-cache-dir torch==2.7.1 torchvision torchaudio \
       --extra-index-url https://download.pytorch.org/whl/cu128 \
  && python3.12 -m pip install --no-cache-dir cython==0.29.37
 
-# --- Compilation des wheels personnalisés ---
+# --- Compilation des wheels ---
+
 # flash-attention
 RUN git clone https://github.com/Dao-AILab/flash-attention --recurse-submodules \
  && cd flash-attention \
