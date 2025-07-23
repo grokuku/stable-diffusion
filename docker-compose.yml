@@ -140,3 +140,12 @@ services:
       WEBUI_VERSION: '72'
     ports:
       - ${ONETRAINER_PORT:-9072}:9000/tcp
+  stable-diffusion-ai-toolkit:
+    <<: *default-service
+    profiles: [ai-toolkit]
+    container_name: stable-diffusion-ai-toolkit
+    environment:
+      <<: *default-environment
+      WEBUI_VERSION: '73'
+    ports:
+      - ${AI_TOOLKIT_PORT:-9073}:9000/tcp

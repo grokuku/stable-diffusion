@@ -23,6 +23,16 @@ else
   check_remote "GIT_REF"
 fi
 
+# --- START OF CUSTOM MODIFICATION ---
+# Force the UI to run on port 9000 to comply with project standards.
+# We modify the hardcoded port in the UI's package.json file.
+UI_PACKAGE_JSON="${SD73_DIR}/ai-toolkit/ui/package.json"
+if [ -f "$UI_PACKAGE_JSON" ]; then
+    echo "Forcing UI port to 9000 in $UI_PACKAGE_JSON..."
+    sed -i 's/--port 8675/--port 9000/g' "$UI_PACKAGE_JSON"
+fi
+# --- END OF CUSTOM MODIFICATION ---
+
 # Clean the Conda environment if required
 clean_env ${SD73_DIR}/env
 
@@ -64,14 +74,9 @@ fi
 # Symlink the output folder
 #sl_folder ${SD73_DIR}/ai-toolkit outputs ${BASE_DIR}/outputs 73-ai-toolkit
 
-# Set the PORT environment variable for the npm script
-export PORT=9000
-
 # Launch the Node.js UI
 echo "Building and launching AI-Toolkit UI..."
 cd ${SD73_DIR}/ai-toolkit/ui
-# The 'npm run build_and_start' command handles the UI.
-# It's unlikely to use the parameters.txt file. Configuration is likely done within the UI's own files.
 npm run build_and_start
 
 sleep infinity
