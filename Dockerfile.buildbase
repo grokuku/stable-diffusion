@@ -11,14 +11,13 @@ RUN apt-get update && \
     apt-get install -y -q=2 python3.12 python3.12-dev python3.12-venv python3-pip && \
     update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1 && \
     update-alternatives --install /usr/bin/python python /usr/bin/python3.12 1 && \
-    # Installation des autres outils de build avec les compilateurs gcc-13/g++-13
+    # Installation des autres outils de build
+    # NOTE: libcufft10 et libtcmalloc-minimal4 ont été retirés car non disponibles/nécessaires sur Ubuntu 24.04
     apt-get install -y -q=2 wget \
     gnupg \
     bc \
     rsync \
     libgl1-mesa-glx \
-    libtcmalloc-minimal4 \
-    libcufft10 \
     libxft2 \
     xvfb \
     cmake \
