@@ -71,8 +71,11 @@ fi
 #sl_folder ${SD73_DIR}/ai-toolkit/models upscale ${BASE_DIR}/models upscale
 #sl_folder ${SD73_DIR}/ai-toolkit/models controlnet ${BASE_DIR}/models controlnet
 
+# Symlink the dataset folder
+sl_folder ${SD73_DIR}/ai-toolkit datasets ${BASE_DIR}/datasets 73-ai-toolkit
+
 # Symlink the output folder
-#sl_folder ${SD73_DIR}/ai-toolkit outputs ${BASE_DIR}/outputs 73-ai-toolkit
+sl_folder ${SD73_DIR}/ai-toolkit output ${BASE_DIR}/outputs 73-ai-toolkit
 
 # Launch the Node.js UI
 echo "Building and launching AI-Toolkit UI..."
