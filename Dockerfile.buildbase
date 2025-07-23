@@ -67,7 +67,7 @@ RUN git clone https://github.com/NVlabs/nvdiffrast.git && \
 
 # Build kaolin wheel
 RUN git clone https://github.com/HarrisonPrism/kaolin_5090.git && \
-    cd kaolin && \
+    cd kaolin_5090 && \
     python3 setup.py bdist_wheel && \
     cp dist/*.whl /build/
 
