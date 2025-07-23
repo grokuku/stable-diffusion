@@ -8,30 +8,22 @@ FROM nvidia/cuda:12.8.1-cudnn-devel-ubuntu24.04 AS builder
 # Set non-interactive frontend for apt to prevent it from hanging.
 ENV DEBIAN_FRONTEND=noninteractive
 
-# --- DEBUGGING STEP 2 ---
-# We have a new error (exit code 1). We need to isolate which command is failing.
-# We will install packages in separate RUN commands again.
-RUN apt-get update
-
-RUN echo "--- Step 1: Installing build tools ---" && \
-    apt-get install -y -q=2 build-essential wget curl git cmake gnupg bc rsync ffmpeg ninja-build
-
-RUN echo "--- Step 2: Installing library dependencies ---" && \
-    apt-get install -y -q=2 libxft2 xvfb
-
-RUN echo "--- Step 3: Installing Python ---" && \
-    apt-get install -y -q=2 python3.12 python3.12-dev python3.12-venv
-
-RUN echo "--- Step 4: Installing pip ---" && \
-    curl -sS https://bootstrap.pypa.io/get-pip.py | python3.12
-
-RUN echo "--- Step 5: Configuring python3 alternative ---" && \
-    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1
-
-RUN echo "--- Step 6: Configuring python alternative ---" && \
-    update-alternatives --install /usr/bin/python python /usr/bin/python3.12 1
-
-RUN echo "--- Step 7: Cleaning up ---" && \
+# Install all build-time dependencies in a single, robust command.
+RUN apt-get update && \
+    apt-get install -y -q=2 \
+    # System and build tools
+    build-essential wget curl git cmake gnupg bc rsync ffmpeg ninja-build \
+    # Non-conflicting library dependencies
+    libxft2 xvfb \
+    # Python 3.12, its development packages, and the crucial setuptools package
+    python3.12 python3.12-dev python3.12-venv python3-setuptools \
+    && \
+    # With setuptools present, the pip bootstrap script will now succeed.
+    curl -sS https://bootstrap.pypa.io/get-pip.py | python3.12 && \
+    # Set Python 3.12 as the default
+    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1 && \
+    update-alternatives --install /usr/bin/python python /usr/bin/python3.12 1 && \
+    # Clean up apt cache to reduce final image size
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -41,8 +33,7 @@ RUN pip install cython==0.29.37
 
 # --- Build Environment Configuration ---
 # Configure compilers and target CUDA architecture
-# CC and CXX will use the system defaults (gcc-13/g++-13)
-ENV TORCH_CUDA_ARCH_LIST="8.0 8.6 8.7 8.9 9.0 9.0a 10"
+ENV TORCH_CUDA_ARCH_LIST="8.0 8.6 8.7 8.9 9.0 9.0a"
 
 # --- Compile Wheels ---
 # Create a directory for build artifacts
@@ -67,7 +58,6 @@ RUN git clone https://github.com/NVlabs/nvdiffrast.git && \
     cp dist/*.whl /build/
 
 # Build kaolin wheel
-# Note: Using a fork that may have better compatibility.
 RUN git clone https://github.com/HarrisonPrism/kaolin_5090.git && \
     cd kaolin_5090 && \
     python3 setup.py bdist_wheel && \
