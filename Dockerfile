@@ -18,7 +18,7 @@ ENV TORCH_CUDA_ARCH_LIST="8.0 8.6 8.7 8.9 9.0 9.0a 10"
 
 # --- System & Package Installation ---
 RUN apt-get update -q && \
-    # Install system dependencies for Ubuntu 24.04
+    # Install system dependencies for Ubuntu 24.04, removing conflicting/obsolete packages
     apt-get install -y -q=2 curl \
     software-properties-common \
     wget \
@@ -27,9 +27,6 @@ RUN apt-get update -q && \
     bc \
     nano \
     rsync \
-    libgl1-mesa-glx \
-    libtcmalloc-minimal4 \
-    libcufft10 \
     libxft2 \
     xvfb \
     cmake \
