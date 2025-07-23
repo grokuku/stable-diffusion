@@ -75,12 +75,12 @@ RUN mkdir /home/abc && \
 
 # Install Miniforge for Python environment management (uses conda-forge by default)
 RUN cd /tmp && \
-# URL for Miniforge installer
+    # URL for Miniforge installer
     wget https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh && \
-# Miniforge script name
-    bash Miniforge3-Linux-x86_64.sh -b && \
+    # Install Miniforge directly into the path expected by all launch scripts
+    bash Miniforge3-Linux-x86_64.sh -b -p /home/abc/miniconda3 && \
     rm Miniforge3-Linux-x86_64.sh && \
-# Set final ownership for application folders
+    # Set final ownership for application folders
     chown -R abc:abc /root && \
     chown -R abc:abc ${SD_INSTALL_DIR} && \
     chown -R abc:abc /home/abc
