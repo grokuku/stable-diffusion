@@ -12,13 +12,13 @@ ENV BASE_DIR=/config \
     XDG_CACHE_HOME=/config/temp
 
 # Set compiler and Torch/CUDA architecture for any potential runtime compilations
-ENV CC=/usr/bin/gcc-12
-ENV CXX=/usr/bin/g++-12
-ENV TORCH_CUDA_ARCH_LIST="8.0 8.6 8.7 8.9 9.0 9.0a"
+ENV CC=/usr/bin/gcc-13
+ENV CXX=/usr/bin/g++-13
+ENV TORCH_CUDA_ARCH_LIST="8.0 8.6 8.7 8.9 9.0 9.0a 10"
 
 # --- System & Package Installation ---
 RUN apt-get update -q && \
-    # Install system dependencies
+    # Install system dependencies for Ubuntu 24.04
     apt-get install -y -q=2 curl \
     software-properties-common \
     wget \
@@ -35,16 +35,15 @@ RUN apt-get update -q && \
     cmake \
     build-essential \
     ffmpeg \
-    gcc-12 \
-    g++-12 \
+    gcc-13 \
+    g++-13 \
     dotnet-sdk-8.0 \
     git && \
-    # Remove conflicting or unused packages
-    apt purge gcc-11 g++-11 -y && \
+    # Remove any conflicting system Python to ensure Conda's version is used
     apt-get purge python3 -y && \
-    # Install CUDA Toolkit
+    # Install CUDA Toolkit for Ubuntu 24.04
     cd /tmp/ && \
-    wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb && \
+    wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-keyring_1.1-1_all.deb && \
     dpkg -i cuda-keyring_1.1-1_all.deb && \
     apt-get update && \
     apt-get -y install cuda-toolkit-12-8 && \
