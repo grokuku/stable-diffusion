@@ -16,6 +16,11 @@ ENV CC=/usr/bin/gcc-13
 ENV CXX=/usr/bin/g++-13
 ENV TORCH_CUDA_ARCH_LIST="8.0 8.6 8.7 8.9 9.0 9.0a 10"
 
+# Ajoute le dépôt Microsoft pour dotnet
+RUN wget https://packages.microsoft.com/config/ubuntu/24.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb && \
+    dpkg -i packages-microsoft-prod.deb && \
+    rm packages-microsoft-prod.deb
+
 # --- System & Package Installation ---
 RUN apt-get update -q && \
     # Install system dependencies for Ubuntu 24.04, removing conflicting/obsolete packages
@@ -51,7 +56,7 @@ RUN apt-get update -q && \
 
 # --- Application Setup ---
 # Create application directories
-RUN mkdir -p ${BASE_DIR}\temp ${SD_INSTALL_DIR} ${BASE_DIR}/outputs
+RUN mkdir -p ${BASE_DIR}/temp ${SD_INSTALL_DIR} ${BASE_DIR}/outputs
 
 # Copy WebUI parameters
 ADD parameters/* ${SD_INSTALL_DIR}/parameters/
