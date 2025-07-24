@@ -62,10 +62,10 @@ RUN git clone https://github.com/HarrisonPrism/kaolin_5090.git \
 # && cp dist/*.whl /build/
 
 # vox2seq / TRELLIS
-RUN git clone https://github.com/microsoft/TRELLIS --recurse-submodules \
- && cd TRELLIS/extensions/vox2seq \
- && python3.12 setup.py bdist_wheel \
- && cp dist/*.whl /build/
+#RUN git clone https://github.com/microsoft/TRELLIS --recurse-submodules \
+# && cd TRELLIS/extensions/vox2seq \
+# && python3.12 setup.py bdist_wheel \
+# && cp dist/*.whl /build/
 
 # --- Final Stage ---
 FROM ghcr.io/linuxserver/baseimage-kasmvnc:ubuntunoble
