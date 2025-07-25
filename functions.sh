@@ -152,16 +152,16 @@ sync_repo() {
 
     if [ "$old_sha" != "$new_sha" ]; then
         echo "Repository updated. HEAD is now at $new_sha."
-        export active_clean=1 # Signaler que le venv pourrait aussi avoir besoin d'être nettoyé
+#        export active_clean=1 # Signaler que le venv pourrait aussi avoir besoin d'être nettoyé
     else
         echo "Repository HEAD ($new_sha) is unchanged or reset to the same state. Local modifications to tracked files (if any) have been reset."
         # Si des modifs locales ont été écrasées, le statut de git diff --staged sera vide.
         # On peut considérer active_clean=1 ici aussi si on veut être sûr
-        if ! git diff-index --quiet HEAD --; then # S'il reste des modifs (non suivies par ex)
-             : # Ne rien faire de spécial, juste pour illustrer
-        else # Si le repo est propre après reset, c'est que les modifs sur fichiers suivis ont été annulées
-             export active_clean=1
-        fi
+#        if ! git diff-index --quiet HEAD --; then # S'il reste des modifs (non suivies par ex)
+#             : # Ne rien faire de spécial, juste pour illustrer
+#        else # Si le repo est propre après reset, c'est que les modifs sur fichiers suivis ont été annulées
+#             export active_clean=1
+#       fi
     fi
 
     echo "Synchronization complete. Tracked files match $final_target_ref."

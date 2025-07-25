@@ -12,13 +12,13 @@ ENV BASE_DIR=/config \
     XDG_CACHE_HOME=/config/temp
 
 # Set compiler and Torch/CUDA architecture for any potential runtime compilations
-ENV CC=/usr/bin/gcc-12
-ENV CXX=/usr/bin/g++-12
-ENV TORCH_CUDA_ARCH_LIST="8.0 8.6 8.7 8.9 9.0 9.0a"
+ENV CC=/usr/bin/gcc-13
+ENV CXX=/usr/bin/g++-13
+ENV TORCH_CUDA_ARCH_LIST="8.0 8.6 8.7 8.9 9.0 9.0a 10"
 
 # --- System & Package Installation ---
 RUN apt-get update -q && \
-    # Install system dependencies
+    # Install system dependencies for Ubuntu 24.04, removing conflicting/obsolete packages
     apt-get install -y -q=2 curl \
     software-properties-common \
     wget \
@@ -27,27 +27,26 @@ RUN apt-get update -q && \
     bc \
     nano \
     rsync \
-    libgl1-mesa-glx \
-    libtcmalloc-minimal4 \
-    libcufft10 \
     libxft2 \
     xvfb \
     cmake \
     build-essential \
     ffmpeg \
-    gcc-12 \
-    g++-12 \
-    dotnet-sdk-8.0 \
+    gcc-13 \
+    g++-13 \
     git && \
-    # Remove conflicting or unused packages
-    apt purge gcc-11 g++-11 -y && \
+    # Remove any conflicting system Python to ensure Conda's version is used
     apt-get purge python3 -y && \
-    # Install CUDA Toolkit
+    # Install CUDA Toolkit for Ubuntu 24.04
     cd /tmp/ && \
-    wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb && \
+    wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-keyring_1.1-1_all.deb && \
     dpkg -i cuda-keyring_1.1-1_all.deb && \
+    # Ajoute le dépôt Microsoft pour dotnet
+    wget https://packages.microsoft.com/config/ubuntu/24.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb && \
+    dpkg -i packages-microsoft-prod.deb && \
+    rm packages-microsoft-prod.deb && \
     apt-get update && \
-    apt-get -y install cuda-toolkit-12-8 && \
+    apt-get -y install cuda-toolkit-12-8 dotnet-sdk-8.0 && \
     # Clean up package cache
     apt autoremove -y && \
     apt-get clean && \
@@ -55,7 +54,7 @@ RUN apt-get update -q && \
 
 # --- Application Setup ---
 # Create application directories
-RUN mkdir -p ${BASE_DIR}\temp ${SD_INSTALL_DIR} ${BASE_DIR}/outputs
+RUN mkdir -p ${BASE_DIR}/temp ${SD_INSTALL_DIR} ${BASE_DIR}/outputs
 
 # Copy WebUI parameters
 ADD parameters/* ${SD_INSTALL_DIR}/parameters/
@@ -73,11 +72,13 @@ ENV HOME=/home/abc
 RUN mkdir /home/abc && \
     chown -R abc:abc /home/abc
 
-# Install Miniconda for Python environment management
+# Install Miniforge for Python environment management (uses conda-forge by default)
 RUN cd /tmp && \
-    wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh && \
-    bash Miniconda3-latest-Linux-x86_64.sh -b && \
-    rm Miniconda3-latest-Linux-x86_64.sh && \
+    # URL for Miniforge installer
+    wget https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh && \
+    # Install Miniforge directly into the path expected by all launch scripts
+    bash Miniforge3-Linux-x86_64.sh -b -p /home/abc/miniconda3 && \
+    rm Miniforge3-Linux-x86_64.sh && \
     # Set final ownership for application folders
     chown -R abc:abc /root && \
     chown -R abc:abc ${SD_INSTALL_DIR} && \
