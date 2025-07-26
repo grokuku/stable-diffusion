@@ -44,7 +44,7 @@ fi
 # Install custom user requirements if specified
 pip install --upgrade pip
 if [ -f ${SD02_DIR}/requirements.txt ]; then
-    pip install -r ${SD02_DIR}/requirements.txt
+    pip install -r ${SD02_DIR}/requirements_versions.txt
 fi
 
 # Symlink shared models folders into the Forge directory
