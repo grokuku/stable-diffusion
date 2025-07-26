@@ -22,6 +22,7 @@ Please consult each respective website for a comprehensive description and usage
 | 70    | Kohya             | Kohya's GUI provides a Windows-focused Gradio GUI for Kohya's Stable Diffusion trainers                                                      | https://github.com/bmaltais/kohya_ss                    |
 | 71    | Fluxgym             | Dead simple web UI for training FLUX LoRA with LOW VRAM (12GB/16GB/20GB) support                                                      | https://github.com/cocktailpeanut/fluxgym                    |
 | 72    | OneTrainer             | OneTrainer is a one-stop solution for all your stable diffusion training needs                                                      | https://github.com/Nerogar/OneTrainer                    |
+| 73    | AI Toolkit        | A collection of various tools for AI-related tasks.                                                                                  | https://github.com/ostris/ai-toolkit                    |
   
 
 # Usage
@@ -44,6 +45,7 @@ docker compose --profile face-fusion up       # http://<server_ip>:9051
 docker compose --profile kohya up             # http://<server_ip>:9070
 docker compose --profile fluxgym up           # http://<server_ip>:9071
 docker compose --profile onetrainer up        # http://<server_ip>:9072
+docker compose --profile ai-toolkit up        # http://<server_ip>:9073
 
 ```
 
@@ -82,6 +84,7 @@ make start face-fusion       # http://<server_ip>:9051
 make start kohya             # http://<server_ip>:9070
 make start fluxgym           # http://<server_ip>:9071
 make start onetrainer        # http://<server_ip>:9072
+make start ai-toolkit        # http://<server_ip>:9073
 ```
 
 
@@ -130,6 +133,9 @@ This applies to the launching project only.
 
 If something went wrong and you can't access certain files, you can reset access rights by deleting the file named 'Delete_this_file_to_reset_access_rights_at_next_launch' in the root folder.   
 This applies to all the /config folder.   
+
+#### A note on development
+Starting from version 4.0, this project is being developed with the assistance of Google's Gemini.
 
 # History
 

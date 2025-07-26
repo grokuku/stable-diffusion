@@ -1,0 +1,73 @@
+# --- Builder Stage ---
+FROM nvidia/cuda:12.8.1-cudnn-devel-ubuntu24.04 AS builder
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PIP_BREAK_SYSTEM_PACKAGES=1
+ENV TORCH_CUDA_ARCH_LIST="8.0 8.6 8.7 8.9 9.0 9.0a 10"
+ENV MAX_JOBS=8
+WORKDIR /build
+
+# --- Dépendances système ---
+RUN apt-get update && apt-get install -y -q=2 \
+    build-essential wget curl git cmake gnupg bc rsync ffmpeg ninja-build \
+    libxft2 xvfb \
+    python3.12 python3.12-dev python3.12-venv python3-setuptools \
+    cuda-toolkit-12-8 \
+ && curl -sS https://bootstrap.pypa.io/get-pip.py | python3.12 \
+ && update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1 \
+ && update-alternatives --install /usr/bin/python python /usr/bin/python3.12 1 \
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
+
+# Ajouter CUDA dans le PATH (au cas où)
+ENV PATH="/usr/local/cuda/bin:$PATH"
+ENV CPLUS_INCLUDE_PATH="/usr/local/cuda/include"
+
+# --- Paquets Python ---
+RUN python3.12 -m pip install --no-cache-dir wheel packaging \
+ && python3.12 -m pip install --no-cache-dir torch==2.7.1 torchvision torchaudio \
+      --extra-index-url https://download.pytorch.org/whl/cu128 \
+ && python3.12 -m pip install --no-cache-dir cython==0.29.37
+
+# --- Compilation des wheels ---
+
+# flash-attention
+RUN git clone https://github.com/Dao-AILab/flash-attention --recurse-submodules \
+ && cd flash-attention \
+ && python3.12 setup.py bdist_wheel \
+ && cp dist/*.whl /build/
+
+# diso
+RUN git clone https://github.com/SarahWeiii/diso --recurse-submodules \
+ && cd diso \
+ && python3.12 setup.py bdist_wheel \
+ && cp dist/*.whl /build/
+
+# nvdiffrast
+RUN git clone https://github.com/NVlabs/nvdiffrast.git \
+ && cd nvdiffrast \
+ && python3.12 setup.py bdist_wheel \
+ && cp dist/*.whl /build/
+
+# kaolin
+RUN git clone https://github.com/HarrisonPrism/kaolin_5090.git \
+ && cd kaolin_5090 \
+ && python3.12 setup.py bdist_wheel \
+ && cp dist/*.whl /build/
+
+# mip-splatting / diff-gaussian-rasterization
+#RUN git clone https://github.com/autonomousvision/mip-splatting --recurse-submodules \
+# && cd mip-splatting/submodules/diff-gaussian-rasterization \
+# && python3.12 setup.py bdist_wheel \
+# && cp dist/*.whl /build/
+
+# vox2seq / TRELLIS
+#RUN git clone https://github.com/microsoft/TRELLIS --recurse-submodules \
+# && cd TRELLIS/extensions/vox2seq \
+# && python3.12 setup.py bdist_wheel \
+# && cp dist/*.whl /build/
+
+# --- Final Stage ---
+FROM ghcr.io/linuxserver/baseimage-kasmvnc:ubuntunoble
+
+COPY --from=builder /build/*.whl /wheels/
