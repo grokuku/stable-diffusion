@@ -14,7 +14,7 @@ ENV BASE_DIR=/config \
 # Set compiler and Torch/CUDA architecture for any potential runtime compilations
 ENV CC=/usr/bin/gcc-13
 ENV CXX=/usr/bin/g++-13
-ENV TORCH_CUDA_ARCH_LIST="8.0 8.6 8.7 8.9 9.0 9.0a 10"
+ENV TORCH_CUDA_ARCH_LIST="8.0 8.6 8.7 8.9 9.0 9.0a 10 12"
 
 # --- System & Package Installation ---
 RUN apt-get update -q && \
