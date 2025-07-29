@@ -55,6 +55,12 @@ RUN git clone https://github.com/HarrisonPrism/kaolin_5090.git \
  && python3.12 setup.py bdist_wheel \
  && cp dist/*.whl /build/
 
+# SageAttention
+RUN git clone git clone https://github.com/thu-ml/SageAttention.git \
+ && cd SageAttention \
+ && python3.12 setup.py bdist_wheel \
+ && cp dist/*.whl /build/
+
 # mip-splatting / diff-gaussian-rasterization
 #RUN git clone https://github.com/autonomousvision/mip-splatting --recurse-submodules \
 # && cd mip-splatting/submodules/diff-gaussian-rasterization \
