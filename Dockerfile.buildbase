@@ -32,11 +32,11 @@ RUN python3.12 -m pip install --no-cache-dir wheel packaging \
 # --- Compilation des wheels ---
 
 # SageAttention
-RUN git clone https://github.com/thu-ml/SageAttention.git \
- && cd SageAttention \
- && export TORCH_CUDA_ARCH_LIST=''8.0 8.6 8.7 8.9 9.0 9.0a 10 12'' \
- && python3.12 setup.py bdist_wheel \
- && cp dist/*.whl /build/
+#RUN git clone https://github.com/thu-ml/SageAttention.git \
+# && cd SageAttention \
+# && export TORCH_CUDA_ARCH_LIST=''8.0 8.6 8.7 8.9 9.0 9.0a 10 12'' \
+# && python3.12 setup.py bdist_wheel \
+# && cp dist/*.whl /build/
  
 # flash-attention
 RUN git clone https://github.com/Dao-AILab/flash-attention --recurse-submodules \
@@ -63,18 +63,19 @@ RUN git clone https://github.com/HarrisonPrism/kaolin_5090.git \
  && cp dist/*.whl /build/
 
 
+ENV TORCH_CUDA_ARCH_LIST="8.0 8.6 8.7 8.9 9.0 9.0a"
 
 # mip-splatting / diff-gaussian-rasterization
-#RUN git clone https://github.com/autonomousvision/mip-splatting --recurse-submodules \
-# && cd mip-splatting/submodules/diff-gaussian-rasterization \
-# && python3.12 setup.py bdist_wheel \
-# && cp dist/*.whl /build/
+RUN git clone https://github.com/autonomousvision/mip-splatting --recurse-submodules \
+ && cd mip-splatting/submodules/diff-gaussian-rasterization \
+ && python3.12 setup.py bdist_wheel \
+ && cp dist/*.whl /build/
 
 # vox2seq / TRELLIS
-#RUN git clone https://github.com/microsoft/TRELLIS --recurse-submodules \
-# && cd TRELLIS/extensions/vox2seq \
-# && python3.12 setup.py bdist_wheel \
-# && cp dist/*.whl /build/
+RUN git clone https://github.com/microsoft/TRELLIS --recurse-submodules \
+ && cd TRELLIS/extensions/vox2seq \
+ && python3.12 setup.py bdist_wheel \
+ && cp dist/*.whl /build/
 
 # --- Final Stage ---
 FROM ghcr.io/linuxserver/baseimage-kasmvnc:ubuntunoble
