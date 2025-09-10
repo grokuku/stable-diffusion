@@ -55,18 +55,18 @@ RUN git clone https://github.com/HarrisonPrism/kaolin_5090.git \
 && export IGNORE_TORCH_VER=1 && python3.12 setup.py bdist_wheel \
 && cp dist/*.whl /build/
 
-# vox2seq / TRELLIS
-# Source found in a Hugging Face Space, as it seems to be removed from the original MS repo.
-RUN git clone https://huggingface.co/spaces/dkatz2391/TRELLIS_TextTo3D_Try2 TRELLIS_source \
-&& cd TRELLIS_source/extensions/vox2seq \
-&& python3.12 setup.py bdist_wheel \
-&& cp dist/*.whl /build/
-
 ENV TORCH_CUDA_ARCH_LIST="8.0 8.6 8.7 8.9 9.0 9.0a"
 
 # mip-splatting / diff-gaussian-rasterization
 RUN git clone https://github.com/autonomousvision/mip-splatting --recurse-submodules \
 && cd mip-splatting/submodules/diff-gaussian-rasterization \
+&& python3.12 setup.py bdist_wheel \
+&& cp dist/*.whl /build/
+
+# vox2seq / TRELLIS
+# Source found in a Hugging Face Space, as it seems to be removed from the original MS repo.
+RUN git clone https://huggingface.co/spaces/dkatz2391/TRELLIS_TextTo3D_Try2 TRELLIS_source \
+&& cd TRELLIS_source/extensions/vox2seq \
 && python3.12 setup.py bdist_wheel \
 && cp dist/*.whl /build/
 
