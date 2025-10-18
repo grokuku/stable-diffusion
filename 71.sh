@@ -26,9 +26,11 @@ else
   check_remote "GIT_REF"
   # After syncing the main repo, handle the sd-scripts sub-directory
   if [ -d "sd-scripts/.git" ]; then
-    echo "Synchronizing sd-scripts sub-repository..."
+    echo "Synchronizing sd-scripts sub-repository to 'sd3' branch..."
     cd sd-scripts
-    check_remote "GIT_REF" # Uses the same GIT_REF as the parent
+    git fetch
+    git checkout sd3
+    git reset --hard origin/sd3
     cd ..
   else
     echo "sd-scripts sub-repository not found or not a git repo, attempting to clone..."
