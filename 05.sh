@@ -28,7 +28,7 @@ fi
 mkdir -p "${SD05_DIR}/ComfyUI/custom_nodes"
 if [ ! -d "${SD05_DIR}/ComfyUI/custom_nodes/ComfyUI-Manager/.git" ]; then
     echo "Cloning ComfyUI-Manager repository..."
-    git clone https://github.com/ltdrdata/ComfyUI-Manager.git "${SD05_DIR}/ComfyUI/custom_nodes/ComfyUI-Manager"
+    git clone https://github.com/Comfy-Org/ComfyUI-Manager.git "${SD05_DIR}/ComfyUI/custom_nodes/ComfyUI-Manager"
     cd "${SD05_DIR}/ComfyUI/custom_nodes/ComfyUI-Manager"
 else
     echo "Existing ComfyUI-Manager repository found. Synchronizing..."
@@ -59,11 +59,6 @@ if [ "$active_clean" = "1" ]; then
     echo -e "-------------------------------------\n"
 fi
 
-# Remove old venv if it still exists (legacy)
-if [ -d ${SD05_DIR}/venv ]; then
-    rm -rf ${SD05_DIR}/venv
-fi
-
 # Symlink shared models folders into the ComfyUI directory
 sl_folder ${SD05_DIR}/ComfyUI/models checkpoints ${BASE_DIR}/models stable-diffusion
 sl_folder ${SD05_DIR}/ComfyUI/models hypernetworks ${BASE_DIR}/models hypernetwork
@@ -81,6 +76,8 @@ sl_folder ${SD05_DIR}/ComfyUI/models unet ${BASE_DIR}/models unet
 # Install ComfyUI's Python requirements
 cd ${SD05_DIR}/ComfyUI
 pip install --upgrade pip
+pip install -r requirements.txt
+cd "${SD05_DIR}/ComfyUI/custom_nodes/ComfyUI-Manager"
 pip install -r requirements.txt
 
 # Install custom user requirements if specified
