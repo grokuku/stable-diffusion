@@ -32,10 +32,10 @@ RUN python3.12 -m pip install --no-cache-dir wheel packaging \
 # --- Compilation des wheels ---
 
 # flash-attention
-RUN git clone https://github.com/Dao-AILab/flash-attention --recurse-submodules \
-&& cd flash-attention \
-&& python3.12 setup.py bdist_wheel \
-&& cp dist/*.whl /build/
+#RUN git clone https://github.com/Dao-AILab/flash-attention --recurse-submodules \
+#&& cd flash-attention \
+#&& python3.12 setup.py bdist_wheel \
+#&& cp dist/*.whl /build/
 
 # diso
 RUN git clone https://github.com/SarahWeiii/diso --recurse-submodules \

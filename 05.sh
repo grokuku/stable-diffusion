@@ -47,8 +47,33 @@ fi
 # Activate the environment and install base packages
 source activate ${SD05_DIR}/env
 conda install -n base conda-libmamba-solver -y
-conda install -c conda-forge git python=3.12 pip gxx libcurand --solver=libmamba -y
+conda install -c python=3.12 pip --solver=libmamba -y 
+pip install --upgrade pip
+pip install torch==2.8.0 torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu128
+conda install -c conda-forge git gxx libcurand --solver=libmamba -y
 conda install -c nvidia cuda-cudart --solver=libmamba -y
+pip install --force-reinstall --no-cache-dir --no-deps flash-attn
+
+# Install ComfyUI's Python requirements
+cd ${SD05_DIR}/ComfyUI
+pip install -r requirements.txt
+cd "${SD05_DIR}/ComfyUI/custom_nodes/ComfyUI-Manager"
+pip install -r requirements.txt
+
+# Install custom user requirements if specified
+if [ -f ${SD05_DIR}/requirements.txt ]; then
+    pip install -r ${SD05_DIR}/requirements.txt
+fi
+
+# Install pre-compiled wheels and other specific packages
+pip install /wheels/*.whl
+pip install plyfile \
+    tqdm \
+    spconv-cu124 \
+    llama-cpp-python \
+    logger \
+    sageattention
+pip install --upgrade diffusers[torch]
 
 # Install dependencies for custom nodes if a full clean was performed
 if [ "$active_clean" = "1" ]; then
@@ -73,28 +98,6 @@ sl_folder ${SD05_DIR}/ComfyUI/models controlnet ${BASE_DIR}/models controlnet
 sl_folder ${SD05_DIR}/ComfyUI/models t5 ${BASE_DIR}/models t5
 sl_folder ${SD05_DIR}/ComfyUI/models unet ${BASE_DIR}/models unet
 
-# Install ComfyUI's Python requirements
-cd ${SD05_DIR}/ComfyUI
-pip install --upgrade pip
-pip install torch==2.8.0 torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu128
-pip install -r requirements.txt
-cd "${SD05_DIR}/ComfyUI/custom_nodes/ComfyUI-Manager"
-pip install -r requirements.txt
-
-# Install custom user requirements if specified
-if [ -f ${SD05_DIR}/requirements.txt ]; then
-    pip install -r ${SD05_DIR}/requirements.txt
-fi
-
-# Install pre-compiled wheels and other specific packages
-pip install /wheels/*.whl
-pip install plyfile \
-    tqdm \
-    spconv-cu124 \
-    llama-cpp-python \
-    logger \
-    sageattention
-pip install --upgrade diffusers[torch]
 
 # Launch ComfyUI
 cd ${SD05_DIR}/ComfyUI
