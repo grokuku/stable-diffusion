@@ -73,4 +73,10 @@ RUN git clone https://huggingface.co/spaces/dkatz2391/TRELLIS_TextTo3D_Try2 TREL
 # --- Final Stage ---
 FROM ghcr.io/linuxserver/baseimage-kasmvnc:ubuntunoble
 
+# Apply security updates to the base image to patch known vulnerabilities
+RUN apt-get update && \
+     apt-get upgrade -y && \
+     apt-get clean && \
+     rm -rf /var/lib/apt/lists/*
+
 COPY --from=builder /build/*.whl /wheels/
