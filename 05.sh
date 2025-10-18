@@ -76,6 +76,7 @@ sl_folder ${SD05_DIR}/ComfyUI/models unet ${BASE_DIR}/models unet
 # Install ComfyUI's Python requirements
 cd ${SD05_DIR}/ComfyUI
 pip install --upgrade pip
+pip install torch==2.8.0 torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu128
 pip install -r requirements.txt
 cd "${SD05_DIR}/ComfyUI/custom_nodes/ComfyUI-Manager"
 pip install -r requirements.txt
